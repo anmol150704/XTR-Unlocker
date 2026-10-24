@@ -1,0 +1,25 @@
+name: Native runtime build
+
+on:
+  push:
+    branches: [main, mvp/desktop-foundation]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2025
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build pinned OptiScaler source
+        run: msbuild "runtime/OptiScaler/OptiScaler.sln" /m /p:Configuration=Release /p:Platform=x64 /verbosity:minimal

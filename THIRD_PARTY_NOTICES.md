@@ -15,6 +15,11 @@ The desktop client uses SkiaSharp 3.119.2 for cover-image resizing and WebP deco
 - License: MIT.
 - Project: https://github.com/mono/SkiaSharp
 
-## Planned runtime components
+## OptiScaler
 
-OptiScaler and optional game-side modules have not yet been imported into this repository. Before adding them, preserve their source licenses, notices, version information, and any redistribution restrictions for bundled runtime binaries.
+`runtime/OptiScaler/` is the OptiScaler v0.9.4 source submodule, pinned at commit `7534ad00bf9e590eedb99e8dd9fd8c89dae3654f` from [optiscaler/OptiScaler](https://github.com/optiscaler/OptiScaler).
+
+- License: GNU General Public License v3.0; see `runtime/OptiScaler/LICENSE`.
+- Upstream submodules retain their own licenses and notices.
+- The OptiScaler source is present for development. XTR does not yet package or install the runtime, and no upstream runtime release binaries are redistributed by this repository.
+- Optional runtime modules remain subject to their own version, compatibility, and redistribution review.

@@ -5,7 +5,7 @@ XTR Unlocker is a unified Windows app for managing supported DLSS and upscaling 
 ## Product structure
 
 - **Desktop app (`desktop/`)**: game-library discovery, DLL management, per-game profiles, install/update/remove, backups, and restore.
-- **Game runtime (planned)**: OptiScaler-based per-game integration and a redesigned in-game menu for options supported by that game.
+- **Game runtime (`runtime/OptiScaler/`)**: the pinned OptiScaler source that will provide the per-game integration and redesigned in-game menu.
 
 These are internal parts of one product. Users will manage their library and runtime from XTR Unlocker; the game-side component supplies controls while a selected game is running.
 
@@ -15,19 +15,31 @@ The desktop app detects installed games from Steam, GOG, Epic Games, Ubisoft Con
 
 ## Project status
 
-The current `desktop/` source is based on [DLSS Swapper v1.2.7.0](https://github.com/beeradmoore/dlss-swapper/tree/v1.2.7.0) under GPL-3.0, with XTR identity, storage, update-feed routing, runtime profile storage, and install ownership manifests. Debug and Release builds both compile cleanly, and the Release build launches and scans games. OptiScaler installation, the in-game menu, and game compatibility records remain to be implemented and validated; this is a functioning desktop foundation, not yet the complete unified product.
+The current `desktop/` source is based on [DLSS Swapper v1.2.7.0](https://github.com/beeradmoore/dlss-swapper/tree/v1.2.7.0) under GPL-3.0, with XTR identity, storage, update-feed routing, runtime profile storage, and install ownership manifests. The desktop Release build launches and scans games. OptiScaler v0.9.4 is pinned as a source submodule; its source is not yet integrated into XTR's install/update/restore flow, and its in-game menu is not yet redesigned. Game compatibility records and end-to-end runtime behavior remain to be implemented and validated.
 
 The initial product scope and implementation sequence are in [docs/unified-app-mvp.md](docs/unified-app-mvp.md). Attribution and license notes are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Build
 
-On Windows, install the .NET 10 SDK and build the Release desktop app:
+Clone with source submodules enabled so the pinned runtime source and its dependencies are available:
+
+```powershell
+git clone --recurse-submodules https://github.com/anmol150704/XTR-Unlocker.git
+```
+
+Build the Release desktop app with the .NET 10 SDK:
 
 ```powershell
 dotnet build "desktop\DLSS Swapper.sln" --configuration Release
 ```
 
 The executable is produced under `desktop\src\bin\x64\Release\net10.0-windows10.0.26100.0\win-x64\XTR Unlocker.exe`.
+
+To build the native runtime, install Visual Studio 2022 with the Desktop development with C++ workload and run:
+
+```powershell
+msbuild "runtime\OptiScaler\OptiScaler.sln" /m /p:Configuration=Release /p:Platform=x64 /verbosity:minimal
+```
 
 ## Compatibility
 
