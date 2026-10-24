@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!--
     Microsoft ResX Schema
@@ -121,7 +121,7 @@
     <value>רישיונות &amp; תודות</value>
   </data>
   <data name="ApplicationTitle" xml:space="preserve">
-    <value>DLSS Swapper</value>
+    <value>XTR Unlocker</value>
   </data>
   <data name="DiagnosticsPage_ClickToCopyDetails" xml:space="preserve">
     <value>לחץ כדי להעתיק את הפרטים שלהלן</value>
@@ -172,7 +172,7 @@
     <value>פריסט {0} (מיושן)</value>
   </data>
   <data name="FailedToLaunchPage_DlssSwapperFailedToLaunch" xml:space="preserve">
-    <value>הפעלת DLSS Swapper נכשלה</value>
+    <value>הפעלת XTR Unlocker נכשלה</value>
   </data>
   <data name="FailedToLaunchPage_PleaseOpenIssuePartial1" xml:space="preserve">
     <value>אנא פתח </value>
@@ -181,7 +181,7 @@
     <value>פנייה חדשה (issue)</value>
   </data>
   <data name="FailedToLaunchPage_PleaseOpenIssuePartial3" xml:space="preserve">
-    <value> במאגר ה-GitHub של DLSS Swapper וספק את המידע הבא בסעיף המידע הנוסף.</value>
+    <value> במאגר ה-GitHub של XTR Unlocker וספק את המידע הבא בסעיף המידע הנוסף.</value>
   </data>
   <data name="FailedToLaunchPage_WindowTitle" xml:space="preserve">
     <value>ההפעלה נכשלה</value>
@@ -293,7 +293,7 @@
     <value>כותר זה לא נוסף באופן ידני ולא ניתן להסירו.</value>
   </data>
   <data name="GamePage_ManuallyAdded_RemoveGameTemplate" xml:space="preserve">
-    <value>האם אתה בטוח שברצונך להסיר את "{0}" מ-DLSS Swapper? פעולה זו לא תבצע שינויים כלשהם בקובצי DLSS שכבר הוחלפו.</value>
+    <value>האם אתה בטוח שברצונך להסיר את "{0}" מ-XTR Unlocker? פעולה זו לא תבצע שינויים כלשהם בקובצי DLSS שכבר הוחלפו.</value>
   </data>
   <data name="GamePage_MultipleDllFound_Notice" xml:space="preserve">
     <value>להלן מוצגים מספר קובצי ה-DLL שנמצאו. עדיין תוכל להחליף ולשחזר קובצי DLL כרגיל, מכיוון שנבצע פעולות אלו על כל קובצי ה-DLL בבת אחת. עם זאת, מכיוון שאיננו יודעים באיזה מקובצי ה-DLL הללו המשחק משתמש, גרסת ה-DLL המוצגת היא של קובץ ה-DLL הראשון שזוהה.</value>
@@ -383,7 +383,7 @@
     <value>עליך לבחור את ספריית ה-&lt;i&gt;משחק&lt;/i&gt;, ולא את ספריית ה-&lt;i&gt;משחקים&lt;/i&gt;.&lt;br/&gt;&lt;br/&gt;לדוגמה, אם יש לך משחק בנתיב:&lt;br/&gt;&lt;b&gt;C:\Program Files\MyGamesFolder\MyFavGame\&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;עליך לבחור את התיקייה &lt;b&gt;MyFavGame&lt;/b&gt; ולא את התיקייה &lt;b&gt;MyGamesFolder&lt;/b&gt;.</value>
   </data>
   <data name="GamesPage_ManuallyAdding_NoteMessage" xml:space="preserve">
-    <value>DLSS Swapper אמור לאתר משחקים מספריות המשחקים המותקנות שלך באופן אוטומטי. אם המשחק שלך אינו מופיע ברשימה, ייתכן שישנן מספר הגדרות שמונעות זאת. אנא בדוק:
+    <value>XTR Unlocker אמור לאתר משחקים מספריות המשחקים המותקנות שלך באופן אוטומטי. אם המשחק שלך אינו מופיע ברשימה, ייתכן שישנן מספר הגדרות שמונעות זאת. אנא בדוק:
 
 - מסנן רשימת המשחקים אינו מוגדר ל-"הסתר משחקים ללא פריטים שניתן להחליף"
 - ספריית המשחקים הספציפית מופעלת בהגדרות
@@ -409,7 +409,7 @@
     <value>צור פנייה (issue) חדשה ב-GitHub</value>
   </data>
   <data name="GamesPage_NewDlls_DiscoveredHelpUs" xml:space="preserve">
-    <value>במהלך טעינת המשחקים שלך התגלו מספר קובצי DLL חדשים שאינם קיימים במניפסט של DLSS Swapper.</value>
+    <value>במהלך טעינת המשחקים שלך התגלו מספר קובצי DLL חדשים שאינם קיימים במניפסט של XTR Unlocker.</value>
   </data>
   <data name="GamesPage_NewDlls_GitHubAccountRequired" xml:space="preserve">
     <value>(נדרש חשבון GitHub)</value>
@@ -646,7 +646,7 @@
     <value>כרגע מותקנת אצלך גרסה {0}.</value>
   </data>
   <data name="GitHubUpdater_DlssSwapperUpdated" xml:space="preserve">
-    <value>DLSS Swapper עודכן הרגע</value>
+    <value>XTR Unlocker עודכן הרגע</value>
   </data>
   <data name="GitHubUpdater_DownloadComplete_Title" xml:space="preserve">
     <value>ההורדה הושלמה</value>
@@ -733,10 +733,10 @@
     <value>ההורדות החלו</value>
   </data>
   <data name="LibraryPage_Error_NVIDIA_Downloading" xml:space="preserve">
-    <value>לא ניתן לאחזר את רשימת הקבצים משרתי NVIDIA. אנא נסה שוב מאוחר יותר או בדוק אם קיימים עדכונים עבור DLSS Swapper.</value>
+    <value>לא ניתן לאחזר את רשימת הקבצים משרתי NVIDIA. אנא נסה שוב מאוחר יותר או בדוק אם קיימים עדכונים עבור XTR Unlocker.</value>
   </data>
   <data name="LibraryPage_Error_NVIDIA_Importing" xml:space="preserve">
-    <value>לא ניתן לייבא משרתי NVIDIA. אנא נסה שוב מאוחר יותר או בדוק אם קיימים עדכונים עבור DLSS Swapper.</value>
+    <value>לא ניתן לייבא משרתי NVIDIA. אנא נסה שוב מאוחר יותר או בדוק אם קיימים עדכונים עבור XTR Unlocker.</value>
   </data>
   <data name="LibraryPage_ExportedDLLs" xml:space="preserve">
     <value>קובצי DLL שיוצאו: </value>
@@ -821,10 +821,10 @@
     <value>מנסה לעדכן</value>
   </data>
   <data name="MainWindow_DlssSwapperCloseDueToManifest" xml:space="preserve">
-    <value>DLSS Swapper לא הצליח לטעון את קובץ המניפסט שלו. היישום ייסגר כעת.</value>
+    <value>XTR Unlocker לא הצליח לטעון את קובץ המניפסט שלו. היישום ייסגר כעת.</value>
   </data>
   <data name="MainWindow_DlssSwapperMustClose" xml:space="preserve">
-    <value>DLSS Swapper חייב להיסגר</value>
+    <value>XTR Unlocker חייב להיסגר</value>
   </data>
   <data name="MainWindow_ManifestCouldNotBeLoaded_GitHubIssues" xml:space="preserve">
     <value>פניות ב-GitHub (Issues)</value>
@@ -867,22 +867,22 @@
     <value>בדיקת User Agent מותאם אישית</value>
   </data>
   <data name="NetworkTesterPage_DiagnosticsTest10Title" xml:space="preserve">
-    <value>הורדת DLL של DLSS Swapper מתוך DLSS Swapper עם user agent מותאם אישית</value>
+    <value>הורדת DLL של XTR Unlocker מתוך XTR Unlocker עם user agent מותאם אישית</value>
   </data>
   <data name="NetworkTesterPage_DiagnosticsTest11Title" xml:space="preserve">
     <value>הורדת DLL של DLSS משרת מראה של UploadThing</value>
   </data>
   <data name="NetworkTesterPage_DiagnosticsTest1Title" xml:space="preserve">
-    <value>גישה אל google.com מתוך DLSS Swapper (בדיקת חיבור כללי לאינטרנט)</value>
+    <value>גישה אל google.com מתוך XTR Unlocker (בדיקת חיבור כללי לאינטרנט)</value>
   </data>
   <data name="NetworkTesterPage_DiagnosticsTest2Title" xml:space="preserve">
-    <value>גישה אל bing.com מתוך DLSS Swapper (בדיקת חיבור כללי לאינטרנט)</value>
+    <value>גישה אל bing.com מתוך XTR Unlocker (בדיקת חיבור כללי לאינטרנט)</value>
   </data>
   <data name="NetworkTesterPage_DiagnosticsTest3Title" xml:space="preserve">
-    <value>הורדת DLL של DLSS Swapper מתוך DLSS Swapper</value>
+    <value>הורדת DLL של XTR Unlocker מתוך XTR Unlocker</value>
   </data>
   <data name="NetworkTesterPage_DiagnosticsTest4Title" xml:space="preserve">
-    <value>הורדת DLL של DLSS Swapper מהדפדפן</value>
+    <value>הורדת DLL של XTR Unlocker מהדפדפן</value>
   </data>
   <data name="NetworkTesterPage_DiagnosticsTest5Title" xml:space="preserve">
     <value>הורדת תמונת עטיפה של משחק מ-Steam</value>
@@ -891,13 +891,13 @@
     <value>הורדת תמונת עטיפה של משחק מ-Epic Game Store</value>
   </data>
   <data name="NetworkTesterPage_DiagnosticsTest7Title" xml:space="preserve">
-    <value>הורדת תמונת עטיפה של משחק משרת הקבצים של DLSS Swapper</value>
+    <value>הורדת תמונת עטיפה של משחק משרת הקבצים של XTR Unlocker</value>
   </data>
   <data name="NetworkTesterPage_DiagnosticsTest8Title" xml:space="preserve">
-    <value>הורדת תמונת עטיפה של משחק משרת קבצים חלופי של DLSS Swapper</value>
+    <value>הורדת תמונת עטיפה של משחק משרת קבצים חלופי של XTR Unlocker</value>
   </data>
   <data name="NetworkTesterPage_DiagnosticsTest9Title" xml:space="preserve">
-    <value>בדיקת DNS עבור שרת הקבצים של DLSS Swapper</value>
+    <value>בדיקת DNS עבור שרת הקבצים של XTR Unlocker</value>
   </data>
   <data name="NetworkTesterPage_OpenInBrowser" xml:space="preserve">
     <value>פתח בדפדפן</value>
@@ -963,7 +963,7 @@
     <value>תאריך בנייה</value>
   </data>
   <data name="SettingsPage_CouldNotOpenLogFileTryManual" xml:space="preserve">
-    <value>לא ניתן היה לפתוח את קובץ היומן שלך ישירות מתוך DLSS Swapper. אנא נסה לפתוח אותו ידנית.</value>
+    <value>לא ניתן היה לפתוח את קובץ היומן שלך ישירות מתוך XTR Unlocker. אנא נסה לפתוח אותו ידנית.</value>
   </data>
   <data name="SettingsPage_DeleteIgnoredPathMessage" xml:space="preserve">
     <value>האם אתה בטוח שברצונך למחוק את הנתיב המוחרג {0}?</value>
@@ -1014,7 +1014,7 @@
     <value>תן משוב</value>
   </data>
   <data name="SettingsPage_GiveFeedbackInfo" xml:space="preserve">
-    <value>תוכל להציע תכונה או לדווח על בעיה ב-DLSS Swapper</value>
+    <value>תוכל להציע תכונה או לדווח על בעיה ב-XTR Unlocker</value>
   </data>
   <data name="SettingsPage_IgnoredPaths" xml:space="preserve">
     <value>נתיבים מוחרגים</value>
@@ -1131,7 +1131,7 @@
     <value>לא נמצאו נתוני תרגום לשמירה.</value>
   </data>
   <data name="TranslationToolboxPage_NotValidTranslationFile" xml:space="preserve">
-    <value>אינו קובץ תרגום חוקי של DLSS Swapper.</value>
+    <value>אינו קובץ תרגום חוקי של XTR Unlocker.</value>
   </data>
   <data name="TranslationToolboxPage_PublishFailedMessage" xml:space="preserve">
     <value>לא ניתן היה לפרסם את התרגום. אנא עיין ביומן השגיאות למידע נוסף.</value>
@@ -1164,7 +1164,7 @@
     <value>מדריך תרגום</value>
   </data>
   <data name="TranslationToolboxPage_TranslationGuideMessage" xml:space="preserve">
-    <value>התרגום שלך נוצר. אנא עיין במדריך התרגום של DLSS Swapper לגבי מה לעשות הלאה עם {0}.</value>
+    <value>התרגום שלך נוצר. אנא עיין במדריך התרגום של XTR Unlocker לגבי מה לעשות הלאה עם {0}.</value>
   </data>
   <data name="TranslationToolboxPage_TranslationProgress" xml:space="preserve">
     <value>התקדמות התרגום</value>

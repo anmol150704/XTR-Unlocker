@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using DLSS_Swapper.Extensions;
 using DLSS_Swapper.Helpers;
 using DLSS_Swapper.Interfaces;
+using DLSS_Swapper.Data.Runtime;
 using DLSS_Swapper.UserControls;
 using Microsoft.UI.Xaml.Controls;
 using NvAPIWrapper.DRS;
@@ -123,6 +124,69 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
 
     [Ignore]
     public List<GameAsset> GameAssets { get; } = new List<GameAsset>();
+
+    [ObservableProperty]
+    [Ignore]
+    public partial RuntimeIntegrationProfile? RuntimeProfile { get; set; }
+
+    [ObservableProperty]
+    [Ignore]
+    public partial RuntimeInstallManifest? RuntimeManifest { get; set; }
+
+    private int _runtimeStateLoadStarted;
+
+    internal async Task LoadRuntimeStateAsync()
+    {
+        if (Interlocked.Exchange(ref _runtimeStateLoadStarted, 1) != 0)
+        {
+            return;
+        }
+
+        try
+        {
+            var profile = await RuntimeIntegrationProfileStore.LoadAsync(ID).ConfigureAwait(false);
+            var manifest = await RuntimeInstallManifestStore.LoadAsync(ID).ConfigureAwait(false);
+            App.CurrentApp.RunOnUIThread(() =>
+            {
+                RuntimeProfile = profile;
+                RuntimeManifest = manifest;
+            });
+        }
+        catch (Exception error)
+        {
+            Logger.Error(error);
+        }
+    }
+
+    internal async Task SaveRuntimeProfileAsync(RuntimeIntegrationProfile profile)
+    {
+        ArgumentNullException.ThrowIfNull(profile);
+        if (!string.Equals(profile.GameId, ID, StringComparison.Ordinal))
+        {
+            throw new ArgumentException("The runtime profile belongs to a different game.", nameof(profile));
+        }
+
+        await RuntimeIntegrationProfileStore.SaveAsync(profile).ConfigureAwait(false);
+        App.CurrentApp.RunOnUIThread(() => RuntimeProfile = profile);
+    }
+
+    internal async Task SaveRuntimeManifestAsync(RuntimeInstallManifest manifest)
+    {
+        ArgumentNullException.ThrowIfNull(manifest);
+        if (!string.Equals(manifest.GameId, ID, StringComparison.Ordinal))
+        {
+            throw new ArgumentException("The runtime manifest belongs to a different game.", nameof(manifest));
+        }
+
+        await RuntimeInstallManifestStore.SaveAsync(manifest).ConfigureAwait(false);
+        App.CurrentApp.RunOnUIThread(() => RuntimeManifest = manifest);
+    }
+
+    internal async Task RemoveRuntimeProfileAsync()
+    {
+        await RuntimeIntegrationProfileStore.DeleteAsync(ID).ConfigureAwait(false);
+        App.CurrentApp.RunOnUIThread(() => RuntimeProfile = null);
+    }
 
     [Ignore]
     public bool NeedsProcessing { get; set; } = false;
@@ -679,7 +743,7 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
                     Logger.Error(err);
                     if (App.CurrentApp.IsAdminUser() is false)
                     {
-                        return (false, "Unable to reset to default. Running DLSS Swapper as administrator may fix this.", true);
+                        return (false, "Unable to reset to default. Running XTR Unlocker as administrator may fix this.", true);
                     }
                     else
                     {
@@ -819,7 +883,7 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
                         Logger.Error(err);
                         if (App.CurrentApp.IsAdminUser() is false)
                         {
-                            return (false, "Unable to swap dll as we are unable to write to the target directory. Running DLSS Swapper as administrator may fix this.", true);
+                            return (false, "Unable to swap dll as we are unable to write to the target directory. Running XTR Unlocker as administrator may fix this.", true);
 
                         }
                         else
@@ -871,7 +935,7 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
                 Logger.Error(err);
                 if (App.CurrentApp.IsAdminUser() is false)
                 {
-                    return (false, "Unable to swap dll as we are unable to write to the target directory. Running DLSS Swapper as administrator may fix this.", true);
+                    return (false, "Unable to swap dll as we are unable to write to the target directory. Running XTR Unlocker as administrator may fix this.", true);
                 }
                 else
                 {

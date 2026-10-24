@@ -296,6 +296,8 @@ internal partial class GameManager : ObservableObject
                 // We could do away with this, but in theory this if is never hit
                 var oldGame = _synchronisedAllGames.First(x => x.Equals(game));
 
+                _ = oldGame.LoadRuntimeStateAsync();
+
                 App.CurrentApp.RunOnUIThread(() =>
                 {
                     oldGame.UpdateFromGame(game);
@@ -307,6 +309,8 @@ internal partial class GameManager : ObservableObject
             else
             {
                 Debug.WriteLine($"Adding new game: {game.Title}");
+
+                _ = game.LoadRuntimeStateAsync();
 
                 _synchronisedAllGames.Add(game);
 

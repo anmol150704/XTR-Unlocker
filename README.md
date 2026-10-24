@@ -15,7 +15,7 @@ The imported desktop foundation already detects games from Steam, GOG, Epic Game
 
 ## Project status
 
-The current `desktop/` source is imported from [DLSS Swapper v1.2.7.0](https://github.com/beeradmoore/dlss-swapper/tree/v1.2.7.0) under GPL-3.0. It is an upstream foundation, not yet an XTR Unlocker release: the app branding, OptiScaler runtime integration, custom in-game menu, and game compatibility records are still to be implemented and validated.
+The current `desktop/` source is imported from [DLSS Swapper v1.2.7.0](https://github.com/beeradmoore/dlss-swapper/tree/v1.2.7.0) under GPL-3.0. XTR-specific storage, app identity, and update-feed routing have been started. The app has not yet been built as an XTR Unlocker release; OptiScaler runtime integration, the custom in-game menu, and game compatibility records are still to be implemented and validated.
 
 The initial product scope and implementation sequence are in [docs/unified-app-mvp.md](docs/unified-app-mvp.md). Attribution and license notes are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 

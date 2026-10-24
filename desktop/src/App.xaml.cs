@@ -136,7 +136,7 @@ public sealed partial class App : Application
         }
 
         var newHttpClient = new HttpClient(httpClientHandler);
-        newHttpClient.DefaultRequestHeaders.Add("User-Agent", $"dlss-swapper/{versionString}");
+        newHttpClient.DefaultRequestHeaders.Add("User-Agent", $"{AppIdentity.Slug}/{versionString}");
         newHttpClient.Timeout = TimeSpan.FromMinutes(30);
         newHttpClient.DefaultRequestVersion = new Version(2, 0);
         newHttpClient.DefaultRequestHeaders.ConnectionClose = true;
@@ -256,9 +256,9 @@ public sealed partial class App : Application
         try
         {
             long installSize = 0;
-            installSize += CalculateDirectorySize(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DLSS Swapper"));
+            installSize += CalculateDirectorySize(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), AppIdentity.Name));
 
-            using (var dlssSwapperRegistryKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall\DLSS Swapper", true))
+            using (var dlssSwapperRegistryKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey($@"Software\Microsoft\Windows\CurrentVersion\Uninstall\{AppIdentity.Name}", true))
             {
                 var installLocation = dlssSwapperRegistryKey?.GetValue("InstallLocation") as string;
                 if (string.IsNullOrEmpty(installLocation) == false && Directory.Exists(installLocation) == true)

@@ -770,7 +770,7 @@ public partial class GameGridPageModel : ObservableObject
             }
             else if (result == ContentDialogResult.Secondary)
             {
-                await Launcher.LaunchUriAsync(new Uri("https://github.com/beeradmoore/dlss-swapper/issues"));
+                await Launcher.LaunchUriAsync(new Uri("https://github.com/anmol150704/XTR-Unlocker/issues"));
             }
         }
         else
@@ -889,7 +889,7 @@ public partial class GameGridPageModel : ObservableObject
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Primary)
             {
-                await Launcher.LaunchUriAsync(new Uri("https://github.com/beeradmoore/dlss-swapper/issues"));
+                await Launcher.LaunchUriAsync(new Uri("https://github.com/anmol150704/XTR-Unlocker/issues"));
             }
         }
     }

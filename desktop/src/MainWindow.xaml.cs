@@ -296,7 +296,7 @@ public sealed partial class MainWindow : Window
             var response = await dialog.ShowAsync();
             if (response == ContentDialogResult.Primary)
             {
-                await Launcher.LaunchUriAsync(new Uri("https://github.com/beeradmoore/dlss-swapper/issues"));
+                await Launcher.LaunchUriAsync(new Uri("https://github.com/anmol150704/XTR-Unlocker/issues"));
             }
             else if (response is ContentDialogResult.Secondary)
             {
