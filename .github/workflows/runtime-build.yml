@@ -2,7 +2,7 @@ name: Native runtime build
 
 on:
   push:
-    branches: [main, mvp/desktop-foundation]
+    branches: [main]
   pull_request:
     branches: [main]
 
