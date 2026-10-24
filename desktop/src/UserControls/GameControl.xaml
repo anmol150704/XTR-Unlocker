@@ -35,9 +35,9 @@
         <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
         <converters:NullToInverseVisibilityConverter x:Key="NullToInverseVisibilityConverter" />
 
-        <Style x:Key="XtrQuietButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
-            <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorSecondaryBrush}" />
-            <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+        <Style x:Key="XtrQuietButtonStyle" TargetType="Button" BasedOn="{StaticResource XtrSecondaryButtonStyle}">
+            <Setter Property="Background" Value="{ThemeResource XtrElevatedBrush}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource XtrStrokeBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="10" />
         </Style>
@@ -122,7 +122,7 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0" Orientation="Vertical" Spacing="8">
-                <Grid Width="220" Height="330" CornerRadius="16" BorderThickness="1" ColumnSpacing="0" RowSpacing="0" Margin="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+                <Grid Width="220" Height="330" CornerRadius="16" BorderThickness="1" ColumnSpacing="0" RowSpacing="0" Margin="0" Background="{ThemeResource XtrSurfaceBrush}" BorderBrush="{ThemeResource XtrStrokeBrush}">
 
                     <!-- Padding="{ThemeResource ContentDialogPadding}" -->
 
@@ -207,7 +207,7 @@
                         <TextBlock Text="Choose a detected component to manage its installed version. Preset controls apply only when supported." FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                     </StackPanel>
 
-                    <Grid HorizontalAlignment="Stretch" ColumnSpacing="16" RowSpacing="8" Padding="16" Margin="0,12,0,0" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="14">
+                    <Grid HorizontalAlignment="Stretch" ColumnSpacing="16" RowSpacing="8" Padding="16" Margin="0,12,0,0" Background="{ThemeResource XtrElevatedBrush}" CornerRadius="14">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
@@ -381,7 +381,7 @@
                     </Grid>
 
 
-                    <Grid HorizontalAlignment="Stretch" ColumnSpacing="16" RowSpacing="8" Padding="16" Margin="0,12,0,0" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="14">
+                    <Grid HorizontalAlignment="Stretch" ColumnSpacing="16" RowSpacing="8" Padding="16" Margin="0,12,0,0" Background="{ThemeResource XtrElevatedBrush}" CornerRadius="14">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
@@ -432,7 +432,7 @@
                     </Grid>
 
 
-                    <Grid HorizontalAlignment="Stretch" ColumnSpacing="16" RowSpacing="8" Padding="16" Margin="0,12,0,0" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="14">
+                    <Grid HorizontalAlignment="Stretch" ColumnSpacing="16" RowSpacing="8" Padding="16" Margin="0,12,0,0" Background="{ThemeResource XtrElevatedBrush}" CornerRadius="14">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
@@ -520,7 +520,7 @@
                         </DropDownButton>
                     </Grid>
 
-                    <Grid Padding="16" Margin="0,14,0,0" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="14" RowSpacing="10">
+                    <Grid Padding="18" Margin="0,14,0,0" Background="{ThemeResource XtrElevatedBrush}" CornerRadius="16" RowSpacing="10">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />

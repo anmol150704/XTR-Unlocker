@@ -5,20 +5,20 @@
     xmlns:usercontrols="using:DLSS_Swapper.UserControls"
     >
 
-    <Style x:Key="DefaultFakeButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+    <Style x:Key="DefaultFakeButtonStyle" TargetType="Button" BasedOn="{StaticResource XtrSecondaryButtonStyle}">
 
     </Style>
 
     <Style x:Key="DefaultFakeContentDialogStyle" TargetType="usercontrols:FakeContentDialog">
-        <Setter Property="Foreground" Value="{ThemeResource ContentDialogForeground}" />
-        <Setter Property="Background" Value="{ThemeResource ContentDialogBackground}" />
-        <Setter Property="BorderThickness" Value="{ThemeResource ContentDialogBorderWidth}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource ContentDialogBorderBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource XtrTextBrush}" />
+        <Setter Property="Background" Value="{ThemeResource XtrSurfaceBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="{ThemeResource XtrStrokeBrush}" />
         <Setter Property="IsTabStop" Value="False" />
-        <Setter Property="PrimaryButtonStyle" Value="{ThemeResource DefaultFakeButtonStyle}" />
+        <Setter Property="PrimaryButtonStyle" Value="{StaticResource XtrPrimaryButtonStyle}" />
         <Setter Property="SecondaryButtonStyle" Value="{ThemeResource DefaultFakeButtonStyle}" />
         <Setter Property="CloseButtonStyle" Value="{ThemeResource DefaultFakeButtonStyle}" />
-        <Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+        <Setter Property="CornerRadius" Value="20" />
         <Setter Property="Template">
 
             <Setter.Value>
@@ -40,11 +40,11 @@
                                             </ObjectAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleX">
                                                 <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="1.0" />
-                                                <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="1.05" />
+                                                <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="0.97" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleY">
                                                 <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="1.0" />
-                                                <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="1.05" />
+                                                <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="0.97" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot" Storyboard.TargetProperty="Opacity">
                                                 <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="1.0" />
@@ -59,11 +59,11 @@
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="Visible" />
                                             </ObjectAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleX">
-                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="1.05" />
+                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0.97" />
                                                 <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="1.0" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleY">
-                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="1.05" />
+                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0.97" />
                                                 <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="1.0" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot" Storyboard.TargetProperty="Opacity">
@@ -169,19 +169,19 @@
                                 <VisualState x:Name="NoDefaultButton" />
                                 <VisualState x:Name="PrimaryAsDefaultButton">
                                     <VisualState.Setters>
-                                        <Setter Target="PrimaryButton.Style" Value="{StaticResource AccentButtonStyle}" />
+                                        <Setter Target="PrimaryButton.Style" Value="{StaticResource XtrPrimaryButtonStyle}" />
 
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="SecondaryAsDefaultButton">
                                     <VisualState.Setters>
-                                        <Setter Target="SecondaryButton.Style" Value="{StaticResource AccentButtonStyle}" />
+                                        <Setter Target="SecondaryButton.Style" Value="{StaticResource XtrPrimaryButtonStyle}" />
 
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="CloseAsDefaultButton">
                                     <VisualState.Setters>
-                                        <Setter Target="CloseButton.Style" Value="{StaticResource AccentButtonStyle}" />
+                                        <Setter Target="CloseButton.Style" Value="{StaticResource XtrPrimaryButtonStyle}" />
 
                                     </VisualState.Setters>
                                 </VisualState>
@@ -205,7 +205,7 @@
                                 <Border.RenderTransform>
                                     <ScaleTransform x:Name="ScaleTransform" />
                                 </Border.RenderTransform>
-                                <Grid x:Name="DialogSpace" CornerRadius="{ThemeResource OverlayCornerRadius}">
+                                <Grid x:Name="DialogSpace" CornerRadius="{TemplateBinding CornerRadius}">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*" />
                                         <RowDefinition Height="Auto" />

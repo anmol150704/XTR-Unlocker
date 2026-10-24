@@ -7,12 +7,16 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <ResourceDictionary Source="Themes/XtrDesign.xaml" />
                 <!-- Other merged dictionaries here -->
 
 
                 <ResourceDictionary>
                     <ResourceDictionary.ThemeDictionaries>
                         <ResourceDictionary x:Key="Dark">
+                            <Color x:Key="SystemAccentColor">#6C5CD0</Color>
+                            <SolidColorBrush x:Key="SystemControlForegroundAccentBrush" Color="#6C5CD0" />
+                            <SolidColorBrush x:Key="SystemControlHighlightAccentBrush" Color="#8174E5" />
                             <Color x:Key="WindowCaptionBackground">Transparent</Color>
                             <Color x:Key="WindowCaptionBackgroundDisabled">Transparent</Color>
                             <Color x:Key="WindowCaptionForeground">#FFFFFF</Color>
@@ -34,6 +38,9 @@
                             <Color x:Key="InformationalIconColor">LightBlue</Color>
                         </ResourceDictionary>
                         <ResourceDictionary x:Key="Light">
+                            <Color x:Key="SystemAccentColor">#5B4AC6</Color>
+                            <SolidColorBrush x:Key="SystemControlForegroundAccentBrush" Color="#5B4AC6" />
+                            <SolidColorBrush x:Key="SystemControlHighlightAccentBrush" Color="#6D5CDC" />
                             <Color x:Key="WindowCaptionBackground">Transparent</Color>
                             <Color x:Key="WindowCaptionBackgroundDisabled">Transparent</Color>
                             <Color x:Key="WindowCaptionForeground">#000000</Color>

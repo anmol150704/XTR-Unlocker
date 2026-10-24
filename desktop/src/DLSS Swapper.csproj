@@ -110,6 +110,7 @@
     <None Remove="Pages\NetworkTesterWindow.xaml" />
     <None Remove="CopyPriFile.targets" />
     <None Remove="Themes\FakeContentDialogStyle.xaml" />
+    <None Remove="Themes\XtrDesign.xaml" />
     <None Remove="TranslationToolboxWindow.xaml" />
     <None Remove="UserControls\DLLPickerControl.xaml" />
     <None Remove="UserControls\GameControl.xaml" />
@@ -367,6 +368,9 @@
           <Generator>MSBuild:Compile</Generator>
         </Page>
         <Page Update="Themes\FakeContentDialogStyle.xaml">
+          <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Update="Themes\XtrDesign.xaml">
           <Generator>MSBuild:Compile</Generator>
         </Page>
         <Page Update="UserControls\GameControl.xaml">

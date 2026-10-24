@@ -1,0 +1,67 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="XtrBackgroundBrush" Color="#F4F5F8" />
+            <SolidColorBrush x:Key="XtrSidebarBrush" Color="#F8F8FA" />
+            <SolidColorBrush x:Key="XtrSurfaceBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="XtrElevatedBrush" Color="#F0F1F5" />
+            <SolidColorBrush x:Key="XtrStrokeBrush" Color="#E2E4E9" />
+            <SolidColorBrush x:Key="XtrTextBrush" Color="#191A1F" />
+            <SolidColorBrush x:Key="XtrSecondaryTextBrush" Color="#696B75" />
+            <SolidColorBrush x:Key="XtrAccentBrush" Color="#6557D9" />
+            <SolidColorBrush x:Key="XtrAccentSoftBrush" Color="#ECEAFF" />
+            <SolidColorBrush x:Key="XtrSuccessBrush" Color="#278B4A" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+            <SolidColorBrush x:Key="XtrBackgroundBrush" Color="#111216" />
+            <SolidColorBrush x:Key="XtrSidebarBrush" Color="#17181D" />
+            <SolidColorBrush x:Key="XtrSurfaceBrush" Color="#1D1F24" />
+            <SolidColorBrush x:Key="XtrElevatedBrush" Color="#26282E" />
+            <SolidColorBrush x:Key="XtrStrokeBrush" Color="#32343B" />
+            <SolidColorBrush x:Key="XtrTextBrush" Color="#F4F4F6" />
+            <SolidColorBrush x:Key="XtrSecondaryTextBrush" Color="#A6A7AE" />
+            <SolidColorBrush x:Key="XtrAccentBrush" Color="#6C5CD0" />
+            <SolidColorBrush x:Key="XtrAccentSoftBrush" Color="#302D4B" />
+            <SolidColorBrush x:Key="XtrSuccessBrush" Color="#62CF87" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Default">
+            <SolidColorBrush x:Key="XtrBackgroundBrush" Color="#111216" />
+            <SolidColorBrush x:Key="XtrSidebarBrush" Color="#17181D" />
+            <SolidColorBrush x:Key="XtrSurfaceBrush" Color="#1D1F24" />
+            <SolidColorBrush x:Key="XtrElevatedBrush" Color="#26282E" />
+            <SolidColorBrush x:Key="XtrStrokeBrush" Color="#32343B" />
+            <SolidColorBrush x:Key="XtrTextBrush" Color="#F4F4F6" />
+            <SolidColorBrush x:Key="XtrSecondaryTextBrush" Color="#A6A7AE" />
+            <SolidColorBrush x:Key="XtrAccentBrush" Color="#6C5CD0" />
+            <SolidColorBrush x:Key="XtrAccentSoftBrush" Color="#302D4B" />
+            <SolidColorBrush x:Key="XtrSuccessBrush" Color="#62CF87" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+
+    <Style x:Key="XtrPrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource AccentButtonStyle}">
+        <Setter Property="Background" Value="{ThemeResource XtrAccentBrush}" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="11" />
+        <Setter Property="Padding" Value="16,9" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style x:Key="XtrSecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+        <Setter Property="Background" Value="{ThemeResource XtrSurfaceBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource XtrTextBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource XtrStrokeBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="11" />
+        <Setter Property="Padding" Value="14,8" />
+    </Style>
+
+    <Style x:Key="XtrCardBorderStyle" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource XtrSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource XtrStrokeBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="16" />
+    </Style>
+</ResourceDictionary>

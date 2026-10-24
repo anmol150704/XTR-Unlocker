@@ -9,7 +9,7 @@
     Title="XTR Unlocker"
     mc:Ignorable="d">
 
-    <Grid x:Name="RootGrid" MinWidth="720" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid x:Name="RootGrid" MinWidth="760" Background="{ThemeResource XtrBackgroundBrush}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
@@ -18,19 +18,22 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Grid x:Name="AppTitleBar" Grid.Row="0" Padding="14,0,12,0" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid x:Name="AppTitleBar" Grid.Row="0" Padding="16,0,12,0" Background="{ThemeResource XtrSidebarBrush}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <Image Width="18" Height="18" VerticalAlignment="Center" Source="Assets/icon_256.png" />
+            <Border Width="22" Height="22" CornerRadius="7" Background="{ThemeResource XtrAccentBrush}">
+                <Image Margin="4" VerticalAlignment="Center" Source="Assets/icon_256.png" />
+            </Border>
             <TextBlock Grid.Column="1"
-                       Margin="10,0,0,0"
+                       Margin="9,0,0,0"
                        VerticalAlignment="Center"
                        Text="XTR Unlocker"
-                       FontSize="12"
+                       FontSize="12.5"
                        FontWeight="SemiBold"
-                       Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                       Foreground="{ThemeResource XtrTextBrush}" />
+            <Border Grid.ColumnSpan="2" BorderBrush="{ThemeResource XtrStrokeBrush}" BorderThickness="0,0,0,1" IsHitTestVisible="False" />
         </Grid>
 
         <muxc:NavigationView x:Name="MainNavigationView"
@@ -42,23 +45,24 @@
                              IsSettingsVisible="True"
                              OpenPaneLength="224"
                              CompactPaneLength="64"
+                             PaneBackground="{ThemeResource XtrSidebarBrush}"
                              SelectionFollowsFocus="Disabled"
                              ItemInvoked="MainNavigationView_ItemInvoked"
                              Loaded="MainNavigationView_Loaded"
-                             Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+                             Background="{ThemeResource XtrBackgroundBrush}">
 
             <muxc:NavigationView.PaneHeader>
-                <Grid Padding="18,12,12,18">
+                <Grid Padding="18,18,12,22">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="38" />
+                        <ColumnDefinition Width="44" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <Border Width="34" Height="34" CornerRadius="11" Background="#6155D9">
-                        <Image Margin="7" Source="Assets/icon_256.png" Stretch="Uniform" />
+                    <Border Width="40" Height="40" CornerRadius="13" Background="{ThemeResource XtrAccentBrush}">
+                        <Image Margin="8" Source="Assets/icon_256.png" Stretch="Uniform" />
                     </Border>
                     <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Spacing="1">
-                        <TextBlock Text="XTR Unlocker" FontSize="14" FontWeight="SemiBold" />
-                        <TextBlock Text="GAME LIBRARY" FontSize="9" CharacterSpacing="110" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Text="XTR Unlocker" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
+                        <TextBlock Text="GAME TOOLS" FontSize="9" CharacterSpacing="95" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
                     </StackPanel>
                 </Grid>
             </muxc:NavigationView.PaneHeader>
@@ -69,7 +73,7 @@
                         <FontIcon Glyph="&#xE7FC;" />
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
-                <muxc:NavigationViewItem Content="Library" Tag="{x:Bind pages:LibraryPage.PageTag}">
+                <muxc:NavigationViewItem Content="DLL Library" Tag="{x:Bind pages:LibraryPage.PageTag}">
                     <muxc:NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE8F1;" />
                     </muxc:NavigationViewItem.Icon>
@@ -83,12 +87,12 @@
                 </muxc:NavigationViewItem>
             </muxc:NavigationView.MenuItems>
 
-            <Frame x:Name="ContentFrame" />
+            <Frame x:Name="ContentFrame" Background="{ThemeResource XtrBackgroundBrush}" />
         </muxc:NavigationView>
 
         <Grid x:Name="LoadingStackPanel"
               Grid.Row="1"
-              Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+              Background="{ThemeResource XtrBackgroundBrush}"
               RowSpacing="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />

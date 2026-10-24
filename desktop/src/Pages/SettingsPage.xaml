@@ -13,7 +13,8 @@
     xmlns:ct_winui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d"
     NavigationCacheMode="Required"
-    x:Name="RootPage">
+    x:Name="RootPage"
+    Background="{ThemeResource XtrBackgroundBrush}">
     <Page.Resources>
         <ct_converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed" />
         <ct_converters:BoolToVisibilityConverter x:Key="BoolToNegationVisibilityConverter"  TrueValue="Collapsed" FalseValue="Visible" />
@@ -27,13 +28,12 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Padding="16,0,16,0">
-            <TextBlock Margin="16,0,0,0" Text="{x:Bind ViewModel.TranslationProperties.PageTitle, Mode=OneWay}" TextWrapping="NoWrap" Style="{StaticResource TitleTextBlockStyle}" VerticalAlignment="Center" />
-
-            <!-- Needed to achieve parity in the looking with other pages -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <AppBarButton Label="" IsEnabled="False"/>
+        <Grid Grid.Row="0" Padding="36,24,36,12">
+            <StackPanel VerticalAlignment="Center" Spacing="4">
+                <TextBlock Text="{x:Bind ViewModel.TranslationProperties.PageTitle, Mode=OneWay}" TextWrapping="NoWrap" FontSize="30" FontWeight="SemiBold" CharacterSpacing="-18" Foreground="{ThemeResource XtrTextBrush}" />
+                <TextBlock Text="Choose how XTR looks, scans, and manages your library" FontSize="13.5" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
             </StackPanel>
+
         </Grid>
 
         <InfoBar x:Name="AdminInfoBar"
@@ -46,16 +46,18 @@
                  Visibility="{x:Bind system:Environment.IsPrivilegedProcess, Converter={StaticResource BoolToVisibilityConverter}}" />
 
         <ScrollViewer Grid.Row="2">
-            <StackPanel Padding="56,0,56,56">
+            <StackPanel Padding="48,8,48,56">
                 <TextBlock
                     Style="{StaticResource SubtitleTextBlockStyle}"
-                    Margin="0,40,0,0"
+                    Margin="0,28,0,0"
                     Text="{x:Bind ViewModel.TranslationProperties.ThemeModeText, Mode=OneWay}" />
-                <StackPanel x:Name="ThemePanel" Margin="0,10,0,0">
-                    <RadioButton x:Name="LightThemeRadioButton" GroupName="ThemeGroup" Tag="Light" IsChecked="{x:Bind ViewModel.LightThemeSelected, Mode=TwoWay}" Content="{x:Bind ViewModel.TranslationProperties.ThemeLightText, Mode=OneWay}" />
-                    <RadioButton x:Name="DarkThemeRadioButton" GroupName="ThemeGroup" Tag="Dark" IsChecked="{x:Bind ViewModel.DarkThemeSelected, Mode=TwoWay}" Content="{x:Bind ViewModel.TranslationProperties.ThemeDarkText, Mode=OneWay}" />
-                    <RadioButton x:Name="DefaultThemeRadioButton" GroupName="ThemeGroup" Tag="Default" IsChecked="{x:Bind ViewModel.DefaultThemeSelected, Mode=TwoWay}" Content="{x:Bind ViewModel.TranslationProperties.ThemeSystemSettingDefaultText, Mode=OneWay}" />
-                </StackPanel>
+                <Border Margin="0,10,0,0" Padding="12" Background="{ThemeResource XtrSurfaceBrush}" BorderBrush="{ThemeResource XtrStrokeBrush}" BorderThickness="1" CornerRadius="16">
+                    <StackPanel x:Name="ThemePanel">
+                        <RadioButton x:Name="LightThemeRadioButton" GroupName="ThemeGroup" Tag="Light" IsChecked="{x:Bind ViewModel.LightThemeSelected, Mode=TwoWay}" Content="{x:Bind ViewModel.TranslationProperties.ThemeLightText, Mode=OneWay}" />
+                        <RadioButton x:Name="DarkThemeRadioButton" GroupName="ThemeGroup" Tag="Dark" IsChecked="{x:Bind ViewModel.DarkThemeSelected, Mode=TwoWay}" Content="{x:Bind ViewModel.TranslationProperties.ThemeDarkText, Mode=OneWay}" />
+                        <RadioButton x:Name="DefaultThemeRadioButton" GroupName="ThemeGroup" Tag="Default" IsChecked="{x:Bind ViewModel.DefaultThemeSelected, Mode=TwoWay}" Content="{x:Bind ViewModel.TranslationProperties.ThemeSystemSettingDefaultText, Mode=OneWay}" />
+                    </StackPanel>
+                </Border>
 
 
                 <TextBlock

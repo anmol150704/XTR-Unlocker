@@ -11,7 +11,8 @@
     xmlns:data="using:DLSS_Swapper.Data"
     mc:Ignorable="d"
     NavigationCacheMode="Required"
-    x:Name="thisPage">
+    x:Name="thisPage"
+    Background="{ThemeResource XtrBackgroundBrush}">
 
     <Page.Resources>
         <converters:DLSSStateVisibilityConverter x:Key="IsDownloadingConverter" DesierdState="Downloading" />
@@ -36,11 +37,14 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Padding="16,0,16,0">
+        <Grid Grid.Row="0" Padding="36,24,36,12">
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Spacing="16">
-                <TextBlock Text="{x:Bind ViewModel.TranslationProperties.PageTitle, Mode=OneWay}" Margin="16,0,0,0" TextWrapping="NoWrap" Style="{StaticResource TitleTextBlockStyle}" VerticalAlignment="Center" />
-                <muxc:ProgressRing IsActive="True" VerticalAlignment="Center" Visibility="{x:Bind ViewModel.IsRefreshing, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}"  />
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Spacing="4">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <TextBlock Text="{x:Bind ViewModel.TranslationProperties.PageTitle, Mode=OneWay}" TextWrapping="NoWrap" FontSize="30" FontWeight="SemiBold" CharacterSpacing="-18" Foreground="{ThemeResource XtrTextBrush}" VerticalAlignment="Center" />
+                    <muxc:ProgressRing Width="16" Height="16" IsActive="True" VerticalAlignment="Center" Visibility="{x:Bind ViewModel.IsRefreshing, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+                </StackPanel>
+                <TextBlock Text="Manage the upscaler versions available to your games" FontSize="13.5" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
@@ -88,11 +92,11 @@
                  Visibility="{x:Bind system:Environment.IsPrivilegedProcess, Converter={StaticResource BoolToVisibilityConverter}}" />
 
 
-        <ScrollViewer Grid.Row="2" HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+        <ScrollViewer Grid.Row="2" HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Padding="36,0">
             <SelectorBar x:Name="UpscalerSelectorBar" SelectedItem="{x:Bind ViewModel.SelectedSelectorBarItem, Mode=TwoWay}" />
         </ScrollViewer>
 
-        <GridView Grid.Row="3" x:Name="MainGridView" Margin="16,0,16,0" SizeChanged="MainGridView_SizeChanged" ItemsSource="{x:Bind ViewModel.SelectedLibraryList, Mode=OneWay}" SelectionMode="None" IsItemClickEnabled="True" ItemClick="MainGridView_ItemClick">
+        <GridView Grid.Row="3" x:Name="MainGridView" Margin="28,0,28,0" SizeChanged="MainGridView_SizeChanged" ItemsSource="{x:Bind ViewModel.SelectedLibraryList, Mode=OneWay}" SelectionMode="None" IsItemClickEnabled="True" ItemClick="MainGridView_ItemClick" Background="Transparent">
 
             <GridView.ItemsPanel>
                 <ItemsPanelTemplate>
@@ -113,8 +117,8 @@
                 <DataTemplate x:DataType="data:DLLRecord">
                     <Grid BorderThickness="1"
                           Padding="8"
-                          Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                          BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                          Background="{ThemeResource XtrSurfaceBrush}"
+                          BorderBrush="{ThemeResource XtrStrokeBrush}"
                           CornerRadius="8"
                           ColumnSpacing="8" RowSpacing="8" >
                         <Grid.ColumnDefinitions>

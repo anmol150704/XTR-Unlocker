@@ -15,7 +15,8 @@
     mc:Ignorable="d"
     d:DataContext="pages:GameGridPageModel"
     Loaded="Page_Loaded"
-    NavigationCacheMode="Required">
+    NavigationCacheMode="Required"
+    Background="{ThemeResource XtrBackgroundBrush}">
 
     <Page.Resources>
         <ct_converters:BoolNegationConverter x:Key="BoolNegationConverter" />
@@ -24,6 +25,7 @@
         <ct_converters:StringVisibilityConverter x:Key="StringVisibilityConverter" EmptyValue="Collapsed" NotEmptyValue="Visible" />
         <converters:BitmapImageUriConverter x:Key="BitmapImageUriConverter" />
         <converters:BoolToOpacityConverter x:Key="BoolToOpacityConverter" TrueValue="0.5" FalseValue="1.0" NullValue="1.0" />
+        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
 
         <DataTemplate x:Key="ListViewTemplate" x:DataType="pages:GameGridPageModel">
             <ListView ItemsSource="{x:Bind CurrentCollectionView, Mode=OneWay}"
@@ -56,9 +58,10 @@
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="data:Game">
                         <Border Padding="12"
-                                CornerRadius="13"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                CornerRadius="14"
+                                BorderBrush="{ThemeResource XtrStrokeBrush}"
                                 BorderThickness="1"
+                                Background="{ThemeResource XtrSurfaceBrush}"
                                 Opacity="{x:Bind IsHidden, Mode=OneWay, Converter={StaticResource BoolToOpacityConverter}}">
                             <Grid ColumnSpacing="14">
                                 <Grid.ColumnDefinitions>
@@ -77,7 +80,7 @@
                                 </Border>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
                                     <TextBlock Text="{x:Bind Title, Mode=OneWay}" FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                                    <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                    <TextBlock FontSize="12" Foreground="{ThemeResource XtrSecondaryTextBrush}">
                                         <Run Text="DLSS" />
                                         <Run Text=" · " />
                                         <Run Text="{x:Bind CurrentDLSS.DisplayName, FallbackValue='Not detected', Mode=OneWay}" />
@@ -100,7 +103,7 @@
                       IsItemClickEnabled="True"
                       ItemClick="GridAndListView_ItemClick"
                       SelectionMode="None"
-                      Padding="20,6,20,30"
+                      Padding="24,8,24,34"
                       Background="Transparent">
                 <GridView.GroupStyle>
                     <GroupStyle HidesIfEmpty="True">
@@ -110,7 +113,7 @@
                                            Margin="2,22,0,12"
                                            FontSize="14"
                                            FontWeight="SemiBold"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                           Foreground="{ThemeResource XtrSecondaryTextBrush}"
                                            Visibility="{x:Bind Name, Converter={StaticResource StringVisibilityConverter}}" />
                             </DataTemplate>
                         </GroupStyle.HeaderTemplate>
@@ -131,7 +134,8 @@
                                 Height="{Binding ElementName=RootGameGridPage, Path=ViewModel.GridViewItemHeight, Mode=OneWay}"
                                 CornerRadius="16"
                                 BorderThickness="1"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderBrush="{ThemeResource XtrStrokeBrush}"
+                                Background="{ThemeResource XtrSurfaceBrush}"
                                 Opacity="{x:Bind IsHidden, Mode=OneWay, Converter={StaticResource BoolToOpacityConverter}}">
                             <Grid>
                                 <Border CornerRadius="16">
@@ -143,7 +147,7 @@
                                         </ImageBrush>
                                     </Border.Background>
                                 </Border>
-                                <Border VerticalAlignment="Bottom" Height="142" CornerRadius="0,0,16,16">
+                                <Border VerticalAlignment="Bottom" Height="132" CornerRadius="0,0,16,16">
                                     <Border.Background>
                                         <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                                             <GradientStop Color="#00000000" Offset="0" />
@@ -155,18 +159,31 @@
                                 <Border HorizontalAlignment="Left"
                                         VerticalAlignment="Top"
                                         Margin="12"
-                                        Padding="9,5"
-                                        CornerRadius="9"
-                                        Background="#C51B1B22">
+                                        Padding="10,6"
+                                        CornerRadius="10"
+                                        Background="#B815161A"
+                                        BorderBrush="#45FFFFFF"
+                                        BorderThickness="1">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                         <Ellipse Width="6" Height="6" Fill="#A99BFF" VerticalAlignment="Center" />
                                         <TextBlock Text="DLSS" FontSize="11" FontWeight="SemiBold" Foreground="White" />
                                     </StackPanel>
                                 </Border>
-                                <muxc:ProgressRing Width="22" Height="22" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="12" IsActive="True" Visibility="{x:Bind Processing, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+                                <Border HorizontalAlignment="Right"
+                                        VerticalAlignment="Top"
+                                        Margin="12"
+                                        Width="28"
+                                        Height="28"
+                                        CornerRadius="14"
+                                        Background="{ThemeResource XtrAccentBrush}"
+                                        ToolTipService.ToolTip="OptiScaler runtime installed"
+                                        Visibility="{x:Bind RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}">
+                                    <FontIcon Glyph="&#xE8D7;" FontSize="12" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <muxc:ProgressRing Width="22" Height="22" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="12,48,12,0" IsActive="True" Visibility="{x:Bind Processing, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
                                 <StackPanel VerticalAlignment="Bottom" Padding="15,8,15,15" Spacing="5">
                                     <TextBlock Text="{x:Bind Title, Mode=OneWay}"
-                                               FontSize="16"
+                                               FontSize="17"
                                                FontWeight="SemiBold"
                                                Foreground="White"
                                                TextWrapping="WrapWholeWords"
@@ -194,7 +211,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Padding="32,28,32,18">
+        <Grid Grid.Row="0" Padding="36,30,36,18">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
@@ -205,27 +222,29 @@
                            FontWeight="SemiBold"
                            CharacterSpacing="-18" />
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <TextBlock Text="Your installed games and upscaler files"
-                               FontSize="13"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock Text="Manage detected games, rendering files, and runtime profiles"
+                               FontSize="13.5"
+                               Foreground="{ThemeResource XtrSecondaryTextBrush}" />
                     <muxc:ProgressRing Width="16" Height="16" IsActive="True" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
                 </StackPanel>
             </StackPanel>
             <Border Grid.Column="1"
-                    Padding="12,7"
-                    CornerRadius="10"
+                    Padding="12,8"
+                    CornerRadius="12"
                     VerticalAlignment="Center"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    Background="{ThemeResource XtrSurfaceBrush}"
+                    BorderBrush="{ThemeResource XtrStrokeBrush}"
                     BorderThickness="1">
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Ellipse Width="7" Height="7" Fill="#31B56A" VerticalAlignment="Center" />
-                    <TextBlock Text="Library ready" FontSize="12" FontWeight="Medium" VerticalAlignment="Center" />
+                    <Ellipse Width="7" Height="7" Fill="{ThemeResource XtrSuccessBrush}" VerticalAlignment="Center" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource InverseBoolToVisibilityConverter}, Mode=OneWay}" />
+                    <muxc:ProgressRing Width="13" Height="13" IsActive="True" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+                    <TextBlock Text="Ready" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource InverseBoolToVisibilityConverter}, Mode=OneWay}" />
+                    <TextBlock Text="Scanning" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
                 </StackPanel>
             </Border>
         </Grid>
 
-        <Grid Grid.Row="1" Padding="32,0,32,18" ColumnSpacing="10">
+        <Grid Grid.Row="1" Padding="36,0,36,18" ColumnSpacing="12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
@@ -233,14 +252,17 @@
             <Grid ColumnSpacing="9" VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="*" MinWidth="200" MaxWidth="320" />
                 </Grid.ColumnDefinitions>
                 <FontIcon Glyph="&#xE721;" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                 <TextBox x:Name="SearchBox"
                          Grid.Column="1"
                          Height="38"
-                         Padding="12,0"
-                         CornerRadius="10"
+                         Padding="13,0"
+                         CornerRadius="12"
+                         Background="{ThemeResource XtrSurfaceBrush}"
+                         BorderBrush="{ThemeResource XtrStrokeBrush}"
+                         BorderThickness="1"
                          AcceptsReturn="False"
                          IsEnabled="{x:Bind ViewModel.IsGameListLoading, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}"
                          PlaceholderText="Search games"
@@ -261,7 +283,8 @@
             </Grid>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                <Button Content="{x:Bind ViewModel.TranslationProperties.RefreshText, Mode=OneWay}"
+                <Button Style="{StaticResource XtrSecondaryButtonStyle}"
+                        Content="{x:Bind ViewModel.TranslationProperties.RefreshText, Mode=OneWay}"
                         Command="{x:Bind ViewModel.RefreshGamesButtonCommand}"
                         IsEnabled="{x:Bind ViewModel.CanRefresh, Mode=OneWay}"
                         ToolTipService.ToolTip="Scan your game launchers again">
@@ -269,11 +292,12 @@
                         <KeyboardAccelerator Key="R" Modifiers="Control" />
                     </Button.KeyboardAccelerators>
                 </Button>
-                <Button Style="{StaticResource AccentButtonStyle}"
+                <Button Style="{StaticResource XtrPrimaryButtonStyle}"
                         Content="{x:Bind ViewModel.TranslationProperties.AddGameText, Mode=OneWay}"
                         Command="{x:Bind ViewModel.AddManualGameButtonCommand}"
                         IsEnabled="{x:Bind ViewModel.CanAddGameAndChangeView, Mode=OneWay}" />
-                <Button Content="More"
+                <Button Style="{StaticResource XtrSecondaryButtonStyle}"
+                        Content="More"
                         IsEnabled="{x:Bind ViewModel.IsGameListLoading, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}">
                     <Button.Flyout>
                         <MenuFlyout>
@@ -312,14 +336,14 @@
                     Padding="14,10"
                     CornerRadius="14"
                     BorderThickness="1"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    Background="{ThemeResource XtrSurfaceBrush}"
+                    BorderBrush="{ThemeResource XtrStrokeBrush}"
                     Visibility="{x:Bind ViewModel.IsSelectionMode, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock Text="{x:Bind ViewModel.SelectedGamesCountText, Mode=OneWay}" VerticalAlignment="Center" Margin="0,0,6,0" />
                     <Button Content="{x:Bind ViewModel.TranslationProperties.SelectAllText, Mode=OneWay}" Command="{x:Bind ViewModel.SelectAllVisibleCommand}" />
                     <Button Content="{x:Bind ViewModel.TranslationProperties.SelectNoneText, Mode=OneWay}" Command="{x:Bind ViewModel.ClearSelectionCommand}" />
-                    <Button Style="{StaticResource AccentButtonStyle}" Content="{x:Bind ViewModel.TranslationProperties.SelectDllsText, Mode=OneWay}" Command="{x:Bind ViewModel.ApplyBatchDllCommand}" />
+                    <Button Style="{StaticResource XtrPrimaryButtonStyle}" Content="{x:Bind ViewModel.TranslationProperties.SelectDllsText, Mode=OneWay}" Command="{x:Bind ViewModel.ApplyBatchDllCommand}" />
                     <Button Content="{x:Bind ViewModel.TranslationProperties.CloseText, Mode=OneWay}" Command="{x:Bind ViewModel.ToggleSelectionModeCommand}" />
                 </StackPanel>
             </Border>
