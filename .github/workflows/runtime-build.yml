@@ -21,5 +21,9 @@ jobs:
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v2
 
+      - name: Apply XTR overlay styling
+        working-directory: runtime/OptiScaler
+        run: git apply ../../runtime/patches/xtr-overlay-branding.patch
+
       - name: Build pinned OptiScaler source
         run: msbuild "runtime/OptiScaler/OptiScaler.sln" /m /p:Configuration=Release /p:Platform=x64 /verbosity:minimal

@@ -1,0 +1,59 @@
+diff --git a/OptiScaler/Config.h b/OptiScaler/Config.h
+index d7909b76..ef5670f8 100644
+--- a/OptiScaler/Config.h
++++ b/OptiScaler/Config.h
+@@ -306,9 +306,9 @@ class Config
+     CustomOptional<std::wstring, NoDefault> TTFFontPath;
+     CustomOptional<int> FGShortcutKey { VK_END };
+     CustomOptional<bool> LightTheme { false };
+-    CustomOptional<float> MenuAccentColorR { 0.00f };
+-    CustomOptional<float> MenuAccentColorG { 0.40f };
+-    CustomOptional<float> MenuAccentColorB { 0.77f };
++    CustomOptional<float> MenuAccentColorR { 0.38f };
++    CustomOptional<float> MenuAccentColorG { 0.33f };
++    CustomOptional<float> MenuAccentColorB { 0.85f };
+     CustomOptional<float> MenuBGColorR { 0.0f };
+     CustomOptional<float> MenuBGColorG { 0.0f };
+     CustomOptional<float> MenuBGColorB { 0.0f };
+diff --git a/OptiScaler/menu/menu_common.cpp b/OptiScaler/menu/menu_common.cpp
+index 8e60cb7f..fb43ff8d 100644
+--- a/OptiScaler/menu/menu_common.cpp
++++ b/OptiScaler/menu/menu_common.cpp
+@@ -1825,13 +1825,17 @@ static void ApplyThemeStyle()
+     auto conf = Config::Instance();
+     bool lightTheme = conf->LightTheme.value_or_default();
+ 
+-    style.WindowRounding = 2.0f;
+-    style.ChildRounding = 1.0f;
+-    style.FrameRounding = 2.0f;
+-    style.PopupRounding = 2.0f;
+-    style.ScrollbarRounding = 2.0f;
+-    style.GrabRounding = 2.0f;
+-    style.TabRounding = 2.0f;
++    style.WindowRounding = 14.0f;
++    style.ChildRounding = 10.0f;
++    style.FrameRounding = 9.0f;
++    style.PopupRounding = 10.0f;
++    style.ScrollbarRounding = 7.0f;
++    style.GrabRounding = 7.0f;
++    style.TabRounding = 9.0f;
++    style.WindowPadding = ImVec2(18.0f, 14.0f);
++    style.FramePadding = ImVec2(12.0f, 8.0f);
++    style.ItemSpacing = ImVec2(12.0f, 9.0f);
++    style.ItemInnerSpacing = ImVec2(8.0f, 6.0f);
+ 
+     style.WindowBorderSize = 1.0f;
+     style.PopupBorderSize = 1.0f;
+@@ -2871,10 +2875,8 @@ bool MenuCommon::RenderMenu()
+         // Main menu window
+         if (windowTitle.empty())
+         {
+-            windowTitle =
+-                StrFmt("%s - %s %s %s %s", VER_PRODUCT_NAME, state.GameExe.c_str(),
+-                       state.GameName.empty() ? "" : StrFmt("- %s", state.GameName.c_str()).c_str(),
+-                       (state.detectedQuirks.size() > 0) ? "(Q)" : "", state.isOptiPatcherSucceed ? "(OP)" : "");
++            const auto& gameTitle = state.GameName.empty() ? state.GameExe : state.GameName;
++            windowTitle = StrFmt("XTR | %s", gameTitle.c_str());
+         }
+ 
+         if (ImGui::Begin(windowTitle.c_str(), NULL, flags))

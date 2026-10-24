@@ -21,5 +21,6 @@ The desktop client uses SkiaSharp 3.119.2 for cover-image resizing and WebP deco
 
 - License: GNU General Public License v3.0; see `runtime/OptiScaler/LICENSE`.
 - Upstream submodules retain their own licenses and notices.
+- `runtime/patches/xtr-overlay-branding.patch` is an XTR modification applied to the pinned source during the native build.
 - The OptiScaler source is present for development. XTR does not yet package or install the runtime, and no upstream runtime release binaries are redistributed by this repository.
 - Optional runtime modules remain subject to their own version, compatibility, and redistribution review.

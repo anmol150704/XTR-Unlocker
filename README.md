@@ -15,7 +15,7 @@ The desktop app detects installed games from Steam, GOG, Epic Games, Ubisoft Con
 
 ## Project status
 
-The current `desktop/` source is based on [DLSS Swapper v1.2.7.0](https://github.com/beeradmoore/dlss-swapper/tree/v1.2.7.0) under GPL-3.0, with XTR identity, storage, update-feed routing, runtime profile storage, and install ownership manifests. The desktop Release build launches and scans games. OptiScaler v0.9.4 is pinned as a source submodule; its source is not yet integrated into XTR's install/update/restore flow, and its in-game menu is not yet redesigned. Game compatibility records and end-to-end runtime behavior remain to be implemented and validated.
+The current `desktop/` source is based on [DLSS Swapper v1.2.7.0](https://github.com/beeradmoore/dlss-swapper/tree/v1.2.7.0) under GPL-3.0, with XTR identity, storage, update-feed routing, runtime profile storage, and install ownership manifests. The desktop Release build launches and scans games. OptiScaler v0.9.4 is pinned as a source submodule; XTR's first source patch adds the product accent, spacing, corner radii, and game-specific window title. Runtime installation and restoration, a new menu information architecture, game compatibility records, and end-to-end behavior remain to be implemented and validated.
 
 The initial product scope and implementation sequence are in [docs/unified-app-mvp.md](docs/unified-app-mvp.md). Attribution and license notes are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
