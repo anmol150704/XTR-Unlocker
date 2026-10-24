@@ -530,7 +530,7 @@
                         <StackPanel Spacing="4">
                             <TextBlock Text="Runtime integration" FontSize="16" FontWeight="SemiBold" />
                             <TextBlock
-                                Text="Choose an extracted OptiScaler package, then the folder containing this game's executable. XTR backs up files it replaces and checks ownership before restoring them."
+                                Text="Install the bundled OptiScaler runtime or choose another extracted package. XTR backs up files it replaces and checks ownership before restoring them."
                                 FontSize="12"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 TextWrapping="Wrap" />
@@ -550,11 +550,17 @@
                                 Grid.Column="0"
                                 ItemsSource="{x:Bind ViewModel.RuntimeProxyNames}"
                                 SelectedItem="{x:Bind ViewModel.SelectedRuntimeProxy, Mode=TwoWay}" />
-                            <Button
+                            <DropDownButton
                                 Grid.Column="1"
                                 Content="Install runtime"
-                                Command="{x:Bind ViewModel.InstallRuntimeCommand}"
-                                Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToInverseVisibilityConverter}, Mode=OneWay}" />
+                                Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToInverseVisibilityConverter}, Mode=OneWay}">
+                                <DropDownButton.Flyout>
+                                    <MenuFlyout>
+                                        <MenuFlyoutItem Text="Install bundled OptiScaler" Command="{x:Bind ViewModel.InstallRuntimeCommand}" />
+                                        <MenuFlyoutItem Text="Choose another package…" Command="{x:Bind ViewModel.InstallCustomRuntimeCommand}" />
+                                    </MenuFlyout>
+                                </DropDownButton.Flyout>
+                            </DropDownButton>
                             <Button
                                 Grid.Column="1"
                                 Content="Restore original files"

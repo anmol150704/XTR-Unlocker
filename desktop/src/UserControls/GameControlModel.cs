@@ -292,17 +292,39 @@ public partial class GameControlModel : ObservableObject
     [RelayCommand]
     async Task InstallRuntimeAsync()
     {
+        var packagePath = RuntimeInstallService.GetBundledPackagePath();
+        if (packagePath is null)
+        {
+            await ShowRuntimeDialogAsync("Bundled runtime unavailable", "This XTR build does not include the OptiScaler runtime. Choose a custom extracted package instead.");
+            return;
+        }
+
+        await InstallRuntimePackageAsync(packagePath);
+    }
+
+    [RelayCommand]
+    async Task InstallCustomRuntimeAsync()
+    {
+        if (!gameControlWeakReference.TryGetTarget(out var gameControl))
+            return;
+
+        var windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(App.CurrentApp.MainWindow);
+        var downloadsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+        var packagePath = FileSystemHelper.OpenFolder(windowHandle, downloadsPath, "Select package");
+        if (string.IsNullOrWhiteSpace(packagePath))
+            return;
+
+        await InstallRuntimePackageAsync(packagePath);
+    }
+
+    private async Task InstallRuntimePackageAsync(string packagePath)
+    {
         if (!gameControlWeakReference.TryGetTarget(out var gameControl))
             return;
 
         try
         {
             var windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(App.CurrentApp.MainWindow);
-            var downloadsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
-            var packagePath = FileSystemHelper.OpenFolder(windowHandle, downloadsPath, "Select package");
-            if (string.IsNullOrWhiteSpace(packagePath))
-                return;
-
             var targetPath = FileSystemHelper.OpenFolder(windowHandle, Game.InstallPath, "Choose game executable folder");
             if (string.IsNullOrWhiteSpace(targetPath))
                 return;

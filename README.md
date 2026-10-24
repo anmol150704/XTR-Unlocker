@@ -27,22 +27,13 @@ Clone with source submodules enabled so the pinned runtime source and its depend
 git clone --recurse-submodules https://github.com/anmol150704/XTR-Unlocker.git
 ```
 
-Build the Release desktop app with the .NET 10 SDK:
+Build the unified Release app with the .NET 10 SDK and Visual Studio 2022 with the Desktop development with C++ workload. Run this from a Visual Studio Developer PowerShell so `msbuild` is available:
 
 ```powershell
-dotnet build "desktop\DLSS Swapper.sln" --configuration Release
+.\scripts\build-windows.ps1 -Configuration Release
 ```
 
-The executable is produced under `desktop\src\bin\x64\Release\net10.0-windows10.0.26100.0\win-x64\XTR Unlocker.exe`.
-
-To build the native runtime, install Visual Studio 2022 with the Desktop development with C++ workload and run:
-
-```powershell
-git -C runtime/OptiScaler apply ../../runtime/patches/xtr-overlay-branding.patch
-msbuild "runtime\OptiScaler\OptiScaler.sln" /m /p:Configuration=Release /p:Platform=x64 /verbosity:minimal
-```
-
-The extracted runtime package is created at `runtime\OptiScaler\x64\Release\a`. In a game's XTR profile, choose that folder (or an extracted OptiScaler release folder), then choose the folder containing the game's executable and the proxy DLL name. XTR records ownership and backups under its app data folder. Restore checks file hashes and stops if a tracked runtime file was changed unexpectedly.
+The executable and bundled OptiScaler package are produced under `desktop\src\bin\x64\Release\net10.0-windows10.0.26100.0\win-x64`. The runtime menu installs the bundled build by default; choose another extracted OptiScaler package from the install menu to use a custom build. Then choose the folder containing the game's executable and the proxy DLL name. XTR records ownership and backups under its app data folder. Restore checks file hashes and stops if a tracked runtime file was changed unexpectedly.
 
 ## Compatibility
 

@@ -14,11 +14,15 @@ jobs:
     runs-on: windows-2025
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: microsoft/setup-msbuild@v2
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
-      - name: Build Release app
-        run: dotnet build "desktop/DLSS Swapper.sln" --configuration Release
+      - name: Build XTR and bundle OptiScaler
+        shell: pwsh
+        run: .\scripts\build-windows.ps1 -Configuration Release
       - name: Upload Windows app build
         uses: actions/upload-artifact@v4
         with:

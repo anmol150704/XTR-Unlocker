@@ -17,11 +17,20 @@ namespace DLSS_Swapper.Data.Runtime;
 internal static class RuntimeInstallService
 {
     private const string RuntimeId = "optiscaler-xtr";
+    private static readonly string BundledPackagePath = Path.Combine(AppContext.BaseDirectory, "Runtime", "OptiScaler");
     private static readonly ConcurrentDictionary<string, SemaphoreSlim> GameLocks = new(StringComparer.Ordinal);
     private static readonly HashSet<string> ProxyNames = new(StringComparer.OrdinalIgnoreCase)
     {
         "dxgi.dll", "winmm.dll", "d3d12.dll", "version.dll", "dbghelp.dll", "winhttp.dll", "wininet.dll"
     };
+
+    internal static string? GetBundledPackagePath()
+    {
+        return File.Exists(Path.Combine(BundledPackagePath, "OptiScaler.dll")) &&
+               File.Exists(Path.Combine(BundledPackagePath, "OptiScaler.ini"))
+            ? BundledPackagePath
+            : null;
+    }
 
     internal static async Task<RuntimeInstallManifest> InstallAsync(
         string gameId,
