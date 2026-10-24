@@ -16,7 +16,7 @@ index d7909b76..ef5670f8 100644
      CustomOptional<float> MenuBGColorG { 0.0f };
      CustomOptional<float> MenuBGColorB { 0.0f };
 diff --git a/OptiScaler/menu/menu_common.cpp b/OptiScaler/menu/menu_common.cpp
-index 8e60cb7f..c901dccc 100644
+index 8e60cb7f..d418918c 100644
 --- a/OptiScaler/menu/menu_common.cpp
 +++ b/OptiScaler/menu/menu_common.cpp
 @@ -1825,13 +1825,17 @@ static void ApplyThemeStyle()
@@ -57,10 +57,21 @@ index 8e60cb7f..c901dccc 100644
          }
  
          if (ImGui::Begin(windowTitle.c_str(), NULL, flags))
-@@ -3027,6 +3029,177 @@ bool MenuCommon::RenderMenu()
-                     ImGui::SetWindowFontScale(menuResScale);
+@@ -2923,6 +2925,8 @@ bool MenuCommon::RenderMenu()
+                 //}
              }
  
++            if (ImGui::CollapsingHeader("Runtime diagnostics"))
++            {
+             // No active upscaler message
+             if (currentFeature == nullptr || !currentFeature->IsInited())
+             {
+@@ -3026,7 +3030,183 @@ bool MenuCommon::RenderMenu()
+                 else
+                     ImGui::SetWindowFontScale(menuResScale);
+             }
++            }
++
 +            const auto frameGenerationInputName = [](FGInput input) -> const char* {
 +                switch (input)
 +                {
@@ -120,9 +131,13 @@ index 8e60cb7f..c901dccc 100644
 +
 +                    ImGui::BeginChild("XTR_OVERVIEW_PERFORMANCE", ImVec2(0.0f, 132.0f * menuResScale), true);
 +                    ImGui::TextDisabled("FRAME GENERATION");
-+                    if (state.activeFgInput != FGInput::NoFG && state.activeFgOutput != FGOutput::NoFG)
-+                        ImGui::Text("%s  -  %s", frameGenerationInputName(state.activeFgInput),
-+                                    frameGenerationOutputName(state.activeFgOutput));
++                    const bool frameGenerationAvailable =
++                        state.activeFgInput != FGInput::NoFG && state.activeFgOutput != FGOutput::NoFG &&
++                        (state.currentFGSwapchain != nullptr || state.activeFgInput == FGInput::Nukems);
++                    if (frameGenerationAvailable)
++                        ImGui::Text("%s  -  %s (%s)", frameGenerationInputName(state.activeFgInput),
++                                    frameGenerationOutputName(state.activeFgOutput),
++                                    config->FGEnabled.value_or_default() ? "On" : "Off");
 +                    else
 +                        ImGui::TextDisabled("No frame-generation path is active.");
 +                    ImGui::Separator();
@@ -193,7 +208,7 @@ index 8e60cb7f..c901dccc 100644
 +                    ImGui::EndChild();
 +                    ImGui::EndTabItem();
 +                }
-+
+ 
 +                if (ImGui::BeginTabItem("Frame Generation"))
 +                {
 +                    ImGui::BeginChild("XTR_FRAME_GENERATION_CARD", ImVec2(0.0f, 0.0f), true);
@@ -235,7 +250,7 @@ index 8e60cb7f..c901dccc 100644
              if (ImGui::BeginTable("main", 2, ImGuiTableFlags_SizingStretchSame))
              {
                  ImGui::TableNextColumn();
-@@ -7042,6 +7215,11 @@ bool MenuCommon::RenderMenu()
+@@ -7042,6 +7222,11 @@ bool MenuCommon::RenderMenu()
                      lastPosition.y = posY;
                  }
  
