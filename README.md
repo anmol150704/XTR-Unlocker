@@ -15,7 +15,7 @@ The desktop app detects installed games from Steam, GOG, Epic Games, Ubisoft Con
 
 ## Project status
 
-The current `desktop/` source is based on [DLSS Swapper v1.2.7.0](https://github.com/beeradmoore/dlss-swapper/tree/v1.2.7.0) under GPL-3.0, with XTR identity, storage, update-feed routing, runtime profile storage, and install ownership manifests. The desktop Release build launches and scans games. OptiScaler v0.9.4 is pinned as a source submodule; an XTR patch adds branded styling and game-specific identification plus Live and Settings tabs, with a session-aware frame generation toggle. Runtime installation and restoration, more focused upscaling and frame generation pages, game compatibility records, and end-to-end behavior remain to be implemented and validated.
+The current `desktop/` source is based on [DLSS Swapper v1.2.7.0](https://github.com/beeradmoore/dlss-swapper/tree/v1.2.7.0) under GPL-3.0, with XTR identity, storage, update-feed routing, runtime profile storage, and install ownership manifests. The desktop Release build launches and scans games. Its per-game profile now installs an extracted OptiScaler package beside the selected game executable and provides a guarded restore action backed by hashed originals. OptiScaler v0.9.4 is pinned as a source submodule; an XTR patch adds branded styling, game-specific identification, Live and Settings tabs, and a session-aware frame generation toggle. Full in-game feature pages, compatibility records, and end-to-end validation with a real game remain in progress.
 
 The initial product scope and implementation sequence are in [docs/unified-app-mvp.md](docs/unified-app-mvp.md). Attribution and license notes are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
@@ -38,8 +38,11 @@ The executable is produced under `desktop\src\bin\x64\Release\net10.0-windows10.
 To build the native runtime, install Visual Studio 2022 with the Desktop development with C++ workload and run:
 
 ```powershell
+git -C runtime/OptiScaler apply ../../runtime/patches/xtr-overlay-branding.patch
 msbuild "runtime\OptiScaler\OptiScaler.sln" /m /p:Configuration=Release /p:Platform=x64 /verbosity:minimal
 ```
+
+The extracted runtime package is created at `runtime\OptiScaler\x64\Release\a`. In a game's XTR profile, choose that folder (or an extracted OptiScaler release folder), then choose the folder containing the game's executable and the proxy DLL name. XTR records ownership and backups under its app data folder. Restore checks file hashes and stops if a tracked runtime file was changed unexpectedly.
 
 ## Compatibility
 
