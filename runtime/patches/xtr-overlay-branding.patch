@@ -16,7 +16,7 @@ index d7909b76..ef5670f8 100644
      CustomOptional<float> MenuBGColorG { 0.0f };
      CustomOptional<float> MenuBGColorB { 0.0f };
 diff --git a/OptiScaler/menu/menu_common.cpp b/OptiScaler/menu/menu_common.cpp
-index 8e60cb7f..bf3df56c 100644
+index 8e60cb7f..f38f54cc 100644
 --- a/OptiScaler/menu/menu_common.cpp
 +++ b/OptiScaler/menu/menu_common.cpp
 @@ -1825,13 +1825,17 @@ static void ApplyThemeStyle()
@@ -120,13 +120,14 @@ index 8e60cb7f..bf3df56c 100644
              if (ImGui::BeginTable("main", 2, ImGuiTableFlags_SizingStretchSame))
              {
                  ImGui::TableNextColumn();
-@@ -7042,6 +7100,10 @@ bool MenuCommon::RenderMenu()
+@@ -7042,6 +7100,11 @@ bool MenuCommon::RenderMenu()
                      lastPosition.y = posY;
                  }
  
 +                    ImGui::EndTabItem();
 +                }
 +                ImGui::EndTabBar();
++            }
 +
                  ImGui::End();
              }
