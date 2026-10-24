@@ -71,6 +71,14 @@ static class Storage
         return path;
     }
 
+    public static string GetRuntimeBackupsPath(string gameId)
+    {
+        var key = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(gameId)));
+        var path = Path.Combine(StoragePath, "runtime_backups", key);
+        CreateDirectoryIfNotExists(path);
+        return path;
+    }
+
     public static string GetUpdatesFolder()
     {
         return Path.Combine(GetTemp(), "updates");

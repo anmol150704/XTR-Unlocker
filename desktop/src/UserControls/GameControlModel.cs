@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using Windows.System;
 using DLSS_Swapper.Helpers;
+using DLSS_Swapper.Data.Runtime;
 using System.Collections.Generic;
 using System.Linq;
 using DLSS_Swapper.Data.DLSS;
@@ -72,6 +73,14 @@ public partial class GameControlModel : ObservableObject
     }
 
     public GameControlModelTranslationProperties TranslationProperties { get; } = new GameControlModelTranslationProperties();
+
+    public IReadOnlyList<string> RuntimeProxyNames { get; } = new[]
+    {
+        "dxgi.dll", "winmm.dll", "d3d12.dll", "version.dll", "dbghelp.dll", "winhttp.dll", "wininet.dll"
+    };
+
+    [ObservableProperty]
+    public partial string SelectedRuntimeProxy { get; set; } = "dxgi.dll";
 
     public GameControlModel(GameControl gameControl, Game game) : base()
     {
@@ -278,6 +287,92 @@ public partial class GameControlModel : ObservableObject
                 await dialog.ShowAsync();
             }
         }
+    }
+
+    [RelayCommand]
+    async Task InstallRuntimeAsync()
+    {
+        if (!gameControlWeakReference.TryGetTarget(out var gameControl))
+            return;
+
+        try
+        {
+            var windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(App.CurrentApp.MainWindow);
+            var downloadsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+            var packagePath = FileSystemHelper.OpenFolder(windowHandle, downloadsPath, "Select package");
+            if (string.IsNullOrWhiteSpace(packagePath))
+                return;
+
+            var targetPath = FileSystemHelper.OpenFolder(windowHandle, Game.InstallPath, "Choose game executable folder");
+            if (string.IsNullOrWhiteSpace(targetPath))
+                return;
+
+            var manifest = await RuntimeInstallService.InstallAsync(
+                Game.ID,
+                targetPath,
+                packagePath,
+                SelectedRuntimeProxy);
+
+            try
+            {
+                await Game.SaveRuntimeManifestAsync(manifest);
+                await Game.SaveRuntimeProfileAsync(new RuntimeIntegrationProfile
+                {
+                    GameId = Game.ID,
+                    RuntimeId = manifest.RuntimeId,
+                    RuntimeVersion = manifest.RuntimeVersion,
+                });
+            }
+            catch
+            {
+                await RuntimeInstallService.RestoreAsync(Game.ID, manifest.InstallRoot);
+                App.CurrentApp.RunOnUIThread(() => Game.RuntimeManifest = null);
+                throw;
+            }
+
+            await ShowRuntimeDialogAsync("Runtime installed", $"OptiScaler {manifest.RuntimeVersion} is installed for this game. XTR recorded backups for every file it replaced.");
+        }
+        catch (Exception error)
+        {
+            Logger.Error(error);
+            await ShowRuntimeDialogAsync("Runtime install failed", error.Message);
+        }
+    }
+
+    [RelayCommand]
+    async Task RestoreRuntimeAsync()
+    {
+        try
+        {
+            var installRoot = Game.RuntimeManifest?.InstallRoot
+                ?? throw new InvalidOperationException("XTR has no runtime install location recorded for this game.");
+            await RuntimeInstallService.RestoreAsync(Game.ID, installRoot);
+            App.CurrentApp.RunOnUIThread(() => Game.RuntimeManifest = null);
+            await Game.RemoveRuntimeProfileAsync();
+            await ShowRuntimeDialogAsync("Runtime restored", "XTR removed its runtime files and restored the originals it had backed up.");
+        }
+        catch (Exception error)
+        {
+            Logger.Error(error);
+            await ShowRuntimeDialogAsync("Restore stopped", error.Message);
+        }
+    }
+
+    private async Task ShowRuntimeDialogAsync(string title, string message)
+    {
+        if (!gameControlWeakReference.TryGetTarget(out var gameControl))
+            return;
+
+        await App.CurrentApp.RunOnUIThreadAsync(async () =>
+        {
+            var dialog = new EasyContentDialog(gameControl.XamlRoot)
+            {
+                Title = title,
+                CloseButtonText = ResourceHelper.GetString("General_Okay"),
+                Content = message,
+            };
+            await dialog.ShowAsync();
+        });
     }
 
     [RelayCommand]

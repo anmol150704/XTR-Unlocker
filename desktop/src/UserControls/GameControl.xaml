@@ -519,6 +519,49 @@
                             </DropDownButton.Content>
                         </DropDownButton>
                     </Grid>
+
+                    <Grid Padding="16" Margin="0,14,0,0" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="14" RowSpacing="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Runtime integration" FontSize="16" FontWeight="SemiBold" />
+                            <TextBlock
+                                Text="Choose an extracted OptiScaler package, then the folder containing this game's executable. XTR backs up files it replaces and checks ownership before restoring them."
+                                FontSize="12"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                        <TextBlock Grid.Row="1" Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
+                            Text="{x:Bind ViewModel.Game.RuntimeManifest.RuntimeVersion, Mode=OneWay}" FontSize="13" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="1" Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToInverseVisibilityConverter}, Mode=OneWay}"
+                            Text="No runtime installed for this game" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Grid.Row="2" Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
+                            Text="{x:Bind ViewModel.Game.RuntimeManifest.InstallRoot, Mode=OneWay}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                        <Grid Grid.Row="3" ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ComboBox
+                                Grid.Column="0"
+                                ItemsSource="{x:Bind ViewModel.RuntimeProxyNames}"
+                                SelectedItem="{x:Bind ViewModel.SelectedRuntimeProxy, Mode=TwoWay}" />
+                            <Button
+                                Grid.Column="1"
+                                Content="Install runtime"
+                                Command="{x:Bind ViewModel.InstallRuntimeCommand}"
+                                Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToInverseVisibilityConverter}, Mode=OneWay}" />
+                            <Button
+                                Grid.Column="1"
+                                Content="Restore original files"
+                                Command="{x:Bind ViewModel.RestoreRuntimeCommand}"
+                                Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}" />
+                        </Grid>
+                    </Grid>
                 </StackPanel>
             </Grid>
         </Grid>
