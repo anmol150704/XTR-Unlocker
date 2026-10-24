@@ -1,0 +1,451 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>DLSS Swapper</AssemblyName>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <RootNamespace>DLSS_Swapper</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x64</Platforms>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <UseWinUI>true</UseWinUI>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <Configurations>Debug;Release;Debug_Portable;Release_Portable</Configurations>
+    <PackageIcon>Assets\icon_256.png</PackageIcon>
+    <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
+    <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+    <Version>1.2.7.0</Version>
+    <Nullable>enable</Nullable>
+    <LangVersion>preview</LangVersion>
+    <PublishSingleFile>false</PublishSingleFile>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <PublishReadyToRunShowWarnings>true</PublishReadyToRunShowWarnings>
+    <CETCompat>false</CETCompat>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release' OR '$(Configuration)'=='Release_Portable'">
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug_Portable'">
+    <DefineConstants>$(DefineConstants);DEBUG;PORTABLE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release_Portable'">
+    <DefineConstants>$(DefineConstants);RELEASE;PORTABLE</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+      <Content Remove="Assets\dlss_presets.json" />
+      <Content Remove="Assets\dlss_d_presets.json" />
+      <Content Remove="Assets\dlss_g_presets.json" />
+      <Content Remove="Assets\ea_app_titles.json" />
+      <Content Remove="Assets\static_manifest.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\BadgeLogo.scale-100.png" />
+    <None Remove="Assets\BadgeLogo.scale-125.png" />
+    <None Remove="Assets\BadgeLogo.scale-150.png" />
+    <None Remove="Assets\BadgeLogo.scale-200.png" />
+    <None Remove="Assets\BadgeLogo.scale-400.png" />
+    <None Remove="Assets\LargeTile.scale-100.png" />
+    <None Remove="Assets\LargeTile.scale-125.png" />
+    <None Remove="Assets\LargeTile.scale-150.png" />
+    <None Remove="Assets\LargeTile.scale-200.png" />
+    <None Remove="Assets\LargeTile.scale-400.png" />
+    <None Remove="Assets\SmallTile.scale-100.png" />
+    <None Remove="Assets\SmallTile.scale-125.png" />
+    <None Remove="Assets\SmallTile.scale-150.png" />
+    <None Remove="Assets\SmallTile.scale-200.png" />
+    <None Remove="Assets\SmallTile.scale-400.png" />
+    <None Remove="Assets\SplashScreen.scale-100.png" />
+    <None Remove="Assets\SplashScreen.scale-125.png" />
+    <None Remove="Assets\SplashScreen.scale-150.png" />
+    <None Remove="Assets\SplashScreen.scale-200.png" />
+    <None Remove="Assets\SplashScreen.scale-400.png" />
+    <None Remove="Assets\Square150x150Logo.scale-100.png" />
+    <None Remove="Assets\Square150x150Logo.scale-125.png" />
+    <None Remove="Assets\Square150x150Logo.scale-150.png" />
+    <None Remove="Assets\Square150x150Logo.scale-200.png" />
+    <None Remove="Assets\Square150x150Logo.scale-400.png" />
+    <None Remove="Assets\Square44x44Logo.altform-lightunplated_targetsize-16.png" />
+    <None Remove="Assets\Square44x44Logo.altform-lightunplated_targetsize-24.png" />
+    <None Remove="Assets\Square44x44Logo.altform-lightunplated_targetsize-256.png" />
+    <None Remove="Assets\Square44x44Logo.altform-lightunplated_targetsize-32.png" />
+    <None Remove="Assets\Square44x44Logo.altform-lightunplated_targetsize-48.png" />
+    <None Remove="Assets\Square44x44Logo.altform-unplated_targetsize-16.png" />
+    <None Remove="Assets\Square44x44Logo.altform-unplated_targetsize-24.png" />
+    <None Remove="Assets\Square44x44Logo.altform-unplated_targetsize-256.png" />
+    <None Remove="Assets\Square44x44Logo.altform-unplated_targetsize-32.png" />
+    <None Remove="Assets\Square44x44Logo.altform-unplated_targetsize-48.png" />
+    <None Remove="Assets\Square44x44Logo.scale-100.png" />
+    <None Remove="Assets\Square44x44Logo.scale-125.png" />
+    <None Remove="Assets\Square44x44Logo.scale-150.png" />
+    <None Remove="Assets\Square44x44Logo.scale-200.png" />
+    <None Remove="Assets\Square44x44Logo.scale-400.png" />
+    <None Remove="Assets\Square44x44Logo.targetsize-16.png" />
+    <None Remove="Assets\Square44x44Logo.targetsize-24.png" />
+    <None Remove="Assets\Square44x44Logo.targetsize-256.png" />
+    <None Remove="Assets\Square44x44Logo.targetsize-32.png" />
+    <None Remove="Assets\Square44x44Logo.targetsize-48.png" />
+    <None Remove="Assets\StoreLogo.scale-100.png" />
+    <None Remove="Assets\StoreLogo.scale-125.png" />
+    <None Remove="Assets\StoreLogo.scale-150.png" />
+    <None Remove="Assets\StoreLogo.scale-200.png" />
+    <None Remove="Assets\StoreLogo.scale-400.png" />
+    <None Remove="Assets\Wide310x150Logo.scale-100.png" />
+    <None Remove="Assets\Wide310x150Logo.scale-125.png" />
+    <None Remove="Assets\Wide310x150Logo.scale-150.png" />
+    <None Remove="Assets\Wide310x150Logo.scale-200.png" />
+    <None Remove="Assets\Wide310x150Logo.scale-400.png" />
+    <None Remove="DiagnosticsWindow.xaml" />
+    <None Remove="DLSS Swapper_TemporaryKey.pfx" />
+    <None Remove="FailToLaunchWindow.xaml" />
+    <None Remove="global.json" />
+    <None Remove="Pages\AcknowledgementsPage.xaml" />
+    <None Remove="Pages\NetworkTesterWindow.xaml" />
+    <None Remove="CopyPriFile.targets" />
+    <None Remove="Themes\FakeContentDialogStyle.xaml" />
+    <None Remove="TranslationToolboxWindow.xaml" />
+    <None Remove="UserControls\DLLPickerControl.xaml" />
+    <None Remove="UserControls\GameControl.xaml" />
+    <None Remove="UserControls\GameHistoryControl.xaml" />
+    <None Remove="UserControls\ImportDLLSummaryControl.xaml" />
+    <None Remove="UserControls\ImportSystemDisabledView.xaml" />
+    <None Remove="UserControls\ManuallyAddGameControl.xaml" />
+    <None Remove="UserControls\MultipleDLLsFoundControl.xaml" />
+    <None Remove="UserControls\NewDLLsControl.xaml" />
+    <None Remove="UserControls\NGXModelImporter.xaml" />
+    <None Remove="UserControls\ProxySettingsControl.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Acknowledgements\**\notes.md" />
+    <EmbeddedResource Include="Acknowledgements\**\license.txt" />
+    <EmbeddedResource Include="Assets\static_manifest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+
+
+    <ItemGroup>
+        <Content Update="Assets\BadgeLogo.scale-100.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\BadgeLogo.scale-125.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\BadgeLogo.scale-150.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\BadgeLogo.scale-200.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\BadgeLogo.scale-400.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Fonts\Segoe-Fluent-Icons.ttf">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\icon.ico">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\icon_256.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\LargeTile.scale-100.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\LargeTile.scale-125.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\LargeTile.scale-150.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\LargeTile.scale-200.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\LargeTile.scale-400.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\SmallTile.scale-100.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\SmallTile.scale-125.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\SmallTile.scale-150.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\SmallTile.scale-200.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\SmallTile.scale-400.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\SplashScreen.scale-100.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\SplashScreen.scale-125.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\SplashScreen.scale-150.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\SplashScreen.scale-200.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\SplashScreen.scale-400.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square150x150Logo.scale-100.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square150x150Logo.scale-125.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square150x150Logo.scale-150.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square150x150Logo.scale-200.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square150x150Logo.scale-400.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square44x44Logo.altform-lightunplated_targetsize-16.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square44x44Logo.altform-lightunplated_targetsize-24.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square44x44Logo.altform-lightunplated_targetsize-256.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square44x44Logo.altform-lightunplated_targetsize-32.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square44x44Logo.altform-lightunplated_targetsize-48.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square44x44Logo.altform-unplated_targetsize-16.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square44x44Logo.altform-unplated_targetsize-24.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square44x44Logo.altform-unplated_targetsize-256.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square44x44Logo.altform-unplated_targetsize-32.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square44x44Logo.altform-unplated_targetsize-48.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square44x44Logo.scale-100.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square44x44Logo.scale-125.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square44x44Logo.scale-150.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square44x44Logo.scale-200.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square44x44Logo.scale-400.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square44x44Logo.targetsize-16.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square44x44Logo.targetsize-24.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square44x44Logo.targetsize-256.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square44x44Logo.targetsize-32.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Square44x44Logo.targetsize-48.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\StoreLogo.scale-100.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\StoreLogo.scale-125.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\StoreLogo.scale-150.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\StoreLogo.scale-200.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\StoreLogo.scale-400.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Wide310x150Logo.scale-100.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Wide310x150Logo.scale-125.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Wide310x150Logo.scale-150.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Wide310x150Logo.scale-200.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Assets\Wide310x150Logo.scale-400.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="Assets\dlss_presets.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+      <None Update="Assets\dlss_d_presets.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\dlss_g_presets.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+        <None Update="Assets\ea_app_titles.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Asssets\icon_256.png">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+        <Page Update="UserControls\NGXModelImporter.xaml">
+          <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Update="UserControls\ProxySettingsControl.xaml">
+          <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Update="UserControls\GameHistoryControl.xaml">
+          <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Update="TranslationToolboxWindow.xaml">
+          <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Update="Pages\AcknowledgementsPage.xaml">
+          <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Update="UserControls\ImportDLLSummaryControl.xaml">
+          <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Update="UserControls\ImportSystemDisabledView.xaml">
+          <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Update="DiagnosticsWindow.xaml">
+          <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Update="Pages\NetworkTesterWindow.xaml">
+          <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Update="FailToLaunchWindow.xaml">
+          <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Update="UserControls\MultipleDLLsFoundControl.xaml">
+          <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Update="UserControls\NewDLLsControl.xaml">
+          <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Update="UserControls\DLLPickerControl.xaml">
+          <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Update="Themes\FakeContentDialogStyle.xaml">
+          <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Update="UserControls\GameControl.xaml">
+          <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Update="UserControls\ManuallyAddGameControl.xaml">
+          <Generator>MSBuild:Compile</Generator>
+        </Page>
+    </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AsyncAwaitBestPractices" Version="10.0.0" />
+    <PackageReference Include="AsyncAwaitBestPractices.MVVM" Version="10.0.0" />
+    <PackageReference Include="ByteSize" Version="2.1.2" />
+    <PackageReference Include="CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock" Version="0.1.260416-build.2580" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
+    <PackageReference Include="CsvHelper" Version="33.1.0" />
+    <PackageReference Include="FuzzySharp" Version="2.0.2" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.13.1" />
+    <PackageReference Include="CommunityToolkit.WinUI.Collections" Version="8.2.251219" />
+    <PackageReference Include="CommunityToolkit.WinUI.Converters" Version="8.2.251219" />
+    <PackageReference Include="CommunityToolkit.WinUI.Extensions" Version="8.2.251219" />
+    <PackageReference Include="CommunityToolkit.WinUI.Helpers" Version="8.2.251219" />
+    <PackageReference Include="Google.Protobuf" Version="3.36.2" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4258.31" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.363">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260921001" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2705" />
+    <PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+    <PackageReference Include="NvAPIWrapper.Net" Version="0.8.1.101" />
+    <PackageReference Include="Serilog" Version="4.4.0" />
+    <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="SourceGear.sqlite3" Version="3.53.4" />
+    <PackageReference Include="sqlite-net-e" Version="1.11.285" />
+    <PackageReference Include="System.Drawing.Common" Version="10.0.13" />
+    <PackageReference Include="System.Management" Version="10.0.13" />
+    <PackageReference Include="ValveKeyValue" Version="0.72.0.534" />
+    <PackageReference Include="WinUI.TableView" Version="1.4.1" />
+    <PackageReference Include="YamlDotNet" Version="18.1.0" />
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <!--
+  Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
+  Tools extension to be activated for this project even if the Windows App SDK Nuget
+  package has not yet been restored.
+  -->
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <ProjectCapability Include="Msix" />
+  </ItemGroup>
+
+  <!--
+  Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution
+  Explorer "Package and Publish" context menu entry to be enabled for this project even if
+  the Windows App SDK Nuget package has not yet been restored.
+  -->
+  <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
+  </PropertyGroup>
+
+  <!--
+  <ItemGroup Condition="'$(Configuration)'=='Release'">
+    <NativeLibrary Include="../extras/RTSSHooksCompatibility/RTSSHooksCompatibility.obj" />
+  </ItemGroup>
+  -->
+
+  <!-- Copy all "Resources.resw" files in the "Translations" folder to the output folder. -->
+  <ItemGroup>
+    <Content Include="Translations\**\*.resw">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <Import Project="CopyPriFile.targets" />
+
+</Project>

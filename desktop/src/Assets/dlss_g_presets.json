@@ -1,0 +1,37 @@
+[
+  {
+    "name": "Default",
+    "value": "0x00000000",
+    "used": true
+  },
+  {
+    "name": "Preset A",
+    "value": "0x00000001",
+    "used": true
+  },
+  {
+    "name": "Preset B",
+    "value": "0x00000002",
+    "used": true
+  },
+  {
+    "name": "Preset C",
+    "value": "0x00000003",
+    "used": true
+  },
+  {
+    "name": "Preset D",
+    "value": "0x00000004",
+    "used": false
+  },
+  {
+    "name": "Preset E",
+    "value": "0x00000005",
+    "used": false
+  },
+  {
+    "name": "NVIDIA recommended",
+    "value": "0x00FFFFFE",
+    "used": true
+  }
+]

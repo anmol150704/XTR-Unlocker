@@ -1,0 +1,98 @@
+<Window
+    x:Class="DLSS_Swapper.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:pages="using:DLSS_Swapper.Pages"
+    Title="{x:Bind ViewModel.TranslationProperties.Title, Mode=OneWay}"
+    mc:Ignorable="d">
+
+    <Grid x:Name="RootGrid" MinWidth="400" FlowDirection="{x:Bind ViewModel.AppFlowDirection, Mode=OneWay}">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="28" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Grid x:Name="AppTitleBar" Grid.Row="0" Padding="12,0,0,0" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Image
+                x:Name="AppFontIcon"
+                Width="20"
+                Height="20"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                Grid.Column="0"
+                Source="Assets/icon_256.png" />
+            <TextBlock
+                Text="{x:Bind ViewModel.TranslationProperties.AppTitleText, Mode=OneWay}"
+                Grid.Column="1"
+                Margin="20,0,0,0"
+                VerticalAlignment="Center"
+                Style="{StaticResource CaptionTextBlockStyle}" />
+        </Grid>
+
+
+        <muxc:NavigationView Grid.Row="1" x:Name="MainNavigationView"
+                             ItemInvoked="MainNavigationView_ItemInvoked"
+                             PaneDisplayMode="LeftCompact"
+                             IsBackButtonVisible="Collapsed"
+                             Loaded="MainNavigationView_Loaded"
+                             Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+            <muxc:NavigationView.MenuItems>
+                <muxc:NavigationViewItem Content="{x:Bind ViewModel.TranslationProperties.NavigationViewItemGamesText, Mode=OneWay}" Tag="{x:Bind pages:GameGridPage.PageTag}">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE7FC;"/>
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Icon="Library" Content="{x:Bind ViewModel.TranslationProperties.NavigationViewItemLibraryText, Mode=OneWay}" Tag="{x:Bind pages:LibraryPage.PageTag}" />
+                <muxc:NavigationViewItem Icon="Emoji" Content="{x:Bind ViewModel.TranslationProperties.NavigationViewItemAcknowledgementsText, Mode=OneWay}" Tag="{x:Bind pages:AcknowledgementsPage.PageTag}" Visibility="{x:Bind ViewModel.AcknowledgementsVisibility, Mode=OneWay}" />
+            </muxc:NavigationView.MenuItems>
+            <Frame x:Name="ContentFrame" />
+        </muxc:NavigationView>
+
+        <Grid x:Name="LoadingStackPanel" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" RowSpacing="10" Grid.Row="1">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <muxc:ProgressRing Grid.Row="0" x:Name="LoadingProgressRing" IsActive="True" Width="60" Height="60" IsIndeterminate="true" VerticalAlignment="Bottom" />
+            <TextBlock Grid.Row="1" x:Name="LoadingProgressText" VerticalAlignment="Top" Text="{x:Bind ViewModel.LoadingMessage, Mode=OneWay}" HorizontalAlignment="Center" Style="{StaticResource SubtitleTextBlockStyle}" />
+
+        </Grid>
+
+        <!--
+            Persistent, low-key indicator that a new version is available.
+            Unlike the update dialog (which only appears once per version) this stays
+            visible for as long as an update is available, so it can't be missed if the
+            dialog was dismissed. Clicking it re-opens the update dialog.
+        -->
+        <InfoBar
+            Grid.Row="1"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            Margin="16"
+            Background="{ThemeResource SolidBackgroundFillColorQuarternaryBrush}"
+            IsOpen="{x:Bind ViewModel.IsUpdateAvailable, Mode=OneWay}"
+            Severity="Informational"
+            Title="{x:Bind ViewModel.TranslationProperties.UpdateAvailableBannerTitleText, Mode=OneWay}"
+            Message="{x:Bind ViewModel.UpdateAvailableText, Mode=OneWay}">
+            <InfoBar.ActionButton>
+                <Button
+                    Content="{x:Bind ViewModel.TranslationProperties.UpdateText, Mode=OneWay}"
+                    Command="{x:Bind ViewModel.UpdateAvailableClickedCommand}" />
+            </InfoBar.ActionButton>
+        </InfoBar>
+    </Grid>
+</Window>

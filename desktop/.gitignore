@@ -1,0 +1,21 @@
+
+bin/
+obj/
+.vs/
+.DS_Store
+*.user
+*.cache
+*.pfx
+*.obj
+AppPackages/
+BundleArtifacts/
+UpgradeLog.htm
+src/Properties/launchSettings.json
+StoredData/
+package/Output/
+.vscode/
+package/NSIS/FileList.nsh
+.idea/
+docs/_site/
+docs/.sass-cache/
+src/DLSS Swapper.net8.csproj
