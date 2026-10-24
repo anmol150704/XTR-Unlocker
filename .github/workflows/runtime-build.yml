@@ -21,7 +21,7 @@ jobs:
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v2
 
-      - name: Apply XTR overlay styling
+      - name: Apply XTR in-game overlay
         working-directory: runtime/OptiScaler
         run: git apply ../../runtime/patches/xtr-overlay-branding.patch
 
