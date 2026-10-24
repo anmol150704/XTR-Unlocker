@@ -7,12 +7,10 @@ using DLSS_Swapper.UserControls;
 using Microsoft.UI.Xaml.Controls;
 using NvAPIWrapper.DRS;
 using SQLite;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -1114,20 +1112,20 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
 
     private static void SaveCoverPng(Stream source, string destination, int maxWidth, int maxHeight)
     {
-        using var image = System.Drawing.Image.FromStream(source);
+        using var image = SKBitmap.Decode(source) ?? throw new InvalidDataException("The cover image could not be decoded.");
         var scale = Math.Min(1d, Math.Min((double)maxWidth / image.Width, (double)maxHeight / image.Height));
         var width = Math.Max(1, (int)Math.Round(image.Width * scale));
         var height = Math.Max(1, (int)Math.Round(image.Height * scale));
-        using var resized = new Bitmap(width, height, PixelFormat.Format32bppArgb);
-        using (var graphics = Graphics.FromImage(resized))
+        using var resized = new SKBitmap(new SKImageInfo(width, height, SKColorType.Rgba8888, SKAlphaType.Premul));
+        if (!image.ScalePixels(resized, new SKSamplingOptions(SKCubicResampler.CatmullRom)))
         {
-            graphics.CompositingQuality = CompositingQuality.HighQuality;
-            graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-            graphics.SmoothingMode = SmoothingMode.HighQuality;
-            graphics.DrawImage(image, 0, 0, width, height);
+            throw new InvalidDataException("The cover image could not be resized.");
         }
-        resized.Save(destination, ImageFormat.Png);
+
+        using var encoded = resized.Encode(SKEncodedImageFormat.Png, 100)
+            ?? throw new InvalidDataException("The cover image could not be encoded as PNG.");
+        using var output = File.Create(destination);
+        encoded.SaveTo(output);
     }
 
     protected async Task<bool> DownloadCoverAsync(string url)

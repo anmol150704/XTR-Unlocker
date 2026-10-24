@@ -6,92 +6,119 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:pages="using:DLSS_Swapper.Pages"
-    Title="{x:Bind ViewModel.TranslationProperties.Title, Mode=OneWay}"
+    Title="XTR Unlocker"
     mc:Ignorable="d">
 
-    <Grid x:Name="RootGrid" MinWidth="400" FlowDirection="{x:Bind ViewModel.AppFlowDirection, Mode=OneWay}">
-
-        <Grid.RowDefinitions>
-            <RowDefinition Height="28" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-
+    <Grid x:Name="RootGrid" MinWidth="720" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="36" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-        <Grid x:Name="AppTitleBar" Grid.Row="0" Padding="12,0,0,0" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid x:Name="AppTitleBar" Grid.Row="0" Padding="14,0,12,0" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <Image
-                x:Name="AppFontIcon"
-                Width="20"
-                Height="20"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Grid.Column="0"
-                Source="Assets/icon_256.png" />
-            <TextBlock
-                Text="{x:Bind ViewModel.TranslationProperties.AppTitleText, Mode=OneWay}"
-                Grid.Column="1"
-                Margin="20,0,0,0"
-                VerticalAlignment="Center"
-                Style="{StaticResource CaptionTextBlockStyle}" />
+            <Image Width="18" Height="18" VerticalAlignment="Center" Source="Assets/icon_256.png" />
+            <TextBlock Grid.Column="1"
+                       Margin="10,0,0,0"
+                       VerticalAlignment="Center"
+                       Text="XTR Unlocker"
+                       FontSize="12"
+                       FontWeight="SemiBold"
+                       Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
         </Grid>
 
-
-        <muxc:NavigationView Grid.Row="1" x:Name="MainNavigationView"
-                             ItemInvoked="MainNavigationView_ItemInvoked"
-                             PaneDisplayMode="LeftCompact"
+        <muxc:NavigationView x:Name="MainNavigationView"
+                             Grid.Row="1"
+                             PaneDisplayMode="Left"
+                             IsPaneOpen="True"
+                             IsPaneToggleButtonVisible="False"
                              IsBackButtonVisible="Collapsed"
+                             IsSettingsVisible="True"
+                             OpenPaneLength="224"
+                             CompactPaneLength="64"
+                             SelectionFollowsFocus="Disabled"
+                             ItemInvoked="MainNavigationView_ItemInvoked"
                              Loaded="MainNavigationView_Loaded"
                              Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+            <muxc:NavigationView.PaneHeader>
+                <Grid Padding="18,12,12,18">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="38" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Border Width="34" Height="34" CornerRadius="11" Background="#6155D9">
+                        <Image Margin="7" Source="Assets/icon_256.png" Stretch="Uniform" />
+                    </Border>
+                    <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Spacing="1">
+                        <TextBlock Text="XTR Unlocker" FontSize="14" FontWeight="SemiBold" />
+                        <TextBlock Text="GAME LIBRARY" FontSize="9" CharacterSpacing="110" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                </Grid>
+            </muxc:NavigationView.PaneHeader>
+
             <muxc:NavigationView.MenuItems>
-                <muxc:NavigationViewItem Content="{x:Bind ViewModel.TranslationProperties.NavigationViewItemGamesText, Mode=OneWay}" Tag="{x:Bind pages:GameGridPage.PageTag}">
+                <muxc:NavigationViewItem Content="Games" Tag="{x:Bind pages:GameGridPage.PageTag}">
                     <muxc:NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE7FC;"/>
+                        <FontIcon Glyph="&#xE7FC;" />
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
-                <muxc:NavigationViewItem Icon="Library" Content="{x:Bind ViewModel.TranslationProperties.NavigationViewItemLibraryText, Mode=OneWay}" Tag="{x:Bind pages:LibraryPage.PageTag}" />
-                <muxc:NavigationViewItem Icon="Emoji" Content="{x:Bind ViewModel.TranslationProperties.NavigationViewItemAcknowledgementsText, Mode=OneWay}" Tag="{x:Bind pages:AcknowledgementsPage.PageTag}" Visibility="{x:Bind ViewModel.AcknowledgementsVisibility, Mode=OneWay}" />
+                <muxc:NavigationViewItem Content="Library" Tag="{x:Bind pages:LibraryPage.PageTag}">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8F1;" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Content="Acknowledgements"
+                                         Tag="{x:Bind pages:AcknowledgementsPage.PageTag}"
+                                         Visibility="{x:Bind ViewModel.AcknowledgementsVisibility, Mode=OneWay}">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE734;" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
             </muxc:NavigationView.MenuItems>
+
             <Frame x:Name="ContentFrame" />
         </muxc:NavigationView>
 
-        <Grid x:Name="LoadingStackPanel" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" RowSpacing="10" Grid.Row="1">
-
+        <Grid x:Name="LoadingStackPanel"
+              Grid.Row="1"
+              Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+              RowSpacing="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-
-            <muxc:ProgressRing Grid.Row="0" x:Name="LoadingProgressRing" IsActive="True" Width="60" Height="60" IsIndeterminate="true" VerticalAlignment="Bottom" />
-            <TextBlock Grid.Row="1" x:Name="LoadingProgressText" VerticalAlignment="Top" Text="{x:Bind ViewModel.LoadingMessage, Mode=OneWay}" HorizontalAlignment="Center" Style="{StaticResource SubtitleTextBlockStyle}" />
-
+            <muxc:ProgressRing Grid.Row="0"
+                               Width="42"
+                               Height="42"
+                               VerticalAlignment="Bottom"
+                               IsActive="True"
+                               IsIndeterminate="True" />
+            <TextBlock Grid.Row="1"
+                       VerticalAlignment="Top"
+                       HorizontalAlignment="Center"
+                       Text="{x:Bind ViewModel.LoadingMessage, Mode=OneWay}"
+                       Style="{StaticResource SubtitleTextBlockStyle}" />
         </Grid>
 
-        <!--
-            Persistent, low-key indicator that a new version is available.
-            Unlike the update dialog (which only appears once per version) this stays
-            visible for as long as an update is available, so it can't be missed if the
-            dialog was dismissed. Clicking it re-opens the update dialog.
-        -->
-        <InfoBar
-            Grid.Row="1"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Bottom"
-            Margin="16"
-            Background="{ThemeResource SolidBackgroundFillColorQuarternaryBrush}"
-            IsOpen="{x:Bind ViewModel.IsUpdateAvailable, Mode=OneWay}"
-            Severity="Informational"
-            Title="{x:Bind ViewModel.TranslationProperties.UpdateAvailableBannerTitleText, Mode=OneWay}"
-            Message="{x:Bind ViewModel.UpdateAvailableText, Mode=OneWay}">
+        <InfoBar Grid.Row="1"
+                 Margin="24"
+                 HorizontalAlignment="Right"
+                 VerticalAlignment="Bottom"
+                 Background="{ThemeResource SolidBackgroundFillColorQuarternaryBrush}"
+                 IsOpen="{x:Bind ViewModel.IsUpdateAvailable, Mode=OneWay}"
+                 Severity="Informational"
+                 Title="{x:Bind ViewModel.TranslationProperties.UpdateAvailableBannerTitleText, Mode=OneWay}"
+                 Message="{x:Bind ViewModel.UpdateAvailableText, Mode=OneWay}">
             <InfoBar.ActionButton>
-                <Button
-                    Content="{x:Bind ViewModel.TranslationProperties.UpdateText, Mode=OneWay}"
-                    Command="{x:Bind ViewModel.UpdateAvailableClickedCommand}" />
+                <Button Content="{x:Bind ViewModel.TranslationProperties.UpdateText, Mode=OneWay}"
+                        Command="{x:Bind ViewModel.UpdateAvailableClickedCommand}" />
             </InfoBar.ActionButton>
         </InfoBar>
     </Grid>

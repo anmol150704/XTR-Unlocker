@@ -34,6 +34,13 @@
         <converters:NullableBoolToObjectConverter x:Key="HideGameGlyphConverter" NullValue="&#xE7B3;" FalseValue="&#xE7B3;" TrueValue="&#xED1A;"  />
         <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
         <converters:NullToInverseVisibilityConverter x:Key="NullToInverseVisibilityConverter" />
+
+        <Style x:Key="XtrQuietButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+            <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorSecondaryBrush}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+        </Style>
         
 
         <ControlTemplate x:Key="LeftButtonsControlTemplate" TargetType="ContentControl">
@@ -108,19 +115,19 @@
     </usercontrols:FakeContentDialog.Resources>
 
     <usercontrols:FakeContentDialog.Content>
-        <Grid Grid.Row="0" ColumnSpacing="20" HorizontalAlignment="Stretch">
+        <Grid Grid.Row="0" ColumnSpacing="28" HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="220" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0" Orientation="Vertical" Spacing="8">
-                <Grid Width="200" Height="300" CornerRadius="8"  BorderThickness="1" ColumnSpacing="0" RowSpacing="0" Margin="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+                <Grid Width="220" Height="330" CornerRadius="16" BorderThickness="1" ColumnSpacing="0" RowSpacing="0" Margin="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
 
                     <!-- Padding="{ThemeResource ContentDialogPadding}" -->
 
                     <!-- Weird, but allows image to strecth centered rather than left align -->
-                    <Border BorderThickness="0" Width="200" Height="300" FlowDirection="LeftToRight">
+                    <Border BorderThickness="0" Width="220" Height="330" FlowDirection="LeftToRight" CornerRadius="16">
                         <Border.RenderTransform>
                             <CompositeTransform ScaleX="1" />
                         </Border.RenderTransform>
@@ -133,9 +140,23 @@
                         </Border.Background>
                     </Border>
 
+                    <Border VerticalAlignment="Bottom" Height="104" CornerRadius="0,0,16,16" IsHitTestVisible="False">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="#00000000" Offset="0" />
+                                <GradientStop Color="#E6000000" Offset="1" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+
+                    <StackPanel VerticalAlignment="Bottom" Padding="16,10,16,16" Spacing="4" IsHitTestVisible="False">
+                        <TextBlock Text="XTR GAME PROFILE" FontSize="10" CharacterSpacing="95" FontWeight="SemiBold" Foreground="#D8D4FF" />
+                        <TextBlock Text="{x:Bind ViewModel.GameTitle, Mode=OneWay}" FontSize="17" FontWeight="SemiBold" Foreground="White" TextWrapping="WrapWholeWords" MaxLines="2" />
+                    </StackPanel>
+
                     <Button HorizontalAlignment="Stretch" Background="Transparent" VerticalAlignment="Stretch" Command="{x:Bind ViewModel.AddCoverImageCommand}" AllowDrop="True" DragEnter="CoverButton_DragEnter" DragOver="CoverButton_DragOver" Drop="CoverButton_Drop" />
                 </Grid>
-                <Button Content="{x:Bind ViewModel.TranslationProperties.AddCustomCoverText, Mode=OneWay}" HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.AddCoverImageCommand}" />
+                <Button Content="{x:Bind ViewModel.TranslationProperties.AddCustomCoverText, Mode=OneWay}" HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.AddCoverImageCommand}" Style="{StaticResource XtrQuietButtonStyle}" />
             </StackPanel>
 
             <Grid Grid.Column="1" >
@@ -181,7 +202,12 @@
                         </Button>
                     </Grid>
 
-                    <Grid HorizontalAlignment="Stretch" ColumnSpacing="16" RowSpacing="4" Padding="0,8,0,0">
+                    <StackPanel Margin="0,18,0,0" Spacing="4">
+                        <TextBlock Text="Rendering components" FontSize="16" FontWeight="SemiBold" />
+                        <TextBlock Text="Choose a detected component to manage its installed version. Preset controls apply only when supported." FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+
+                    <Grid HorizontalAlignment="Stretch" ColumnSpacing="16" RowSpacing="8" Padding="16" Margin="0,12,0,0" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="14">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
@@ -355,7 +381,7 @@
                     </Grid>
 
 
-                    <Grid HorizontalAlignment="Stretch" ColumnSpacing="16" RowSpacing="4" Padding="0,20,0,0">
+                    <Grid HorizontalAlignment="Stretch" ColumnSpacing="16" RowSpacing="8" Padding="16" Margin="0,12,0,0" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="14">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
@@ -406,7 +432,7 @@
                     </Grid>
 
 
-                    <Grid HorizontalAlignment="Stretch" ColumnSpacing="16" RowSpacing="4" Padding="0,20,0,0">
+                    <Grid HorizontalAlignment="Stretch" ColumnSpacing="16" RowSpacing="8" Padding="16" Margin="0,12,0,0" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="14">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />

@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
@@ -287,8 +288,8 @@ public class FakeContentDialog : Control
             var appTitleBar = rootGrid.FindChild<Grid>(x => x.Name == "AppTitleBar");
             */
 
-            Grid.SetColumnSpan(this, rootGrid.ColumnDefinitions.Count);
-            Grid.SetRowSpan(this, rootGrid.RowDefinitions.Count);
+            Grid.SetColumnSpan(this, Math.Max(1, rootGrid.ColumnDefinitions.Count));
+            Grid.SetRowSpan(this, Math.Max(1, rootGrid.RowDefinitions.Count));
 
             XamlRoot = rootGrid.XamlRoot;
 
