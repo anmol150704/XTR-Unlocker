@@ -253,10 +253,10 @@ internal static class RuntimeInstallService
         {
             foreach (var entry in restoreCommitted.AsEnumerable().Reverse())
             {
+                var rollbackPath = rollbackPaths[entry];
                 try
                 {
                     var installedPath = ResolveBeneath(root, entry.RelativePath);
-                    var rollbackPath = rollbackPaths[entry];
                     if (entry.OriginalBackupPath is null)
                         File.Move(rollbackPath, installedPath);
                     else
