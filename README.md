@@ -11,13 +11,23 @@ These are internal parts of one product. Users will manage their library and run
 
 ## Automatic game discovery
 
-The imported desktop foundation already detects games from Steam, GOG, Epic Games, Ubisoft Connect, Xbox App, and Battle.net. It also supports adding a game manually. The first implementation work will adapt this library and scanner to XTR Unlocker's per-game profiles and runtime management.
+The desktop app detects installed games from Steam, GOG, Epic Games, Ubisoft Connect, Xbox App, and Battle.net. It also supports adding a game manually. The current XTR build has been launched locally and confirmed to discover the user's Steam library.
 
 ## Project status
 
-The current `desktop/` source is imported from [DLSS Swapper v1.2.7.0](https://github.com/beeradmoore/dlss-swapper/tree/v1.2.7.0) under GPL-3.0. XTR-specific storage, app identity, and update-feed routing have been started. The app has not yet been built as an XTR Unlocker release; OptiScaler runtime integration, the custom in-game menu, and game compatibility records are still to be implemented and validated.
+The current `desktop/` source is based on [DLSS Swapper v1.2.7.0](https://github.com/beeradmoore/dlss-swapper/tree/v1.2.7.0) under GPL-3.0, with XTR identity, storage, update-feed routing, runtime profile storage, and install ownership manifests. Debug and Release builds both compile cleanly, and the Release build launches and scans games. OptiScaler installation, the in-game menu, and game compatibility records remain to be implemented and validated; this is a functioning desktop foundation, not yet the complete unified product.
 
 The initial product scope and implementation sequence are in [docs/unified-app-mvp.md](docs/unified-app-mvp.md). Attribution and license notes are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## Build
+
+On Windows, install the .NET 10 SDK and build the Release desktop app:
+
+```powershell
+dotnet build "desktop\DLSS Swapper.sln" --configuration Release
+```
+
+The executable is produced under `desktop\src\bin\x64\Release\net10.0-windows10.0.26100.0\win-x64\XTR Unlocker.exe`.
 
 ## Compatibility
 

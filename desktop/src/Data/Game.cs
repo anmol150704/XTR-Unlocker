@@ -6,12 +6,13 @@ using DLSS_Swapper.Data.Runtime;
 using DLSS_Swapper.UserControls;
 using Microsoft.UI.Xaml.Controls;
 using NvAPIWrapper.DRS;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Processing;
 using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -1059,29 +1060,14 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
     */
 
 
-    protected async Task ResizeCoverAsync(Stream imageStream)
+    protected Task ResizeCoverAsync(Stream imageStream)
     {
         // TODO:
         // - find optimal format (eg, is displaying 100 webp images more intense than 100 png images)
         // - load image based on scale
         try
         {
-            using (var image = await SixLabors.ImageSharp.Image.LoadAsync(imageStream).ConfigureAwait(false))
-            {
-                // If images are really big we resize to at least 2x the 200x300 we display as.
-                // In future this should be updated to resize to display scale.
-                // If the image is smaller than this we are just saving as png.
-                var resizeOptions = new ResizeOptions()
-                {
-                    Size = new Size(200 * 2, 300 * 2),
-                    Sampler = KnownResamplers.Lanczos5,
-                    Mode = ResizeMode.Min, // If image is smaller it won't be resized up.
-                };
-                image.Mutate(x => x.Resize(resizeOptions));
-                image.SaveAsPng(ExpectedCoverImage);
-                //image.SaveAsWebp(ExpectedCoverImage);
-                //image.SaveAsJpeg(ExpectedCoverImage);
-            }
+            SaveCoverPng(imageStream, ExpectedCoverImage, 200 * 2, 300 * 2);
 
             App.CurrentApp.RunOnUIThread(() =>
             {
@@ -1093,6 +1079,8 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
         {
             Logger.Error(err);
         }
+
+        return Task.CompletedTask;
     }
 
 
@@ -1111,22 +1099,7 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
         // - load image based on scale
         try
         {
-            using (var image = SixLabors.ImageSharp.Image.Load(stream))
-            {
-                // If images are really big we resize to at least 3x the 200x300 we display as.
-                // In future this should be updated to resize to display scale.
-                // If the image is smaller than this we are just saving as png.
-                var resizeOptions = new ResizeOptions()
-                {
-                    Size = new Size(200 * 3, 300 * 3),
-                    Sampler = KnownResamplers.Lanczos5,
-                    Mode = ResizeMode.Min, // If image is smaller it won't be resized up.
-                };
-                image.Mutate(x => x.Resize(resizeOptions));
-                image.SaveAsPng(ExpectedCustomCoverImage);
-                //image.SaveAsWebp(ExpectedCustomCoverImage);
-                //image.SaveAsJpeg(ExpectedCustomCoverImage);
-            }
+            SaveCoverPng(stream, ExpectedCustomCoverImage, 200 * 3, 300 * 3);
 
             App.CurrentApp.RunOnUIThread(() =>
             {
@@ -1137,6 +1110,24 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
         {
             Logger.Error(err);
         }
+    }
+
+    private static void SaveCoverPng(Stream source, string destination, int maxWidth, int maxHeight)
+    {
+        using var image = System.Drawing.Image.FromStream(source);
+        var scale = Math.Min(1d, Math.Min((double)maxWidth / image.Width, (double)maxHeight / image.Height));
+        var width = Math.Max(1, (int)Math.Round(image.Width * scale));
+        var height = Math.Max(1, (int)Math.Round(image.Height * scale));
+        using var resized = new Bitmap(width, height, PixelFormat.Format32bppArgb);
+        using (var graphics = Graphics.FromImage(resized))
+        {
+            graphics.CompositingQuality = CompositingQuality.HighQuality;
+            graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            graphics.SmoothingMode = SmoothingMode.HighQuality;
+            graphics.DrawImage(image, 0, 0, width, height);
+        }
+        resized.Save(destination, ImageFormat.Png);
     }
 
     protected async Task<bool> DownloadCoverAsync(string url)
