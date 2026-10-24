@@ -71,6 +71,7 @@ internal static class RuntimeInstallService
         var sourceFiles = EnumeratePackageFiles(package, proxyName);
         var backupRoot = Storage.GetRuntimeBackupsPath(gameId);
         Directory.CreateDirectory(backupRoot);
+        var backupSessionId = Guid.NewGuid().ToString("N");
         var manifest = new RuntimeInstallManifest
         {
             GameId = gameId,
@@ -108,11 +109,11 @@ internal static class RuntimeInstallService
                 if (File.Exists(destinationPath))
                 {
                     var originalHash = await HashFileAsync(destinationPath, cancellationToken).ConfigureAwait(false);
-                    var backupRelativePath = relativePath;
+                    var backupRelativePath = Path.Combine(backupSessionId, relativePath);
                     var backupPath = ResolveBeneath(backupRoot, backupRelativePath);
                     Directory.CreateDirectory(Path.GetDirectoryName(backupPath)!);
                     File.Copy(destinationPath, backupPath, overwrite: false);
-                    entry.OriginalBackupPath = backupRelativePath;
+                    entry.OriginalBackupPath = backupRelativePath.Replace(Path.DirectorySeparatorChar, '/');
                     entry.OriginalSha256 = originalHash;
                 }
 
@@ -144,10 +145,16 @@ internal static class RuntimeInstallService
             await RuntimeInstallManifestStore.SaveAsync(manifest, cancellationToken).ConfigureAwait(false);
             return manifest;
         }
-        catch
+        catch (Exception installError)
         {
-            RollBackCommittedFiles(root, backupRoot, committed);
-            TryDeleteDirectory(backupRoot);
+            if (!RollBackCommittedFiles(root, backupRoot, committed))
+            {
+                throw new IOException(
+                    $"XTR could not completely undo the partial install. It preserved original files in {backupRoot}; keep that folder for recovery.",
+                    installError);
+            }
+
+            TryDeleteDirectory(ResolveBeneath(backupRoot, backupSessionId));
             throw;
         }
         finally
@@ -280,7 +287,7 @@ internal static class RuntimeInstallService
             }
         }
 
-        TryDeleteDirectory(backupRoot);
+        DeleteManifestBackupSessions(manifest, backupRoot);
     }
 
     private static List<(string SourcePath, string RelativePath)> EnumeratePackageFiles(string packageRoot, string proxyName)
@@ -347,38 +354,40 @@ internal static class RuntimeInstallService
         }
     }
 
-    private static void RollBackCommittedFiles(string root, string backupRoot, IEnumerable<RuntimeOwnedFile> committed)
+    private static bool RollBackCommittedFiles(string root, string backupRoot, IEnumerable<RuntimeOwnedFile> committed)
     {
+        var succeeded = true;
         foreach (var entry in committed.Reverse())
         {
             try
             {
                 var destinationPath = ResolveBeneath(root, entry.RelativePath);
-                if (!File.Exists(destinationPath) || !string.Equals(
+                if (!File.Exists(destinationPath))
+                {
+                    if (entry.OriginalBackupPath is not null)
+                    {
+                        var backupPath = ResolveBeneath(backupRoot, entry.OriginalBackupPath);
+                        RestoreBackupFile(backupPath, destinationPath);
+                    }
+                    continue;
+                }
+
+                if (!string.Equals(
                         HashFileAsync(destinationPath, CancellationToken.None).GetAwaiter().GetResult(),
                         entry.InstalledSha256,
                         StringComparison.OrdinalIgnoreCase))
+                {
+                    succeeded = false;
                     continue;
+                }
 
                 if (entry.OriginalBackupPath is not null)
                 {
                     var backupPath = ResolveBeneath(backupRoot, entry.OriginalBackupPath);
                     if (File.Exists(backupPath))
-                    {
-                        var temporaryPath = destinationPath + $".{Guid.NewGuid():N}.xtrtmp";
-                        try
-                        {
-                            File.Copy(backupPath, temporaryPath, overwrite: false);
-                            if (File.Exists(destinationPath))
-                                File.Replace(temporaryPath, destinationPath, null, ignoreMetadataErrors: true);
-                            else
-                                File.Move(temporaryPath, destinationPath);
-                        }
-                        finally
-                        {
-                            TryDeleteFile(temporaryPath);
-                        }
-                    }
+                        RestoreBackupFile(backupPath, destinationPath);
+                    else
+                        succeeded = false;
                 }
                 else
                 {
@@ -387,9 +396,49 @@ internal static class RuntimeInstallService
             }
             catch
             {
-                // Keep the original install error; the ownership manifest has not been saved.
+                succeeded = false;
             }
         }
+
+        return succeeded;
+    }
+
+    private static void RestoreBackupFile(string backupPath, string destinationPath)
+    {
+        var temporaryPath = destinationPath + $".{Guid.NewGuid():N}.xtrtmp";
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+            File.Copy(backupPath, temporaryPath, overwrite: false);
+            if (File.Exists(destinationPath))
+                File.Replace(temporaryPath, destinationPath, null, ignoreMetadataErrors: true);
+            else
+                File.Move(temporaryPath, destinationPath);
+        }
+        finally
+        {
+            TryDeleteFile(temporaryPath);
+        }
+    }
+
+    private static void DeleteManifestBackupSessions(RuntimeInstallManifest manifest, string backupRoot)
+    {
+        var backupPaths = manifest.Files
+            .Where(file => file.OriginalBackupPath is not null)
+            .Select(file => file.OriginalBackupPath!.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries))
+            .ToList();
+
+        // Older manifests stored backups directly under backupRoot instead of a session folder.
+        foreach (var segments in backupPaths.Where(segments => segments.Length == 1))
+            TryDeleteFile(ResolveBeneath(backupRoot, segments[0]));
+
+        var sessionIds = backupPaths
+            .Where(segments => segments.Length > 1)
+            .Select(segments => segments[0])
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var sessionId in sessionIds)
+            TryDeleteDirectory(ResolveBeneath(backupRoot, sessionId));
     }
 
     private static string NormalizeExistingDirectory(string path, string errorMessage)
