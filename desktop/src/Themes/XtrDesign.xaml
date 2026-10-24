@@ -13,6 +13,9 @@
             <SolidColorBrush x:Key="XtrAccentBrush" Color="#6557D9" />
             <SolidColorBrush x:Key="XtrAccentSoftBrush" Color="#ECEAFF" />
             <SolidColorBrush x:Key="XtrSuccessBrush" Color="#278B4A" />
+            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="#F8F8FA" />
+            <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#F8F8FA" />
+            <SolidColorBrush x:Key="NavigationViewTopPaneBackground" Color="#F8F8FA" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
             <SolidColorBrush x:Key="XtrBackgroundBrush" Color="#111216" />
@@ -25,6 +28,9 @@
             <SolidColorBrush x:Key="XtrAccentBrush" Color="#6C5CD0" />
             <SolidColorBrush x:Key="XtrAccentSoftBrush" Color="#302D4B" />
             <SolidColorBrush x:Key="XtrSuccessBrush" Color="#62CF87" />
+            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="#17181D" />
+            <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#17181D" />
+            <SolidColorBrush x:Key="NavigationViewTopPaneBackground" Color="#17181D" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Default">
             <SolidColorBrush x:Key="XtrBackgroundBrush" Color="#111216" />
@@ -37,8 +43,25 @@
             <SolidColorBrush x:Key="XtrAccentBrush" Color="#6C5CD0" />
             <SolidColorBrush x:Key="XtrAccentSoftBrush" Color="#302D4B" />
             <SolidColorBrush x:Key="XtrSuccessBrush" Color="#62CF87" />
+            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="#17181D" />
+            <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#17181D" />
+            <SolidColorBrush x:Key="NavigationViewTopPaneBackground" Color="#17181D" />
         </ResourceDictionary>
-    </ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="HighContrast">
+            <SolidColorBrush x:Key="XtrBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="XtrSidebarBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="XtrSurfaceBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="XtrElevatedBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="XtrStrokeBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="XtrTextBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="XtrSecondaryTextBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="XtrAccentBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="XtrAccentSoftBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="XtrSuccessBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="NavigationViewTopPaneBackground" Color="{ThemeResource SystemColorWindowColor}" />
+        </ResourceDictionary>    </ResourceDictionary.ThemeDictionaries>
 
     <Style x:Key="XtrPrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource AccentButtonStyle}">
         <Setter Property="Background" Value="{ThemeResource XtrAccentBrush}" />

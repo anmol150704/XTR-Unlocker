@@ -45,7 +45,6 @@
                              IsSettingsVisible="True"
                              OpenPaneLength="224"
                              CompactPaneLength="64"
-                             PaneBackground="{ThemeResource XtrSidebarBrush}"
                              SelectionFollowsFocus="Disabled"
                              ItemInvoked="MainNavigationView_ItemInvoked"
                              Loaded="MainNavigationView_Loaded"
