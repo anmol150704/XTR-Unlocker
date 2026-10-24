@@ -16,7 +16,7 @@ index d7909b76..ef5670f8 100644
      CustomOptional<float> MenuBGColorG { 0.0f };
      CustomOptional<float> MenuBGColorB { 0.0f };
 diff --git a/OptiScaler/menu/menu_common.cpp b/OptiScaler/menu/menu_common.cpp
-index 8e60cb7f..f38f54cc 100644
+index 8e60cb7f..c901dccc 100644
 --- a/OptiScaler/menu/menu_common.cpp
 +++ b/OptiScaler/menu/menu_common.cpp
 @@ -1825,13 +1825,17 @@ static void ApplyThemeStyle()
@@ -57,25 +57,53 @@ index 8e60cb7f..f38f54cc 100644
          }
  
          if (ImGui::Begin(windowTitle.c_str(), NULL, flags))
-@@ -3027,6 +3029,62 @@ bool MenuCommon::RenderMenu()
+@@ -3027,6 +3029,177 @@ bool MenuCommon::RenderMenu()
                      ImGui::SetWindowFontScale(menuResScale);
              }
  
++            const auto frameGenerationInputName = [](FGInput input) -> const char* {
++                switch (input)
++                {
++                case FGInput::Nukems: return "Nukem's DLSSG";
++                case FGInput::FSRFG: return "FSR Frame Generation";
++                case FGInput::DLSSG: return "DLSSG via Streamline";
++                case FGInput::XeFG: return "Xe Frame Generation";
++                case FGInput::Upscaler: return "OptiFG (Upscaler)";
++                case FGInput::FSRFG30: return "FSR 3.0 Frame Generation";
++                default: return "Not configured";
++                }
++            };
++            const auto frameGenerationOutputName = [](FGOutput output) -> const char* {
++                switch (output)
++                {
++                case FGOutput::Nukems: return "Nukem's";
++                case FGOutput::FSRFG: return "AMD FSR";
++                case FGOutput::DLSSG: return "DLSSG";
++                case FGOutput::XeFG: return "Intel XeSS";
++                default: return "Not configured";
++                }
++            };
++
 +            if (ImGui::BeginTabBar("XTR_RUNTIME_TABS", ImGuiTabBarFlags_FittingPolicyScroll))
 +            {
-+                if (ImGui::BeginTabItem("Live"))
-+                {
-+                    ImGui::SeparatorText("Current game");
-+                    ImGui::Text("%s", state.GameName.empty() ? state.GameExe.c_str() : state.GameName.c_str());
-+                    ImGui::TextDisabled("%s", currentVersionText.c_str());
++                static bool selectAdvancedTab = false;
 +
-+                    ImGui::SeparatorText("Upscaling");
++                if (ImGui::BeginTabItem("Overview"))
++                {
++                    ImGui::BeginChild("XTR_OVERVIEW_GAME", ImVec2(0.0f, 92.0f * menuResScale), true);
++                    ImGui::TextDisabled("CURRENT GAME");
++                    ImGui::Text("%s", state.GameName.empty() ? state.GameExe.c_str() : state.GameName.c_str());
++                    ImGui::TextDisabled("OptiScaler %s", currentVersionText.c_str());
++                    ImGui::EndChild();
++
++                    ImGui::BeginChild("XTR_OVERVIEW_UPSCALING", ImVec2(0.0f, 112.0f * menuResScale), true);
++                    ImGui::TextDisabled("UPSCALING");
 +                    if (currentFeature != nullptr && currentFeature->IsInited())
 +                    {
 +                        ImGui::Text("%s", currentFeature->Name().c_str());
 +                        if (!currentFeature->IsFrozen())
 +                        {
-+                            ImGui::TextDisabled("%d x %d -> %d x %d", currentFeature->RenderWidth(),
++                            ImGui::TextDisabled("%d x %d  ->  %d x %d", currentFeature->RenderWidth(),
 +                                                currentFeature->RenderHeight(), currentFeature->DisplayWidth(),
 +                                                currentFeature->DisplayHeight());
 +                        }
@@ -88,11 +116,95 @@ index 8e60cb7f..f38f54cc 100644
 +                    {
 +                        ImGui::TextDisabled("No upscaler is active in this game session.");
 +                    }
++                    ImGui::EndChild();
 +
-+                    ImGui::SeparatorText("Frame generation");
++                    ImGui::BeginChild("XTR_OVERVIEW_PERFORMANCE", ImVec2(0.0f, 132.0f * menuResScale), true);
++                    ImGui::TextDisabled("FRAME GENERATION");
++                    if (state.activeFgInput != FGInput::NoFG && state.activeFgOutput != FGOutput::NoFG)
++                        ImGui::Text("%s  -  %s", frameGenerationInputName(state.activeFgInput),
++                                    frameGenerationOutputName(state.activeFgOutput));
++                    else
++                        ImGui::TextDisabled("No frame-generation path is active.");
++                    ImGui::Separator();
++                    ImGui::TextDisabled("PERFORMANCE");
++                    ImGui::Text("Frame time  %.2f ms", frameTime);
++                    ImGui::Text("Frame rate  %.1f FPS", frameRate);
++                    ImGui::EndChild();
++                    ImGui::EndTabItem();
++                }
++
++                if (ImGui::BeginTabItem("Upscaling"))
++                {
++                    ImGui::BeginChild("XTR_UPSCALING_CARD", ImVec2(0.0f, 0.0f), true);
++                    ImGui::TextDisabled("RENDERING METHOD");
++                    if (currentFeature != nullptr && currentFeature->IsInited() && !currentFeature->IsFrozen())
++                    {
++                        ImGui::Text("%s", currentFeature->Name().c_str());
++                        ImGui::TextDisabled("Active for %s", state.currentInputApiName.c_str());
++                        ImGui::Separator();
++
++                        if (currentFeature->Name() == "DLSSD")
++                        {
++                            ImGui::Text("DLSS Super Resolution is managed by the game.");
++                            ImGui::TextDisabled("The active game integration does not expose backend switching.");
++                        }
++                        else
++                        {
++                            GetCurrentBackendInfo(state.api, &currentBackend, &currentBackendName);
++                            ImGui::Text("Upscaler");
++                            ImGui::SetNextItemWidth(240.0f * menuResScale);
++                            switch (state.api)
++                            {
++                            case DX11: AddDx11Backends(&currentBackend, &currentBackendName); break;
++                            case DX12: AddDx12Backends(&currentBackend, &currentBackendName); break;
++                            default: AddVulkanBackends(&currentBackend, &currentBackendName); break;
++                            }
++
++                            ImGui::SameLine();
++                            if (ImGui::Button("Apply") && state.newBackend != "" && state.newBackend != currentBackend)
++                            {
++                                if (state.newBackend == "xess")
++                                {
++                                    config->DisableReactiveMask.reset();
++                                    config->DlssReactiveMaskBias.reset();
++                                }
++                                MARK_ALL_BACKENDS_CHANGED();
++                            }
++                        }
++
++                        ImGui::Spacing();
++                        ImGui::Text("Input resolution");
++                        ImGui::TextDisabled("%d x %d", currentFeature->RenderWidth(), currentFeature->RenderHeight());
++                        ImGui::Text("Output resolution");
++                        ImGui::TextDisabled("%d x %d", currentFeature->DisplayWidth(), currentFeature->DisplayHeight());
++                    }
++                    else if (currentFeature != nullptr && currentFeature->IsFrozen())
++                    {
++                        ImGui::Text("%s is ready", currentFeature->Name().c_str());
++                        ImGui::TextDisabled("Start or resume gameplay to adjust its active settings.");
++                    }
++                    else
++                    {
++                        ImGui::Text("No active upscaler");
++                        ImGui::TextDisabled("Choose an upscaler in Advanced settings after the game initializes it.");
++                        if (ImGui::Button("Open Advanced settings"))
++                            selectAdvancedTab = true;
++                    }
++                    ImGui::EndChild();
++                    ImGui::EndTabItem();
++                }
++
++                if (ImGui::BeginTabItem("Frame Generation"))
++                {
++                    ImGui::BeginChild("XTR_FRAME_GENERATION_CARD", ImVec2(0.0f, 0.0f), true);
++                    ImGui::TextDisabled("FRAME GENERATION");
 +                    const bool frameGenerationAvailable =
 +                        state.activeFgInput != FGInput::NoFG && state.activeFgOutput != FGOutput::NoFG &&
 +                        (state.currentFGSwapchain != nullptr || state.activeFgInput == FGInput::Nukems);
++
++                    ImGui::Text("Input  %s", frameGenerationInputName(state.activeFgInput));
++                    ImGui::Text("Output  %s", frameGenerationOutputName(state.activeFgOutput));
++                    ImGui::Spacing();
 +                    if (frameGenerationAvailable)
 +                    {
 +                        bool frameGenerationEnabled = config->FGEnabled.value_or_default();
@@ -102,25 +214,28 @@ index 8e60cb7f..f38f54cc 100644
 +                            if (frameGenerationEnabled)
 +                                state.FGchanged = true;
 +                        }
-+                        ImGui::TextDisabled("This toggle appears only when an input and output are active.");
++                        ImGui::TextDisabled("The toggle is available because this session has an active input and output.");
 +                    }
 +                    else
 +                    {
-+                        ImGui::TextDisabled("No compatible frame generation path is active right now.");
++                        ImGui::Text("No compatible frame-generation path is active.");
++                        ImGui::TextDisabled("Choose an input and output in Advanced settings when the game supports them.");
++                        if (ImGui::Button("Open Advanced settings"))
++                            selectAdvancedTab = true;
 +                    }
-+
-+                    ImGui::SeparatorText("Performance");
-+                    ImGui::Text("Frame time  %.2f ms", frameTime);
-+                    ImGui::Text("Frame rate  %.1f FPS", frameRate);
++                    ImGui::EndChild();
 +                    ImGui::EndTabItem();
 +                }
 +
-+                if (ImGui::BeginTabItem("Settings"))
++                if (ImGui::BeginTabItem("Advanced", nullptr,
++                                        selectAdvancedTab ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None))
 +                {
++                    selectAdvancedTab = false;
++                    ImGui::TextDisabled("All runtime controls and compatibility options");
              if (ImGui::BeginTable("main", 2, ImGuiTableFlags_SizingStretchSame))
              {
                  ImGui::TableNextColumn();
-@@ -7042,6 +7100,11 @@ bool MenuCommon::RenderMenu()
+@@ -7042,6 +7215,11 @@ bool MenuCommon::RenderMenu()
                      lastPosition.y = posY;
                  }
  
