@@ -1,5 +1,5 @@
-title: DLSS Swapper
-repository: beeradmoore/dlss-swapper
+title: XTR Unlocker
+repository: anmol150704/XTR-Unlocker
 remote_theme: pages-themes/slate@v0.2.0
 plugins:
 - jekyll-remote-theme

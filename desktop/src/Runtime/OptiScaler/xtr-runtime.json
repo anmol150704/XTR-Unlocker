@@ -102,8 +102,8 @@
                        },
                        {
                            "path":  "OptiScaler.ini",
-                           "sha256":  "42a643239688c351cf7e00246c4faf0a8ba5a0f26f5832788c8397b5bdf35cfd",
-                           "sizeBytes":  47469
+                           "sha256":  "674d8b6a3e8625e25497b01a0d9bab0879362c9ca26c0359f54b3c29d01d829c",
+                           "sizeBytes":  47471
                        },
                        {
                            "path":  "D3D12_Optiscaler/D3D12Core.dll",

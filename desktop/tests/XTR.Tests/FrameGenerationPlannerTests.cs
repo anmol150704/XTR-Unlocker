@@ -79,6 +79,27 @@ public sealed class FrameGenerationPlannerTests
             var showFps = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Menu" && m.Key == "ShowFps");
             Assert.IsNotNull(showFps);
             Assert.AreEqual("true", showFps.Value);
+
+            // Verify XTR Menu shortcut keys & Apple Liquid theming
+            var shortcutKey = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Menu" && m.Key == "ShortcutKey");
+            Assert.IsNotNull(shortcutKey);
+            Assert.AreEqual("0x2D", shortcutKey.Value);
+
+            var fpsKey = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Menu" && m.Key == "FpsShortcutKey");
+            Assert.IsNotNull(fpsKey);
+            Assert.AreEqual("0x21", fpsKey.Value);
+
+            var fpsCycleKey = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Menu" && m.Key == "FpsCycleShortcutKey");
+            Assert.IsNotNull(fpsCycleKey);
+            Assert.AreEqual("0x22", fpsCycleKey.Value);
+
+            var fgKey = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Menu" && m.Key == "FGShortcutKey");
+            Assert.IsNotNull(fgKey);
+            Assert.AreEqual("0x23", fgKey.Value);
+
+            var accentColorR = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Menu" && m.Key == "AccentColorR");
+            Assert.IsNotNull(accentColorR);
+            Assert.AreEqual("0.20", accentColorR.Value);
         }
         finally
         {

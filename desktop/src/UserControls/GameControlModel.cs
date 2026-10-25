@@ -126,7 +126,7 @@ public partial class GameControlModel : ObservableObject
     }
 
     [ObservableProperty]
-    public partial bool InGameHudOverlayEnabled { get; set; } = false;
+    public partial bool InGameHudOverlayEnabled { get; set; } = true;
 
     partial void OnInGameHudOverlayEnabledChanged(bool value)
     {
@@ -137,7 +137,7 @@ public partial class GameControlModel : ObservableObject
     [ObservableProperty]
     public partial bool StreamlineSpoofingEnabled { get; set; } = true;
     [ObservableProperty]
-    public partial bool InGameDevMenuEnabled { get; set; } = false;
+    public partial bool InGameDevMenuEnabled { get; set; } = true;
 
     partial void OnInGameDevMenuEnabledChanged(bool value)
     {
@@ -152,7 +152,7 @@ public partial class GameControlModel : ObservableObject
     }
 
     [ObservableProperty]
-    public partial string SelectedEngineNeuralPreset { get; set; } = "Default (Game Engine Default)";
+    public partial string SelectedEngineNeuralPreset { get; set; } = "Preset E (Anti-Ghosting Champion)";
 
     partial void OnSelectedEngineNeuralPresetChanged(string value)
     {
@@ -162,7 +162,7 @@ public partial class GameControlModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(SharpnessPercentLabel))]
-    public partial double SharpnessPercentage { get; set; } = 30.0;
+    public partial double SharpnessPercentage { get; set; } = 35.0;
 
     public string SharpnessPercentLabel => $"{Math.Round(SharpnessPercentage)}%";
 
@@ -837,11 +837,22 @@ public partial class GameControlModel : ObservableObject
 
     private void ApplyHudOverlaySetting(bool enabled)
     {
-        UpdateOptiScalerConfigSetting("Menu", "ShowFps", enabled ? "true" : "false");
         if (enabled)
         {
-            UpdateOptiScalerConfigSetting("Menu", "FpsOverlayType", "2");
-            UpdateOptiScalerConfigSetting("Menu", "OverlayMenu", "true");
+            UpdateOptiScalerConfigSettings(new[]
+            {
+                ("Menu", "ShowFps", "true"),
+                ("Menu", "FpsOverlayType", "2"),
+                ("Menu", "OverlayMenu", "true"),
+                ("Menu", "FpsShortcutKey", "0x21"),
+                ("Menu", "FpsCycleShortcutKey", "0x22"),
+                ("Menu", "FGShortcutKey", "0x23"),
+                ("Menu", "FpsOverlayHorizontal", "true")
+            });
+        }
+        else
+        {
+            UpdateOptiScalerConfigSetting("Menu", "ShowFps", "false");
         }
     }
 

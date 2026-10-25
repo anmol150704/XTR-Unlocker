@@ -382,8 +382,7 @@
                             Background="{ThemeResource XtrSurfaceBrush}"
                             BorderBrush="{ThemeResource XtrGlassBorderBrush}"
                             BorderThickness="1"
-                            CornerRadius="16"
-                            Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}">
+                            CornerRadius="16">
                             <StackPanel Spacing="12">
                                 <Grid>
                                     <Grid.ColumnDefinitions>

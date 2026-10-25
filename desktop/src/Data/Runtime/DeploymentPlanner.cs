@@ -245,46 +245,6 @@ public static class DeploymentPlanner
                     Reason = "Ensures Hardware Accelerated GPU Scheduling requirements are satisfied."
                 });
 
-                // Enable OptiScaler in-game detection overlay so the user can verify real-time FPS and FG status
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "Menu",
-                    Key = "OverlayMenu",
-                    Value = "true",
-                    Reason = "Enables OptiScaler in-game overlay and frame interpolation swapchain support."
-                });
-
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "Menu",
-                    Key = "ShowFps",
-                    Value = "true",
-                    Reason = "Renders real-time in-game detection overlay with frame generation status."
-                });
-
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "Menu",
-                    Key = "FpsOverlayType",
-                    Value = "2",
-                    Reason = "Detailed HUD displaying FPS, active upscaler, and generated frame delta."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "Menu",
-                    Key = "DisableSplash",
-                    Value = "true",
-                    Reason = "Suppresses external splash screens on game launch."
-                });
-
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "Menu",
-                    Key = "ShortcutKey",
-                    Value = "-1",
-                    Reason = "Suppresses native backend developer menu to keep game UI clean."
-                });
-
                 // Anti-Ghosting Shield: HUD isolation, immutable buffer cloning & transparency masks
                 plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                 {
@@ -433,6 +393,9 @@ public static class DeploymentPlanner
                     Value = "5",
                     Reason = "Forces DLSS Preset E across all performance modes to eliminate ghosting trails."
                 });
+
+                // Enable OptiScaler in-game detection overlay and full XTR Apple Liquid styling & hotkeys
+                AddXtrMenuAndOverlayEntries(plan);
                 break;
 
             case RuntimeIntegrationPreset.NativeDlssG:
@@ -515,6 +478,9 @@ public static class DeploymentPlanner
                     Value = "5",
                     Reason = "Forces DLSS Preset E across all performance modes to eliminate ghosting trails."
                 });
+
+                // Enable OptiScaler in-game detection overlay and full XTR Apple Liquid styling & hotkeys
+                AddXtrMenuAndOverlayEntries(plan);
                 break;
 
             case RuntimeIntegrationPreset.TurboBoost:
@@ -849,42 +815,8 @@ public static class DeploymentPlanner
                     Reason = "Satisfies HAGS hardware scheduling requirement."
                 });
 
-                // Menu & Telemetry
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "Menu",
-                    Key = "OverlayMenu",
-                    Value = "true",
-                    Reason = "Activates overlay and swapchain support."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "Menu",
-                    Key = "ShowFps",
-                    Value = "true",
-                    Reason = "Displays real-time FPS and interpolation telemetry."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "Menu",
-                    Key = "FpsOverlayType",
-                    Value = "2",
-                    Reason = "Detailed HUD telemetry."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "Menu",
-                    Key = "DisableSplash",
-                    Value = "true",
-                    Reason = "Suppresses external splash screen."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "Menu",
-                    Key = "ShortcutKey",
-                    Value = "-1",
-                    Reason = "Suppresses backend dev menu."
-                });
+                // Menu & Telemetry: Apple Liquid overlay & hotkeys
+                AddXtrMenuAndOverlayEntries(plan);
                 break;
 
             case RuntimeIntegrationPreset.Performance:
@@ -918,6 +850,157 @@ public static class DeploymentPlanner
         }
 
         return plan;
+    }
+
+    private static void AddXtrMenuAndOverlayEntries(DeploymentPlan plan)
+    {
+        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+        {
+            Section = "Menu",
+            Key = "OverlayMenu",
+            Value = "true",
+            Reason = "Enables OptiScaler in-game overlay and frame interpolation swapchain support."
+        });
+        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+        {
+            Section = "Menu",
+            Key = "ShowFps",
+            Value = "true",
+            Reason = "Renders real-time in-game telemetry overlay with frame generation status."
+        });
+        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+        {
+            Section = "Menu",
+            Key = "FpsOverlayType",
+            Value = "2",
+            Reason = "Detailed HUD displaying FPS, active upscaler, and generated frame delta."
+        });
+        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+        {
+            Section = "Menu",
+            Key = "FpsOverlayHorizontal",
+            Value = "true",
+            Reason = "Renders sleek horizontal pill HUD layout."
+        });
+        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+        {
+            Section = "Menu",
+            Key = "FpsOverlayPos",
+            Value = "0",
+            Reason = "Anchors HUD overlay at Top-Left."
+        });
+        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+        {
+            Section = "Menu",
+            Key = "FpsScale",
+            Value = "1.05",
+            Reason = "Optimal HiDPI scale for FPS telemetry."
+        });
+        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+        {
+            Section = "Menu",
+            Key = "FpsOverlayAlpha",
+            Value = "0.75",
+            Reason = "Apple dark glass overlay transparency."
+        });
+        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+        {
+            Section = "Menu",
+            Key = "DisableSplash",
+            Value = "true",
+            Reason = "Suppresses external splash screens on game launch."
+        });
+        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+        {
+            Section = "Menu",
+            Key = "ShortcutKey",
+            Value = "0x2D",
+            Reason = "Enables [Insert] hotkey to toggle engine diagnostics overlay."
+        });
+        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+        {
+            Section = "Menu",
+            Key = "FpsShortcutKey",
+            Value = "0x21",
+            Reason = "Enables [Page Up] hotkey to toggle real-time FPS & FG HUD."
+        });
+        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+        {
+            Section = "Menu",
+            Key = "FpsCycleShortcutKey",
+            Value = "0x22",
+            Reason = "Enables [Page Down] hotkey to cycle telemetry detail modes."
+        });
+        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+        {
+            Section = "Menu",
+            Key = "FGShortcutKey",
+            Value = "0x23",
+            Reason = "Enables [End] hotkey to dynamically toggle Frame Generation."
+        });
+        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+        {
+            Section = "Menu",
+            Key = "AccentColorR",
+            Value = "0.20",
+            Reason = "Apple Emerald Green accent."
+        });
+        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+        {
+            Section = "Menu",
+            Key = "AccentColorG",
+            Value = "0.78",
+            Reason = "Apple Emerald Green accent."
+        });
+        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+        {
+            Section = "Menu",
+            Key = "AccentColorB",
+            Value = "0.35",
+            Reason = "Apple Emerald Green accent."
+        });
+        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+        {
+            Section = "Menu",
+            Key = "BGColorR",
+            Value = "0.08",
+            Reason = "Apple Dark Slate Glass background."
+        });
+        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+        {
+            Section = "Menu",
+            Key = "BGColorG",
+            Value = "0.09",
+            Reason = "Apple Dark Slate Glass background."
+        });
+        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+        {
+            Section = "Menu",
+            Key = "BGColorB",
+            Value = "0.11",
+            Reason = "Apple Dark Slate Glass background."
+        });
+        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+        {
+            Section = "Menu",
+            Key = "BGColorA",
+            Value = "0.92",
+            Reason = "Apple Dark Slate Glass opacity."
+        });
+        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+        {
+            Section = "Menu",
+            Key = "Scale",
+            Value = "1.1",
+            Reason = "HiDPI scaling for developer overlay."
+        });
+        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+        {
+            Section = "Menu",
+            Key = "UseHQFont",
+            Value = "true",
+            Reason = "High-quality monospace typography."
+        });
     }
 
     private static async Task<string> ComputeSha256Async(string filePath, CancellationToken cancellationToken)
