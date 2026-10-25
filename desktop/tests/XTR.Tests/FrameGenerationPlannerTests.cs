@@ -255,6 +255,18 @@ public sealed class FrameGenerationPlannerTests
             var spoofHags = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Spoofing" && m.Key == "SpoofHAGS");
             Assert.IsNotNull(spoofHags);
             Assert.AreEqual("true", spoofHags.Value);
+
+            var shortcutKey = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Menu" && m.Key == "ShortcutKey");
+            Assert.IsNotNull(shortcutKey);
+            Assert.AreEqual("0x2D", shortcutKey.Value);
+
+            var fpsKey = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Menu" && m.Key == "FpsShortcutKey");
+            Assert.IsNotNull(fpsKey);
+            Assert.AreEqual("0x21", fpsKey.Value);
+
+            var fgKey = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Menu" && m.Key == "FGShortcutKey");
+            Assert.IsNotNull(fgKey);
+            Assert.AreEqual("0x23", fgKey.Value);
         }
         finally
         {
@@ -438,6 +450,12 @@ public sealed class FrameGenerationPlannerTests
             Assert.AreEqual("16", RuntimeConfigService.ReadIniValue(iniContent, "Anisotropy", "AnisotropyOverride"));
             Assert.AreEqual("-0.5", RuntimeConfigService.ReadIniValue(iniContent, "Mipmap", "MipmapBiasOverride"));
             Assert.AreEqual("0.35", RuntimeConfigService.ReadIniValue(iniContent, "Sharpness", "Sharpness"));
+            Assert.AreEqual("0x2D", RuntimeConfigService.ReadIniValue(iniContent, "Menu", "ShortcutKey"));
+            Assert.AreEqual("0x21", RuntimeConfigService.ReadIniValue(iniContent, "Menu", "FpsShortcutKey"));
+            Assert.AreEqual("0x22", RuntimeConfigService.ReadIniValue(iniContent, "Menu", "FpsCycleShortcutKey"));
+            Assert.AreEqual("0x23", RuntimeConfigService.ReadIniValue(iniContent, "Menu", "FGShortcutKey"));
+            Assert.AreEqual("true", RuntimeConfigService.ReadIniValue(iniContent, "Menu", "ShowFps"));
+            Assert.AreEqual("true", RuntimeConfigService.ReadIniValue(iniContent, "Menu", "DisableSplash"));
 
             await RuntimeInstallService.RestoreAsync(gameId, tempDir);
             Assert.IsFalse(File.Exists(iniPath));

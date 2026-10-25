@@ -859,7 +859,6 @@ public partial class GameControlModel : ObservableObject
     private void ApplyDevMenuSetting(bool enabled)
     {
         UpdateOptiScalerConfigSetting("Menu", "ShortcutKey", enabled ? "0x2D" : "-1");
-        UpdateOptiScalerConfigSetting("Menu", "DisableSplash", enabled ? "false" : "true");
     }
 
     private void ApplyStreamlineSpoofingSetting(bool enabled)

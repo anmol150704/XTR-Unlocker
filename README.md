@@ -37,7 +37,7 @@ When deployed to a game directory, the in-engine overlay is accessible via globa
 | `Page Up` | Toggle real-time FPS and Frame Generation telemetry HUD | Enabled |
 | `Page Down` | Cycle telemetry detail and graph modes | Enabled |
 | `End` | Toggle frame generation interpolation dynamically | Enabled |
-| `Insert` | Developer diagnostics panel | Suppressed |
+| `Insert` | Developer diagnostics panel | Enabled |
 
 ## Installation
 
