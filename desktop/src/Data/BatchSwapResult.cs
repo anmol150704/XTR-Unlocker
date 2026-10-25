@@ -16,7 +16,7 @@ public class BatchSwapResult
     public BatchSwapStatus Status { get; init; }
 
     // Localised, game-agnostic action label built on the UI thread before the
-    // worker starts (e.g. "DLSS → 3.7.0" or "Preset DLSS → D"). Never resolved
+    // worker starts (e.g. "DLSS -> 3.7.0" or "Preset DLSS -> D"). Never resolved
     // inside the batch worker.
     public string ActionLabel { get; init; } = string.Empty;
 
@@ -31,9 +31,9 @@ public class BatchSwapResult
 
     public string DisplayText => Status switch
     {
-        BatchSwapStatus.Skipped => $"{GameTitle} — {ActionLabel} — {ResourceHelper.GetString(ReasonKey)}",
-        BatchSwapStatus.Error when string.IsNullOrEmpty(ErrorMessage) => $"{GameTitle} — {ActionLabel} — {ResourceHelper.GetString("GamesPage_Batch_Error_Generic")}",
-        BatchSwapStatus.Error => $"{GameTitle} — {ActionLabel} — {ResourceHelper.GetFormattedResourceTemplate("GamesPage_Batch_Error_PossiblyPartialTemplate", ErrorMessage)}",
-        _ => $"{GameTitle} — {ActionLabel}",
+        BatchSwapStatus.Skipped => $"{GameTitle} - {ActionLabel} - {ResourceHelper.GetString(ReasonKey)}",
+        BatchSwapStatus.Error when string.IsNullOrEmpty(ErrorMessage) => $"{GameTitle} - {ActionLabel} - {ResourceHelper.GetString("GamesPage_Batch_Error_Generic")}",
+        BatchSwapStatus.Error => $"{GameTitle} - {ActionLabel} - {ResourceHelper.GetFormattedResourceTemplate("GamesPage_Batch_Error_PossiblyPartialTemplate", ErrorMessage)}",
+        _ => $"{GameTitle} - {ActionLabel}",
     };
 }

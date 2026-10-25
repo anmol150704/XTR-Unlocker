@@ -294,7 +294,7 @@
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <Ellipse Width="7" Height="7" Fill="{ThemeResource XtrSuccessBrush}" VerticalAlignment="Center" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource InverseBoolToVisibilityConverter}, Mode=OneWay}" />
                     <muxc:ProgressRing Width="13" Height="13" IsActive="True" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
-                    <TextBlock Text="Engine Ready · FSR 3.1 Swapchain Active" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" VerticalAlignment="Center" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource InverseBoolToVisibilityConverter}, Mode=OneWay}" />
+                    <TextBlock Text="Engine Ready - FSR 3.1 Swapchain Active" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" VerticalAlignment="Center" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource InverseBoolToVisibilityConverter}, Mode=OneWay}" />
                     <TextBlock Text="Scanning Launchers..." FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" VerticalAlignment="Center" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
                 </StackPanel>
             </Border>

@@ -113,7 +113,7 @@ public partial class GameControlModel : ObservableObject
     }
 
     public string RuntimeComponentsText => Game.RuntimeManifest?.Components is { Count: > 0 } components
-        ? string.Join(" � ", components)
+        ? string.Join(" | ", components)
         : "Engine components not recorded";
 
     public string RuntimeStatusText => Game.RuntimeManifest is not null
@@ -547,7 +547,7 @@ public partial class GameControlModel : ObservableObject
             BorderThickness = new Thickness(1),
             Child = new TextBlock
             {
-                Text = $"Preflight: {plan.PreflightResult.Headline} � {plan.PlannedCopies.Count} files to deploy � {plan.PlannedBackups.Count} backups planned\nProxy: {plan.SelectedProxy} ({plan.PreflightResult.DetectedApi})",
+                Text = $"Preflight: {plan.PreflightResult.Headline} | {plan.PlannedCopies.Count} files to deploy | {plan.PlannedBackups.Count} backups planned\nProxy: {plan.SelectedProxy} ({plan.PreflightResult.DetectedApi})",
                 FontSize = 12,
                 Foreground = (Microsoft.UI.Xaml.Media.Brush)App.CurrentApp.Resources["XtrSecondaryTextBrush"],
                 TextWrapping = TextWrapping.Wrap
@@ -561,7 +561,7 @@ public partial class GameControlModel : ObservableObject
             HorizontalAlignment = HorizontalAlignment.Stretch,
             Content = new TextBlock
             {
-                Text = string.Join(Environment.NewLine, plan.PlannedCopies.Select(c => $"� {c.RelativePath}{(c.RequiresBackup ? " (backs up original)" : "")}")),
+                Text = string.Join(Environment.NewLine, plan.PlannedCopies.Select(c => $"| {c.RelativePath}{(c.RequiresBackup ? " (backs up original)" : "")}")),
                 FontSize = 11,
                 Foreground = (Microsoft.UI.Xaml.Media.Brush)App.CurrentApp.Resources["XtrSecondaryTextBrush"],
                 TextWrapping = TextWrapping.Wrap

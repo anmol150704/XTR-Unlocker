@@ -33,7 +33,7 @@ public static class DlssVersionHelper
         var firstPart = ver.Split('.')[0];
         if (int.TryParse(firstPart, out var major))
         {
-            return $"DLSS {major} · v{ver}";
+            return $"DLSS {major} - v{ver}";
         }
 
         return $"DLSS v{ver}";
@@ -50,7 +50,7 @@ public static class DlssVersionHelper
         var firstPart = ver.Split('.')[0];
         if (int.TryParse(firstPart, out var major))
         {
-            return $"DLSS {major} · v{ver}";
+            return $"DLSS {major} - v{ver}";
         }
 
         return $"DLSS v{ver}";

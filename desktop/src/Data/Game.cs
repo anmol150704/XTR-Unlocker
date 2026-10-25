@@ -136,67 +136,17 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
 
     [Ignore]
     public string IntegrationStatus => RuntimeManifest is not null
-        ? CurrentDLSS is not null ? "Runtime ready · DLSS detected" : "Runtime installed · DLSS not detected"
-        : CurrentDLSS is not null ? "DLSS detected · runtime not installed" : "No runtime configured";
-    [Ignore]
-    public string DlssGenerationText
-    {
-        get
-        {
-            if (CurrentDLSS is null || string.IsNullOrWhiteSpace(CurrentDLSS.DisplayVersion))
-            {
-                return "No DLSS";
-            }
-
-            var ver = CurrentDLSS.DisplayVersion.TrimStart('v', 'V');
-            var firstPart = ver.Split('.')[0];
-            if (int.TryParse(firstPart, out var major))
-            {
-                return $"DLSS {major}";
-            }
-            return "DLSS";
-        }
-    }
+        ? CurrentDLSS is not null ? "Runtime ready - DLSS detected" : "Runtime installed - DLSS not detected"
+        : CurrentDLSS is not null ? "DLSS detected - runtime not installed" : "No runtime configured";
 
     [Ignore]
-    public string DlssVersionLabel
-    {
-        get
-        {
-            if (CurrentDLSS is null || string.IsNullOrWhiteSpace(CurrentDLSS.DisplayVersion))
-            {
-                return "DLSS not detected";
-            }
-
-            var ver = CurrentDLSS.DisplayVersion.TrimStart('v', 'V');
-            var firstPart = ver.Split('.')[0];
-            if (int.TryParse(firstPart, out var major))
-            {
-                return $"DLSS {major} · v{ver}";
-            }
-            return $"DLSS v{ver}";
-        }
-    }
+    public string DlssGenerationText => DlssVersionHelper.FormatGeneration(CurrentDLSS?.DisplayVersion);
 
     [Ignore]
-    public string DlssBadgeText
-    {
-        get
-        {
-            if (CurrentDLSS is null || string.IsNullOrWhiteSpace(CurrentDLSS.DisplayVersion))
-            {
-                return "NO DLSS";
-            }
+    public string DlssVersionLabel => DlssVersionHelper.FormatVersionLabel(CurrentDLSS?.DisplayVersion);
 
-            var ver = CurrentDLSS.DisplayVersion.TrimStart('v', 'V');
-            var firstPart = ver.Split('.')[0];
-            if (int.TryParse(firstPart, out var major))
-            {
-                return $"DLSS {major} · v{ver}";
-            }
-            return $"DLSS v{ver}";
-        }
-    }
+    [Ignore]
+    public string DlssBadgeText => DlssVersionHelper.FormatBadge(CurrentDLSS?.DisplayVersion);
 
     [Ignore]
     public string FrameGenBadgeText
@@ -205,7 +155,7 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
         {
             if (RuntimeManifest is not null)
             {
-                return "⚡ FG ACTIVE";
+                return "FG ACTIVE";
             }
             if (CurrentDLSS_G is not null)
             {

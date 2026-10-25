@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -26,7 +26,7 @@ public sealed class RuntimeHealthReport
     public string? ActiveApi { get; set; }
     public string? ActiveUpscaler { get; set; }
     public string? ActiveFrameGen { get; set; }
-    public string InGameOverlayGuide { get; set; } = "[Insert] In-Game Menu · [Page Up] FPS & FG Overlay";
+    public string InGameOverlayGuide { get; set; } = "[Insert] In-Game Menu - [Page Up] FPS & FG Overlay";
     public string Summary { get; set; } = "Runtime installed; waiting for first launch.";
     public List<string> Details { get; set; } = new();
     public string? LogPath { get; set; }
@@ -63,7 +63,7 @@ public static class RuntimeHealthService
         if (!File.Exists(logPath))
         {
             report.State = RuntimeHealthState.InstalledNotYetLaunched;
-            report.Summary = "Files installed · Launch the game to initialize runtime.";
+            report.Summary = "Files installed - Launch the game to initialize runtime.";
             report.Details.Add($"Proxy {proxyName} is present on disk. OptiScaler has not generated OptiScaler.log yet.");
             return report;
         }
@@ -168,7 +168,7 @@ public static class RuntimeHealthService
                 report.State = RuntimeHealthState.HealthyActive;
                 var upscalerStr = report.ActiveUpscaler ?? "DLSS / Upscaler";
                 var fgStr = report.FrameGenerationActive ? $" + {report.ActiveFrameGen}" : string.Empty;
-                report.Summary = $"Active · {upscalerStr}{fgStr} ({report.ActiveApi ?? "DirectX"}).";
+                report.Summary = $"Active - {upscalerStr}{fgStr} ({report.ActiveApi ?? "DirectX"}).";
                 report.Details.Add($"Proxy {proxyName} successfully hooked by game process.");
                 if (report.StreamlineHookConfirmed)
                     report.Details.Add("Engine Streamline DLSS-G tags successfully intercepted.");

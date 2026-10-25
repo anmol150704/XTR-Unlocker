@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <usercontrols:FakeContentDialog
     x:Class="DLSS_Swapper.UserControls.GameControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -271,7 +271,7 @@
                         </Border>
 
                         <!-- DUAL FRAME GENERATION MODES (NATIVE DLSS-G VS UNIVERSAL FSR BRIDGE) -->
-                        <Grid Grid.Row="3" ColumnSpacing="10">
+                        <Grid Grid.Row="3" ColumnSpacing="12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
@@ -279,61 +279,68 @@
 
                             <Button
                                 Grid.Column="0"
-                                Content="âš¡ Native DLSS 3 Hardware FG"
                                 Style="{StaticResource XtrPrimaryButtonStyle}"
                                 Command="{x:Bind ViewModel.EnableNativeDlssGCommand}"
                                 Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToInverseVisibilityConverter}, Mode=OneWay}"
                                 HorizontalAlignment="Stretch"
-                                Height="42"
-                                CornerRadius="18"
-                                FontSize="12.5"
-                                FontWeight="SemiBold"
-                                ToolTipService.ToolTip="Uses pure NVIDIA nvngx_dlssg.dll hardware optical flow acceleration directly without FSR" />
+                                Height="44"
+                                CornerRadius="16"
+                                ToolTipService.ToolTip="Uses pure NVIDIA nvngx_dlssg.dll hardware optical flow acceleration directly">
+                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="&#xE945;" FontSize="13" />
+                                    <TextBlock Text="Native DLSS 3 Hardware FG" FontSize="12.5" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </Button>
 
                             <Button
                                 Grid.Column="1"
-                                Content="âœ¦ Universal FG Bridge (FSR 3.1)"
                                 Style="{StaticResource XtrPrimaryButtonStyle}"
                                 Command="{x:Bind ViewModel.EnableFrameGenerationCommand}"
                                 Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToInverseVisibilityConverter}, Mode=OneWay}"
                                 HorizontalAlignment="Stretch"
-                                Height="42"
-                                CornerRadius="18"
-                                FontSize="12.5"
-                                FontWeight="SemiBold"
-                                ToolTipService.ToolTip="Translates DLSS-G calls to FSR 3.1 swapchain with Anti-Ghosting shield for RTX 20/30/AMD/Intel" />
+                                Height="44"
+                                CornerRadius="16"
+                                ToolTipService.ToolTip="Translates DLSS-G calls to FSR 3.1 swapchain with Anti-Ghosting shield for RTX 20/30/AMD/Intel">
+                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="&#xE735;" FontSize="13" />
+                                    <TextBlock Text="Universal FG Bridge (FSR 3.1)" FontSize="12.5" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </Button>
 
                             <Button
                                 Grid.Column="0"
                                 Grid.ColumnSpan="2"
-                                Content="â†º Restore original game files"
                                 Style="{StaticResource XtrSecondaryButtonStyle}"
                                 Command="{x:Bind ViewModel.RestoreRuntimeCommand}"
                                 Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
                                 HorizontalAlignment="Stretch"
-                                Height="42"
-                                CornerRadius="18"
-                                FontSize="13.5" />
+                                Height="44"
+                                CornerRadius="16">
+                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="&#xE72C;" FontSize="13" />
+                                    <TextBlock Text="Restore Original Game Files" FontSize="13" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </Button>
                         </Grid>
 
                         <!-- ANTI-GHOSTING SHIELD & LIVE ENGINE CONTROLS -->
                         <Border
                             Grid.Row="4"
-                            Padding="14"
+                            Padding="16"
                             Background="{ThemeResource XtrSurfaceBrush}"
                             BorderBrush="{ThemeResource XtrGlassBorderBrush}"
                             BorderThickness="1"
-                            CornerRadius="14"
+                            CornerRadius="16"
                             Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}">
-                            <StackPanel Spacing="10">
+                            <StackPanel Spacing="12">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                        <Ellipse Width="8" Height="8" Fill="{ThemeResource XtrSuccessBrush}" />
-                                        <TextBlock Text="ANTI-GHOSTING SHIELD &amp; LIVE DETECTION" FontSize="11" FontWeight="Bold" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
+                                        <Ellipse Width="7" Height="7" Fill="{ThemeResource XtrSuccessBrush}" />
+                                        <TextBlock Text="ANTI-GHOSTING SHIELD &amp; LIVE DETECTION" FontSize="11" FontWeight="Bold" CharacterSpacing="60" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
                                     </StackPanel>
                                     <Button
                                         Grid.Column="1"
@@ -348,64 +355,83 @@
                                 <TextBlock Text="{x:Bind ViewModel.RuntimeHealthSummaryText, Mode=OneWay}" FontSize="12.5" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" TextWrapping="Wrap" />
 
                                 <!-- Anti-Ghosting Toggle -->
-                                <Grid ColumnSpacing="12">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Spacing="1">
-                                        <TextBlock Text="ðŸ›¡ï¸ Anti-Ghosting Shield (HUD Separation &amp; Buffer Cloning)" FontSize="12.5" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
-                                        <TextBlock Text="Eliminates HUD smearing, subtitle ghosting, and double-image edge trails." FontSize="11" Foreground="{ThemeResource XtrSecondaryTextBrush}" TextWrapping="Wrap" />
-                                    </StackPanel>
-                                    <ToggleSwitch Grid.Column="1" IsOn="{x:Bind ViewModel.AntiGhostingShieldEnabled, Mode=TwoWay}" OnContent="" OffContent="" VerticalAlignment="Center" />
-                                </Grid>
+                                <Border Padding="12,10" CornerRadius="12" Background="{ThemeResource XtrElevatedBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1">
+                                    <Grid ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Spacing="2">
+                                            <StackPanel Orientation="Horizontal" Spacing="7">
+                                                <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="&#xE730;" FontSize="13" Foreground="{ThemeResource XtrAccentBrush}" VerticalAlignment="Center" />
+                                                <TextBlock Text="Anti-Ghosting Shield (HUD Separation &amp; Buffer Cloning)" FontSize="12.5" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
+                                            </StackPanel>
+                                            <TextBlock Text="Eliminates HUD smearing, subtitle ghosting, and double-image edge trails." FontSize="11" Foreground="{ThemeResource XtrSecondaryTextBrush}" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                        <ToggleSwitch Grid.Column="1" IsOn="{x:Bind ViewModel.AntiGhostingShieldEnabled, Mode=TwoWay}" OnContent="" OffContent="" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
 
                                 <!-- In-Game HUD Overlay Toggle -->
-                                <Grid ColumnSpacing="12">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Spacing="1">
-                                        <TextBlock Text="ðŸ“Š In-Game FPS &amp; Frame Gen Overlay [Page Up]" FontSize="12.5" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
-                                        <TextBlock Text="Shows real-time frame rates and generated frame interpolation delta." FontSize="11" Foreground="{ThemeResource XtrSecondaryTextBrush}" TextWrapping="Wrap" />
-                                    </StackPanel>
-                                    <ToggleSwitch Grid.Column="1" IsOn="{x:Bind ViewModel.InGameHudOverlayEnabled, Mode=TwoWay}" OnContent="" OffContent="" VerticalAlignment="Center" />
-                                </Grid>
+                                <Border Padding="12,10" CornerRadius="12" Background="{ThemeResource XtrElevatedBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1">
+                                    <Grid ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Spacing="2">
+                                            <StackPanel Orientation="Horizontal" Spacing="7">
+                                                <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="&#xE9D9;" FontSize="13" Foreground="{ThemeResource XtrAccentBrush}" VerticalAlignment="Center" />
+                                                <TextBlock Text="In-Game FPS &amp; Frame Gen Overlay [Page Up]" FontSize="12.5" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
+                                            </StackPanel>
+                                            <TextBlock Text="Shows real-time frame rates and generated frame interpolation delta." FontSize="11" Foreground="{ThemeResource XtrSecondaryTextBrush}" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                        <ToggleSwitch Grid.Column="1" IsOn="{x:Bind ViewModel.InGameHudOverlayEnabled, Mode=TwoWay}" OnContent="" OffContent="" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
 
                                 <!-- Streamline Spoofing Toggle -->
-                                <Grid ColumnSpacing="12">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Spacing="1">
-                                        <TextBlock Text="ðŸ”“ Streamline RTX 40 Spoofing" FontSize="12.5" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
-                                        <TextBlock Text="Unlocks the native DLSS Frame Generation toggle in game menus on RTX 20/30 cards." FontSize="11" Foreground="{ThemeResource XtrSecondaryTextBrush}" TextWrapping="Wrap" />
-                                    </StackPanel>
-                                    <ToggleSwitch Grid.Column="1" IsOn="{x:Bind ViewModel.StreamlineSpoofingEnabled, Mode=TwoWay}" OnContent="" OffContent="" VerticalAlignment="Center" />
-                                </Grid>
-                                <!-- In-Game Developer Menu Toggle [Insert] -->
-                                <Grid ColumnSpacing="12">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Spacing="1">
-                                        <TextBlock Text="ðŸ› ï¸ Native ImGui Developer Menu [Insert]" FontSize="12.5" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
-                                        <TextBlock Text="Displays the underlying C++ backend developer menu for low-level engine debugging (disabled by default for clean presentation)." FontSize="11" Foreground="{ThemeResource XtrSecondaryTextBrush}" TextWrapping="Wrap" />
-                                    </StackPanel>
-                                    <ToggleSwitch Grid.Column="1" IsOn="{x:Bind ViewModel.InGameDevMenuEnabled, Mode=TwoWay}" OnContent="" OffContent="" VerticalAlignment="Center" />
-                                </Grid>
-                                <Grid Visibility="Collapsed">
-                                </Grid>
+                                <Border Padding="12,10" CornerRadius="12" Background="{ThemeResource XtrElevatedBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1">
+                                    <Grid ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Spacing="2">
+                                            <StackPanel Orientation="Horizontal" Spacing="7">
+                                                <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="&#xE72E;" FontSize="13" Foreground="{ThemeResource XtrAccentBrush}" VerticalAlignment="Center" />
+                                                <TextBlock Text="Streamline RTX 40 Spoofing" FontSize="12.5" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
+                                            </StackPanel>
+                                            <TextBlock Text="Unlocks the native DLSS Frame Generation toggle in game menus on RTX 20/30 cards." FontSize="11" Foreground="{ThemeResource XtrSecondaryTextBrush}" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                        <ToggleSwitch Grid.Column="1" IsOn="{x:Bind ViewModel.StreamlineSpoofingEnabled, Mode=TwoWay}" OnContent="" OffContent="" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
 
-                                <Border Background="{ThemeResource XtrElevatedBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="12,8">
-                                    <StackPanel Spacing="4">
-                                        <TextBlock Text="IN-GAME OVERLAY HOTKEYS" FontSize="10" FontWeight="Bold" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
-                                        <TextBlock Text="• [Insert] key — Open / close in-game OptiScaler settings menu" FontSize="11.5" Foreground="{ThemeResource XtrTextBrush}" />
-                                        <TextBlock Text="• [Page Up] key — Toggle real-time FPS &amp; Frame Generation HUD" FontSize="11.5" Foreground="{ThemeResource XtrTextBrush}" />
-                                        <TextBlock Text="• [End] key — Toggle Frame Generation on / off dynamically" FontSize="11.5" Foreground="{ThemeResource XtrTextBrush}" />
+                                <!-- In-Game Developer Menu Toggle [Insert] -->
+                                <Border Padding="12,10" CornerRadius="12" Background="{ThemeResource XtrElevatedBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1">
+                                    <Grid ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Spacing="2">
+                                            <StackPanel Orientation="Horizontal" Spacing="7">
+                                                <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="&#xE90F;" FontSize="13" Foreground="{ThemeResource XtrAccentBrush}" VerticalAlignment="Center" />
+                                                <TextBlock Text="XTR Engine Developer Menu [Insert]" FontSize="12.5" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
+                                            </StackPanel>
+                                            <TextBlock Text="Displays the underlying backend developer panel for low-level engine diagnostics." FontSize="11" Foreground="{ThemeResource XtrSecondaryTextBrush}" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                        <ToggleSwitch Grid.Column="1" IsOn="{x:Bind ViewModel.InGameDevMenuEnabled, Mode=TwoWay}" OnContent="" OffContent="" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+
+                                <Border Background="{ThemeResource XtrElevatedBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="14,10">
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="IN-GAME OVERLAY HOTKEYS" FontSize="10" FontWeight="Bold" CharacterSpacing="60" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
+                                        <TextBlock Text="[Insert] key - Toggle in-game XTR Engine developer panel" FontSize="11.5" Foreground="{ThemeResource XtrTextBrush}" />
+                                        <TextBlock Text="[Page Up] key - Toggle real-time FPS &amp; Frame Generation HUD" FontSize="11.5" Foreground="{ThemeResource XtrTextBrush}" />
+                                        <TextBlock Text="[End] key - Toggle Frame Generation on / off dynamically" FontSize="11.5" Foreground="{ThemeResource XtrTextBrush}" />
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
@@ -440,7 +466,7 @@
                                         <DropDownButton.Flyout>
                                             <MenuFlyout>
                                                 <MenuFlyoutItem Text="Choose custom package folder..." Command="{x:Bind ViewModel.InstallCustomRuntimeCommand}" />
-                                                <MenuFlyoutItem Text="Direct install bundled OptiScaler" Command="{x:Bind ViewModel.InstallRuntimeCommand}" />
+                                                <MenuFlyoutItem Text="Direct install bundled XTR Engine" Command="{x:Bind ViewModel.InstallRuntimeCommand}" />
                                             </MenuFlyout>
                                         </DropDownButton.Flyout>
                                     </DropDownButton>

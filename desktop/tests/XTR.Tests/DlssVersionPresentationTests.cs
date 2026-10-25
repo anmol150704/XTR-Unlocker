@@ -19,8 +19,8 @@ public sealed class DlssVersionPresentationTests
     {
         var rawVersion = "3.7.10.0";
         Assert.AreEqual("DLSS 3", DlssVersionHelper.FormatGeneration(rawVersion));
-        Assert.AreEqual("DLSS 3 · v3.7.10", DlssVersionHelper.FormatVersionLabel(rawVersion));
-        Assert.AreEqual("DLSS 3 · v3.7.10", DlssVersionHelper.FormatBadge(rawVersion));
+        Assert.AreEqual("DLSS 3 - v3.7.10", DlssVersionHelper.FormatVersionLabel(rawVersion));
+        Assert.AreEqual("DLSS 3 - v3.7.10", DlssVersionHelper.FormatBadge(rawVersion));
     }
 
     [TestMethod]
@@ -28,8 +28,8 @@ public sealed class DlssVersionPresentationTests
     {
         var rawVersion = "2.5.1.0";
         Assert.AreEqual("DLSS 2", DlssVersionHelper.FormatGeneration(rawVersion));
-        Assert.AreEqual("DLSS 2 · v2.5.1", DlssVersionHelper.FormatVersionLabel(rawVersion));
-        Assert.AreEqual("DLSS 2 · v2.5.1", DlssVersionHelper.FormatBadge(rawVersion));
+        Assert.AreEqual("DLSS 2 - v2.5.1", DlssVersionHelper.FormatVersionLabel(rawVersion));
+        Assert.AreEqual("DLSS 2 - v2.5.1", DlssVersionHelper.FormatBadge(rawVersion));
     }
 
     [TestMethod]
@@ -37,8 +37,8 @@ public sealed class DlssVersionPresentationTests
     {
         var rawVersion = "4.0.0.0";
         Assert.AreEqual("DLSS 4", DlssVersionHelper.FormatGeneration(rawVersion));
-        Assert.AreEqual("DLSS 4 · v4.0", DlssVersionHelper.FormatVersionLabel(rawVersion));
-        Assert.AreEqual("DLSS 4 · v4.0", DlssVersionHelper.FormatBadge(rawVersion));
+        Assert.AreEqual("DLSS 4 - v4.0", DlssVersionHelper.FormatVersionLabel(rawVersion));
+        Assert.AreEqual("DLSS 4 - v4.0", DlssVersionHelper.FormatBadge(rawVersion));
     }
 
     [TestMethod]
