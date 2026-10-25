@@ -103,7 +103,7 @@ internal static class RuntimeInstallService
                     }
                 }
 
-                await RuntimeConfigService.ApplyProfileAsync(manifest.InstallRoot, profile, cancellationToken).ConfigureAwait(false);
+                await RuntimeConfigService.ApplyModificationsAsync(manifest.InstallRoot, plan.PlannedConfigModifications, cancellationToken).ConfigureAwait(false);
                 await RuntimeIntegrationProfileStore.SaveAsync(profile, cancellationToken).ConfigureAwait(false);
             }
 

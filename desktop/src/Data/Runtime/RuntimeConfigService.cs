@@ -21,6 +21,40 @@ internal static class RuntimeConfigService
             ["Vulkan"] = "VulkanUpscaler",
         };
 
+    internal static async Task ApplyModificationsAsync(
+        string installRoot,
+        IEnumerable<PlannedConfigEntry> modifications,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(installRoot);
+        ArgumentNullException.ThrowIfNull(modifications);
+
+        var path = Path.Combine(Path.GetFullPath(installRoot), "OptiScaler.ini");
+        if (!File.Exists(path))
+            throw new FileNotFoundException("The installed runtime configuration was not found.", path);
+
+        var content = await File.ReadAllTextAsync(path, Encoding.UTF8, cancellationToken).ConfigureAwait(false);
+        foreach (var mod in modifications)
+        {
+            if (!string.IsNullOrWhiteSpace(mod.Section) && !string.IsNullOrWhiteSpace(mod.Key) && !string.IsNullOrWhiteSpace(mod.Value))
+            {
+                content = ReplaceIniValue(content, mod.Section, mod.Key, mod.Value);
+            }
+        }
+
+        var temporaryPath = path + $".{Guid.NewGuid():N}.xtrtmp";
+        try
+        {
+            await File.WriteAllTextAsync(temporaryPath, content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), cancellationToken).ConfigureAwait(false);
+            File.Move(temporaryPath, path, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+                File.Delete(temporaryPath);
+        }
+    }
+
     internal static async Task ApplyProfileAsync(
         string installRoot,
         RuntimeIntegrationProfile profile,
@@ -53,7 +87,7 @@ internal static class RuntimeConfigService
         try
         {
             await File.WriteAllTextAsync(temporaryPath, content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), cancellationToken).ConfigureAwait(false);
-            File.Replace(temporaryPath, path, null, ignoreMetadataErrors: true);
+            File.Move(temporaryPath, path, overwrite: true);
         }
         finally
         {

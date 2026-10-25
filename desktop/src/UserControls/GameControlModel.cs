@@ -334,6 +334,15 @@ public partial class GameControlModel : ObservableObject
     [RelayCommand]
     Task EnableFrameGenerationAsync() => DeployPresetAsync(RuntimeIntegrationPreset.DlssWithFrameGeneration, "Enable DLSS + Frame Generation");
 
+    [RelayCommand]
+    void RefreshDiagnostics()
+    {
+        OnPropertyChanged(nameof(RuntimeHealthSummaryText));
+        OnPropertyChanged(nameof(PrimaryActionExplanationText));
+        OnPropertyChanged(nameof(FrameGenerationStatusText));
+        OnPropertyChanged(nameof(RuntimeStatusText));
+    }
+
     private async Task DeployPresetAsync(RuntimeIntegrationPreset preset, string dialogTitle)
     {
         if (!gameControlWeakReference.TryGetTarget(out var gameControl))

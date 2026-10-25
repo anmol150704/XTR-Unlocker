@@ -533,6 +533,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <!-- Header & Primary Status -->
@@ -619,8 +620,50 @@
                                 FontSize="13" />
                         </Grid>
 
+                        <!-- Live Detection & In-Game Controls Panel -->
+                        <Border
+                            Grid.Row="3"
+                            Padding="14"
+                            Background="{ThemeResource XtrSurfaceBrush}"
+                            BorderBrush="{ThemeResource XtrStrokeBrush}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}">
+                            <StackPanel Spacing="10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                        <Ellipse Width="8" Height="8" Fill="#107C41" />
+                                        <TextBlock Text="LIVE RUNTIME &amp; FRAME GEN DETECTION" FontSize="11" FontWeight="Bold" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
+                                    </StackPanel>
+                                    <Button
+                                        Grid.Column="1"
+                                        Content="Refresh Detection"
+                                        FontSize="11"
+                                        Height="28"
+                                        Padding="10,0"
+                                        CornerRadius="6"
+                                        Command="{x:Bind ViewModel.RefreshDiagnosticsCommand}" />
+                                </Grid>
+
+                                <TextBlock Text="{x:Bind ViewModel.RuntimeHealthSummaryText, Mode=OneWay}" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" />
+
+                                <Border Background="{ThemeResource XtrElevatedBrush}" CornerRadius="8" Padding="12,8">
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Text="IN-GAME DETECTION &amp; OVERLAY HOTKEYS" FontSize="10" FontWeight="Bold" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                        <TextBlock Text="• [Insert] key — Open / close in-game OptiScaler settings menu" FontSize="11" />
+                                        <TextBlock Text="• [Page Up] key — Toggle real-time FPS &amp; Frame Generation HUD" FontSize="11" />
+                                        <TextBlock Text="• [End] key — Toggle Frame Generation on / off dynamically" FontSize="11" />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
                         <!-- Progressive Disclosure: Advanced Settings -->
-                        <Expander Grid.Row="3" Header="Advanced runtime options" IsExpanded="False" HorizontalAlignment="Stretch">
+                        <Expander Grid.Row="4" Header="Advanced runtime options" IsExpanded="False" HorizontalAlignment="Stretch">
                             <StackPanel Spacing="10" Padding="0,8,0,0">
                                 <TextBlock Text="Proxy selection and custom packages are optional. XTR manages these automatically by default." FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                                 <Grid ColumnSpacing="8">

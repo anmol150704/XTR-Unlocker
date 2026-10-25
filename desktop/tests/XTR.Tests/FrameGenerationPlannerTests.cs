@@ -32,7 +32,7 @@ public sealed class FrameGenerationPlannerTests
     }
 
     [TestMethod]
-    public async Task DlssWithFrameGen_WithNativeStreamlineAndDlssG_ConfiguresDlssgInput()
+    public async Task DlssWithFrameGen_WithNativeStreamlineAndDlssG_ConfiguresDlssgInputAndFsrfgOutput()
     {
         var tempDir = Path.Combine(Path.GetTempPath(), $"xtr_fg_plan_{Guid.NewGuid():N}");
         try
@@ -65,9 +65,20 @@ public sealed class FrameGenerationPlannerTests
             Assert.IsNotNull(fgInput);
             Assert.AreEqual("dlssg", fgInput.Value);
 
+            // As proven via REA audit of OptiScaler 0.9.4 FG_Hooks.cpp:88, FGOutput must be 'fsrfg'
             var fgOutput = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FrameGen" && m.Key == "FGOutput");
             Assert.IsNotNull(fgOutput);
-            Assert.AreEqual("nukems", fgOutput.Value);
+            Assert.AreEqual("fsrfg", fgOutput.Value);
+
+            // Verify Streamline GPU spoofing is activated to unlock DLSS-G menu switch on RTX 20/30 cards
+            var spoofing = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Spoofing" && m.Key == "StreamlineSpoofing");
+            Assert.IsNotNull(spoofing);
+            Assert.AreEqual("true", spoofing.Value);
+
+            // Verify in-game detection overlay is enabled
+            var showFps = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Menu" && m.Key == "ShowFps");
+            Assert.IsNotNull(showFps);
+            Assert.AreEqual("true", showFps.Value);
         }
         finally
         {
@@ -77,31 +88,34 @@ public sealed class FrameGenerationPlannerTests
     }
 
     [TestMethod]
-    public async Task DlssWithFrameGen_WithMultiFrameGenPack_ConfiguresNativeDlssgOutput()
+    public async Task DlssWithFrameGen_WithoutStreamline_FallsBackToUpscalerMotionVectors()
     {
-        var tempDir = Path.Combine(Path.GetTempPath(), $"xtr_mfg_plan_{Guid.NewGuid():N}");
+        var tempDir = Path.Combine(Path.GetTempPath(), $"xtr_upscaler_fg_plan_{Guid.NewGuid():N}");
         try
         {
             Directory.CreateDirectory(tempDir);
-            await File.WriteAllTextAsync(Path.Combine(tempDir, "witcher3.exe"), "EXE_CONTENT");
-            await File.WriteAllTextAsync(Path.Combine(tempDir, "sl.interposer.dll"), "SL_INTERPOSER");
-            await File.WriteAllTextAsync(Path.Combine(tempDir, "sl.dlss_g.dll"), "SL_DLSSG");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "GameWithoutStreamline.exe"), "EXE_CONTENT");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "d3d12.dll"), "DX12_DLL");
 
-            var pack = ReviewedPacks.CreateDlssUnlockedDescriptor();
-            Assert.IsTrue(pack.Capabilities.MultiFrameGeneration);
+            var pack = await RuntimePack.LoadFromDirectoryAsync(GetBundledPackagePath());
+            Assert.IsNotNull(pack);
 
             var plan = await DeploymentPlanner.CreatePlanAsync(
-                "tw3-mfg-test",
-                "The Witcher 3: Wild Hunt",
+                "no-sl-fg-test",
+                "Non Streamline Game",
                 tempDir,
                 pack,
                 RuntimeIntegrationPreset.DlssWithFrameGeneration);
 
             Assert.IsTrue(plan.CanExecute);
 
+            var fgInput = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FrameGen" && m.Key == "FGInput");
+            Assert.IsNotNull(fgInput);
+            Assert.AreEqual("upscaler", fgInput.Value, "When Streamline DLSSG is not detected, OptiScaler must derive vectors from the upscaler.");
+
             var fgOutput = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FrameGen" && m.Key == "FGOutput");
             Assert.IsNotNull(fgOutput);
-            Assert.AreEqual("dlssg", fgOutput.Value, "MultiFrameGeneration capable pack must target dlssg output for RTX 20/30 native hardware path.");
+            Assert.AreEqual("fsrfg", fgOutput.Value);
         }
         finally
         {

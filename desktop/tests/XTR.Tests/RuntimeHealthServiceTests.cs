@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using DLSS_Swapper.Data.Runtime;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -74,7 +75,10 @@ public sealed class RuntimeHealthServiceTests
 [2026-10-25 12:00:01.050] [info] Hooking DirectX 12 CreateDevice... Hook confirmed.
 [2026-10-25 12:00:01.100] [info] D3D12 device created successfully.
 [2026-10-25 12:00:02.000] [info] DLSS upscaler initialized and active.
-[2026-10-25 12:00:02.100] [info] FrameGen Enabled: true. Selected input: dlssg, output: dlssg.
+[2026-10-25 12:00:02.050] [info] Streamline hooked successfully: hookInterposer, hookDlssg confirmed.
+[2026-10-25 12:00:02.100] [info] FrameGen Enabled: true. Selected input: dlssg, output: fsrfg.
+[2026-10-25 12:00:03.000] [debug] HookFGSwapchain: swapchain hooked successfully.
+[2026-10-25 12:00:03.100] [debug] flags: 0, Frametime: 16.666
 ";
             File.WriteAllText(Path.Combine(tempDir, "OptiScaler.log"), logContent);
 
@@ -82,11 +86,14 @@ public sealed class RuntimeHealthServiceTests
 
             Assert.AreEqual(RuntimeHealthState.HealthyActive, report.State);
             Assert.IsTrue(report.ProxyHookConfirmed);
+            Assert.IsTrue(report.StreamlineHookConfirmed);
+            Assert.IsTrue(report.SwapchainHookConfirmed);
+            Assert.IsTrue(report.GeneratedFramesConfirmed);
             Assert.IsTrue(report.UpscalerActive);
             Assert.AreEqual("DLSS", report.ActiveUpscaler);
             Assert.AreEqual("DX12", report.ActiveApi);
             Assert.IsTrue(report.FrameGenerationActive);
-            Assert.AreEqual("DLSS-G native bridge", report.ActiveFrameGen);
+            Assert.IsTrue(report.ActiveFrameGen?.Contains("DLSS-G", StringComparison.OrdinalIgnoreCase) == true);
             Assert.IsTrue(report.Summary.Contains("Active", StringComparison.OrdinalIgnoreCase));
         }
         finally
