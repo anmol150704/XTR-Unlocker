@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <usercontrols:FakeContentDialog
     x:Class="DLSS_Swapper.UserControls.GameControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -193,6 +193,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <!-- Header & Status Pill -->
@@ -202,7 +203,7 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel Spacing="3">
-                                <TextBlock Text="Native DLSS &amp; Frame Generation Engine" FontSize="16" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
+                                <TextBlock Text="Native DLSS &amp; Frame Generation Control Center" FontSize="16" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
                                 <TextBlock Text="{x:Bind ViewModel.PrimaryActionExplanationText, Mode=OneWay}"
                                            FontSize="12"
                                            Foreground="{ThemeResource XtrSecondaryTextBrush}"
@@ -245,13 +246,32 @@
                                         <TextBlock Text="FRAME GENERATION ENGINE" FontSize="10" FontWeight="Bold" CharacterSpacing="60" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
                                     </StackPanel>
                                     <TextBlock Text="{x:Bind ViewModel.FrameGenerationStatusText, Mode=OneWay}" FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource XtrSuccessBrush}" TextTrimming="CharacterEllipsis" />
-                                    <TextBlock Text="FSR 3.1 Swapchain + Streamline DLSS-G" FontSize="11" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
+                                    <TextBlock Text="Native Streamline DLSS-G / FSR 3.1" FontSize="11" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
                                 </StackPanel>
                             </Border>
                         </Grid>
 
-                        <!-- Primary Action Buttons: Enable Frame Generation & DLSS -->
-                        <Grid Grid.Row="2">
+                        <!-- DLSS GENERATION QUICK SELECTOR BAR -->
+                        <Border Grid.Row="2" Padding="14,10" CornerRadius="14" Background="{ThemeResource XtrSurfaceBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="QUICK DLSS GENERATION SWITCHER" FontSize="10" FontWeight="Bold" CharacterSpacing="60" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
+                                <Grid ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Button Grid.Column="0" Content="DLSS 3.7+ (Latest)" Style="{StaticResource XtrPillButtonStyle}" HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.QuickSwapDlss37Command}" ToolTipService.ToolTip="Switch immediately to latest DLSS 3.7+ DLL" />
+                                    <Button Grid.Column="1" Content="DLSS 3.5 (Ray Recon)" Style="{StaticResource XtrPillButtonStyle}" HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.QuickSwapDlss35Command}" ToolTipService.ToolTip="Switch to DLSS 3.5 with Ray Reconstruction support" />
+                                    <Button Grid.Column="2" Content="DLSS 2.5 (Stable)" Style="{StaticResource XtrPillButtonStyle}" HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.QuickSwapDlss25Command}" ToolTipService.ToolTip="Switch to classic pure DLSS 2.5 DLL" />
+                                    <Button Grid.Column="3" Content="More Versions..." Style="{StaticResource XtrPillButtonStyle}" Command="{x:Bind ViewModel.OpenDlssPickerCommand}" ToolTipService.ToolTip="Open complete DLSS library picker" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- DUAL FRAME GENERATION MODES (NATIVE DLSS-G VS UNIVERSAL FSR BRIDGE) -->
+                        <Grid Grid.Row="3" ColumnSpacing="10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
@@ -259,34 +279,34 @@
 
                             <Button
                                 Grid.Column="0"
-                                Margin="0,0,6,0"
-                                Content="⚡ Enable Frame Generation"
+                                Content="âš¡ Native DLSS 3 Hardware FG"
+                                Style="{StaticResource XtrPrimaryButtonStyle}"
+                                Command="{x:Bind ViewModel.EnableNativeDlssGCommand}"
+                                Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToInverseVisibilityConverter}, Mode=OneWay}"
+                                HorizontalAlignment="Stretch"
+                                Height="42"
+                                CornerRadius="18"
+                                FontSize="12.5"
+                                FontWeight="SemiBold"
+                                ToolTipService.ToolTip="Uses pure NVIDIA nvngx_dlssg.dll hardware optical flow acceleration directly without FSR" />
+
+                            <Button
+                                Grid.Column="1"
+                                Content="âœ¦ Universal FG Bridge (FSR 3.1)"
                                 Style="{StaticResource XtrPrimaryButtonStyle}"
                                 Command="{x:Bind ViewModel.EnableFrameGenerationCommand}"
                                 Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToInverseVisibilityConverter}, Mode=OneWay}"
                                 HorizontalAlignment="Stretch"
                                 Height="42"
                                 CornerRadius="18"
-                                FontSize="13.5"
-                                FontWeight="SemiBold" />
-
-                            <Button
-                                Grid.Column="1"
-                                Margin="6,0,0,0"
-                                Content="✦ Enable Latest DLSS"
-                                Style="{StaticResource XtrSecondaryButtonStyle}"
-                                Command="{x:Bind ViewModel.EnableLatestDlssCommand}"
-                                Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToInverseVisibilityConverter}, Mode=OneWay}"
-                                HorizontalAlignment="Stretch"
-                                Height="42"
-                                CornerRadius="18"
-                                FontSize="13.5"
-                                FontWeight="SemiBold" />
+                                FontSize="12.5"
+                                FontWeight="SemiBold"
+                                ToolTipService.ToolTip="Translates DLSS-G calls to FSR 3.1 swapchain with Anti-Ghosting shield for RTX 20/30/AMD/Intel" />
 
                             <Button
                                 Grid.Column="0"
                                 Grid.ColumnSpan="2"
-                                Content="↺ Restore original game files"
+                                Content="â†º Restore original game files"
                                 Style="{StaticResource XtrSecondaryButtonStyle}"
                                 Command="{x:Bind ViewModel.RestoreRuntimeCommand}"
                                 Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
@@ -296,9 +316,9 @@
                                 FontSize="13.5" />
                         </Grid>
 
-                        <!-- Live Detection & In-Game Controls Panel -->
+                        <!-- ANTI-GHOSTING SHIELD & LIVE ENGINE CONTROLS -->
                         <Border
-                            Grid.Row="3"
+                            Grid.Row="4"
                             Padding="14"
                             Background="{ThemeResource XtrSurfaceBrush}"
                             BorderBrush="{ThemeResource XtrGlassBorderBrush}"
@@ -313,7 +333,7 @@
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                         <Ellipse Width="8" Height="8" Fill="{ThemeResource XtrSuccessBrush}" />
-                                        <TextBlock Text="LIVE RUNTIME &amp; FRAME GEN DETECTION" FontSize="11" FontWeight="Bold" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
+                                        <TextBlock Text="ANTI-GHOSTING SHIELD &amp; LIVE DETECTION" FontSize="11" FontWeight="Bold" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
                                     </StackPanel>
                                     <Button
                                         Grid.Column="1"
@@ -327,9 +347,48 @@
 
                                 <TextBlock Text="{x:Bind ViewModel.RuntimeHealthSummaryText, Mode=OneWay}" FontSize="12.5" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" TextWrapping="Wrap" />
 
+                                <!-- Anti-Ghosting Toggle -->
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Spacing="1">
+                                        <TextBlock Text="ðŸ›¡ï¸ Anti-Ghosting Shield (HUD Separation &amp; Buffer Cloning)" FontSize="12.5" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
+                                        <TextBlock Text="Eliminates HUD smearing, subtitle ghosting, and double-image edge trails." FontSize="11" Foreground="{ThemeResource XtrSecondaryTextBrush}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                    <ToggleSwitch Grid.Column="1" IsOn="{x:Bind ViewModel.AntiGhostingShieldEnabled, Mode=TwoWay}" OnContent="" OffContent="" VerticalAlignment="Center" />
+                                </Grid>
+
+                                <!-- In-Game HUD Overlay Toggle -->
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Spacing="1">
+                                        <TextBlock Text="ðŸ“Š In-Game FPS &amp; Frame Gen Overlay [Page Up]" FontSize="12.5" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
+                                        <TextBlock Text="Shows real-time frame rates and generated frame interpolation delta." FontSize="11" Foreground="{ThemeResource XtrSecondaryTextBrush}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                    <ToggleSwitch Grid.Column="1" IsOn="{x:Bind ViewModel.InGameHudOverlayEnabled, Mode=TwoWay}" OnContent="" OffContent="" VerticalAlignment="Center" />
+                                </Grid>
+
+                                <!-- Streamline Spoofing Toggle -->
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Spacing="1">
+                                        <TextBlock Text="ðŸ”“ Streamline RTX 40 Spoofing" FontSize="12.5" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
+                                        <TextBlock Text="Unlocks the native DLSS Frame Generation toggle in game menus on RTX 20/30 cards." FontSize="11" Foreground="{ThemeResource XtrSecondaryTextBrush}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                    <ToggleSwitch Grid.Column="1" IsOn="{x:Bind ViewModel.StreamlineSpoofingEnabled, Mode=TwoWay}" OnContent="" OffContent="" VerticalAlignment="Center" />
+                                </Grid>
+
                                 <Border Background="{ThemeResource XtrElevatedBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="12,8">
                                     <StackPanel Spacing="4">
-                                        <TextBlock Text="IN-GAME DETECTION &amp; OVERLAY HOTKEYS" FontSize="10" FontWeight="Bold" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
+                                        <TextBlock Text="IN-GAME OVERLAY HOTKEYS" FontSize="10" FontWeight="Bold" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
                                         <TextBlock Text="• [Insert] key — Open / close in-game OptiScaler settings menu" FontSize="11.5" Foreground="{ThemeResource XtrTextBrush}" />
                                         <TextBlock Text="• [Page Up] key — Toggle real-time FPS &amp; Frame Generation HUD" FontSize="11.5" Foreground="{ThemeResource XtrTextBrush}" />
                                         <TextBlock Text="• [End] key — Toggle Frame Generation on / off dynamically" FontSize="11.5" Foreground="{ThemeResource XtrTextBrush}" />
@@ -339,7 +398,7 @@
                         </Border>
 
                         <!-- Progressive Disclosure: Advanced Settings -->
-                        <Expander Grid.Row="4" Header="Advanced runtime options" IsExpanded="False" HorizontalAlignment="Stretch" CornerRadius="12">
+                        <Expander Grid.Row="5" Header="Advanced runtime options" IsExpanded="False" HorizontalAlignment="Stretch" CornerRadius="12">
                             <StackPanel Spacing="10" Padding="0,8,0,0">
                                 <TextBlock Text="Proxy selection and custom packages are optional. XTR manages these automatically by default." FontSize="11" Foreground="{ThemeResource XtrSecondaryTextBrush}" TextWrapping="Wrap" />
                                 <Grid ColumnSpacing="8">

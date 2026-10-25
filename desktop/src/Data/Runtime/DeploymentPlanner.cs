@@ -12,6 +12,7 @@ public enum RuntimeIntegrationPreset
 {
     LatestDlssOnly,
     DlssWithFrameGeneration,
+    NativeDlssG,
     Performance,
     Quality,
     RestoreOriginal
@@ -253,6 +254,152 @@ public static class DeploymentPlanner
                     Reason = "Renders real-time in-game detection overlay with frame generation status."
                 });
 
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "Menu",
+                    Key = "FpsOverlayType",
+                    Value = "2",
+                    Reason = "Detailed HUD displaying FPS, active upscaler, and generated frame delta."
+                });
+
+                // Anti-Ghosting Shield: HUD isolation, immutable buffer cloning & transparency masks
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "OptiFG",
+                    Key = "HUDFix",
+                    Value = "true",
+                    Reason = "Prevents HUD smearing, crosshair ghosting, and subtitle flicker."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "OptiFG",
+                    Key = "HUDFixExtended",
+                    Value = "true",
+                    Reason = "Extended HUD separation for complex post-processing game UIs."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "OptiFG",
+                    Key = "MakeDepthCopy",
+                    Value = "true",
+                    Reason = "Creates depth buffer clone to avoid race conditions with DX12 presentation."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "OptiFG",
+                    Key = "MakeMVCopy",
+                    Value = "true",
+                    Reason = "Clones motion vectors before overwriting, eliminating edge ghost trails."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "FSRFGInputs",
+                    Key = "UseReactiveMaskForTransparency",
+                    Value = "true",
+                    Reason = "Enables reactive transparency masks to eliminate character disocclusion trails."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "FSRFGInputs",
+                    Key = "DlssReactiveMaskBias",
+                    Value = "0.45",
+                    Reason = "Optimal reactive bias balancing edge sharpness and ghost prevention."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "FrameGen",
+                    Key = "ForceBorderless",
+                    Value = "true",
+                    Reason = "Eliminates presentation stutter and tearing under frame interpolation."
+                });
+                break;
+
+            case RuntimeIntegrationPreset.NativeDlssG:
+                plan.Headline = "Enable Native DLSS 3 Hardware Frame Generation";
+                plan.Summary = "Routes frame generation directly through NVIDIA Ada Lovelace hardware optical flow acceleration (requires RTX 40 series).";
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "Upscalers",
+                    Key = api switch
+                    {
+                        "DX11" => "Dx11Upscaler",
+                        "DX12" => "Dx12Upscaler",
+                        "Vulkan" => "VulkanUpscaler",
+                        _ => "Dx12Upscaler"
+                    },
+                    Value = "dlss",
+                    Reason = "Directs OptiScaler to utilize NVIDIA native DLSS upscaling."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "FrameGen",
+                    Key = "Enabled",
+                    Value = "true",
+                    Reason = "Activates the frame-generation pipeline."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "FrameGen",
+                    Key = "FGInput",
+                    Value = "dlssg",
+                    Reason = "Intercepts native Streamline DLSS-G motion vectors, depth, and hudless buffers."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "FrameGen",
+                    Key = "FGOutput",
+                    Value = "dlssg",
+                    Reason = "Routes frame generation directly to native NVIDIA Optical Flow Accelerator hardware."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "Spoofing",
+                    Key = "StreamlineSpoofing",
+                    Value = "true",
+                    Reason = "Ensures the game unlocks native DLSS Frame Generation toggles."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "OptiFG",
+                    Key = "HUDFix",
+                    Value = "true",
+                    Reason = "Prevents HUD smearing and text ghosting."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "OptiFG",
+                    Key = "HUDFixExtended",
+                    Value = "true",
+                    Reason = "Extended HUD separation for complex UI elements."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "OptiFG",
+                    Key = "MakeDepthCopy",
+                    Value = "true",
+                    Reason = "Eliminates depth ghosting during rapid motion."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "OptiFG",
+                    Key = "MakeMVCopy",
+                    Value = "true",
+                    Reason = "Eliminates motion vector ghosting and edge trails."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "Menu",
+                    Key = "OverlayMenu",
+                    Value = "true",
+                    Reason = "Enables OptiScaler in-game overlay and frame interpolation swapchain support."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "Menu",
+                    Key = "ShowFps",
+                    Value = "true",
+                    Reason = "Renders real-time in-game detection overlay with frame generation status."
+                });
                 plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                 {
                     Section = "Menu",

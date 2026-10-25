@@ -81,14 +81,39 @@ public partial class GameControlModel : ObservableObject
 
     [ObservableProperty]
     public partial string SelectedRuntimeProxy { get; set; } = "dxgi.dll";
+    [ObservableProperty]
+    public partial bool AntiGhostingShieldEnabled { get; set; } = true;
+
+    partial void OnAntiGhostingShieldEnabledChanged(bool value)
+    {
+        ApplyAntiGhostingSetting(value);
+    }
+
+    [ObservableProperty]
+    public partial bool InGameHudOverlayEnabled { get; set; } = false;
+
+    partial void OnInGameHudOverlayEnabledChanged(bool value)
+    {
+        ApplyHudOverlaySetting(value);
+    }
+
+    [ObservableProperty]
+    public partial bool StreamlineSpoofingEnabled { get; set; } = true;
+
+    partial void OnStreamlineSpoofingEnabledChanged(bool value)
+    {
+        ApplyStreamlineSpoofingSetting(value);
+    }
 
     public string RuntimeComponentsText => Game.RuntimeManifest?.Components is { Count: > 0 } components
-        ? string.Join(" · ", components)
+        ? string.Join(" � ", components)
         : "Engine components not recorded";
 
     public string RuntimeStatusText => Game.RuntimeManifest is not null
         ? "Restore available"
         : "Ready";
+
+    public string DlssEngineSummaryText => $"Game engine using {Game.DlssGenerationText}";
 
     public string FrameGenerationStatusText => Game.CurrentDLSS_G is not null
         ? "Native DLSS-G detected"
@@ -333,6 +358,127 @@ public partial class GameControlModel : ObservableObject
 
     [RelayCommand]
     Task EnableFrameGenerationAsync() => DeployPresetAsync(RuntimeIntegrationPreset.DlssWithFrameGeneration, "Enable DLSS + Frame Generation");
+    [RelayCommand]
+    Task EnableNativeDlssGAsync() => DeployPresetAsync(RuntimeIntegrationPreset.NativeDlssG, "Enable Native DLSS 3 Hardware Frame Generation");
+
+    [RelayCommand]
+    Task QuickSwapDlss37Async() => QuickSwapDlssCoreAsync("3.7");
+
+    [RelayCommand]
+    Task QuickSwapDlss35Async() => QuickSwapDlssCoreAsync("3.5");
+
+    [RelayCommand]
+    Task QuickSwapDlss25Async() => QuickSwapDlssCoreAsync("2.5");
+
+    [RelayCommand]
+    Task OpenDlssPickerAsync() => ChangeRecordAsync(GameAssetType.DLSS);
+
+    private async Task QuickSwapDlssCoreAsync(string targetPrefix)
+    {
+        try
+        {
+            var match = DLLManager.Instance.DLSSRecords
+                .Where(r => r.Version.StartsWith(targetPrefix) && r.LocalRecord?.IsDownloaded == true)
+                .OrderByDescending(r => r.VersionNumber)
+                .FirstOrDefault();
+
+            if (match is not null)
+            {
+                var updateResult = await Game.UpdateDllAsync(match);
+                if (updateResult.Success)
+                {
+                    OnPropertyChanged(nameof(RuntimeHealthSummaryText));
+                    OnPropertyChanged(nameof(PrimaryActionExplanationText));
+                    await ShowRuntimeDialogAsync("DLSS Swapped", $"Swapped game to DLSS {match.Version} successfully.");
+                    return;
+                }
+            }
+
+            await ChangeRecordAsync(GameAssetType.DLSS);
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex, "Failed to quick swap DLSS to {Target}", targetPrefix);
+        }
+    }
+
+    private void ApplyAntiGhostingSetting(bool enabled)
+    {
+        string val = enabled ? "true" : "false";
+        UpdateOptiScalerConfigSetting("HUDFix", val);
+        UpdateOptiScalerConfigSetting("HUDFixExtended", val);
+        UpdateOptiScalerConfigSetting("MakeDepthCopy", val);
+        UpdateOptiScalerConfigSetting("MakeMVCopy", val);
+        UpdateOptiScalerConfigSetting("UseReactiveMaskForTransparency", val);
+        if (enabled)
+        {
+            UpdateOptiScalerConfigSetting("DisableHUDFix", "false");
+            UpdateOptiScalerConfigSetting("DlssReactiveMaskBias", "0.45");
+            UpdateOptiScalerConfigSetting("ReactiveScale", "1.1");
+        }
+    }
+
+    private void ApplyHudOverlaySetting(bool enabled)
+    {
+        UpdateOptiScalerConfigSetting("ShowFps", enabled ? "true" : "false");
+        if (enabled)
+        {
+            UpdateOptiScalerConfigSetting("FpsOverlayType", "2");
+            UpdateOptiScalerConfigSetting("OverlayMenu", "true");
+        }
+    }
+
+    private void ApplyStreamlineSpoofingSetting(bool enabled)
+    {
+        UpdateOptiScalerConfigSetting("StreamlineSpoofing", enabled ? "true" : "false");
+    }
+
+    private string? GetDeployedIniPath()
+    {
+        if (Game.RuntimeManifest?.InstallRoot is { } root && Directory.Exists(root))
+        {
+            var p = Path.Combine(root, "OptiScaler.ini");
+            if (File.Exists(p)) return p;
+        }
+        if (!string.IsNullOrEmpty(Game.InstallPath) && Directory.Exists(Game.InstallPath))
+        {
+            var p = Path.Combine(Game.InstallPath, "OptiScaler.ini");
+            if (File.Exists(p)) return p;
+        }
+        return null;
+    }
+
+    private void UpdateOptiScalerConfigSetting(string key, string value)
+    {
+        try
+        {
+            var iniPath = GetDeployedIniPath();
+            if (iniPath is null || !File.Exists(iniPath)) return;
+
+            var lines = File.ReadAllLines(iniPath).ToList();
+            bool updated = false;
+            for (int i = 0; i < lines.Count; i++)
+            {
+                var trimmed = lines[i].TrimStart();
+                if (trimmed.StartsWith(key + "=", StringComparison.OrdinalIgnoreCase) ||
+                    trimmed.StartsWith(key + " =", StringComparison.OrdinalIgnoreCase))
+                {
+                    lines[i] = $"{key}={value}";
+                    updated = true;
+                    break;
+                }
+            }
+            if (!updated)
+            {
+                lines.Add($"{key}={value}");
+            }
+            File.WriteAllLines(iniPath, lines);
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex, "Failed to write OptiScaler setting {Key}", key);
+        }
+    }
 
     [RelayCommand]
     void RefreshDiagnostics()
@@ -394,7 +540,7 @@ public partial class GameControlModel : ObservableObject
             BorderThickness = new Thickness(1),
             Child = new TextBlock
             {
-                Text = $"Preflight: {plan.PreflightResult.Headline} · {plan.PlannedCopies.Count} files to deploy · {plan.PlannedBackups.Count} backups planned\nProxy: {plan.SelectedProxy} ({plan.PreflightResult.DetectedApi})",
+                Text = $"Preflight: {plan.PreflightResult.Headline} � {plan.PlannedCopies.Count} files to deploy � {plan.PlannedBackups.Count} backups planned\nProxy: {plan.SelectedProxy} ({plan.PreflightResult.DetectedApi})",
                 FontSize = 12,
                 Foreground = (Microsoft.UI.Xaml.Media.Brush)App.CurrentApp.Resources["XtrSecondaryTextBrush"],
                 TextWrapping = TextWrapping.Wrap
@@ -408,7 +554,7 @@ public partial class GameControlModel : ObservableObject
             HorizontalAlignment = HorizontalAlignment.Stretch,
             Content = new TextBlock
             {
-                Text = string.Join(Environment.NewLine, plan.PlannedCopies.Select(c => $"• {c.RelativePath}{(c.RequiresBackup ? " (backs up original)" : "")}")),
+                Text = string.Join(Environment.NewLine, plan.PlannedCopies.Select(c => $"� {c.RelativePath}{(c.RequiresBackup ? " (backs up original)" : "")}")),
                 FontSize = 11,
                 Foreground = (Microsoft.UI.Xaml.Media.Brush)App.CurrentApp.Resources["XtrSecondaryTextBrush"],
                 TextWrapping = TextWrapping.Wrap

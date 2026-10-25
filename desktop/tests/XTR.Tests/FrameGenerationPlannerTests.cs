@@ -123,4 +123,98 @@ public sealed class FrameGenerationPlannerTests
                 Directory.Delete(tempDir, recursive: true);
         }
     }
+
+    [TestMethod]
+    public async Task DlssWithFrameGen_AppliesAntiGhostingShieldSettings()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"xtr_antighost_plan_{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(tempDir);
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "Game.exe"), "EXE_CONTENT");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "d3d12.dll"), "DX12_DLL");
+
+            var pack = await RuntimePack.LoadFromDirectoryAsync(GetBundledPackagePath());
+            Assert.IsNotNull(pack);
+
+            var plan = await DeploymentPlanner.CreatePlanAsync(
+                "antighost-test",
+                "Ghosting Test Game",
+                tempDir,
+                pack,
+                RuntimeIntegrationPreset.DlssWithFrameGeneration);
+
+            Assert.IsTrue(plan.CanExecute);
+
+            // Verify Anti-Ghosting HUD fix and buffer duplication entries
+            var hudFix = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "OptiFG" && m.Key == "HUDFix");
+            Assert.IsNotNull(hudFix);
+            Assert.AreEqual("true", hudFix.Value);
+
+            var depthCopy = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "OptiFG" && m.Key == "MakeDepthCopy");
+            Assert.IsNotNull(depthCopy);
+            Assert.AreEqual("true", depthCopy.Value);
+
+            var mvCopy = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "OptiFG" && m.Key == "MakeMVCopy");
+            Assert.IsNotNull(mvCopy);
+            Assert.AreEqual("true", mvCopy.Value);
+
+            var transparency = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FSRFGInputs" && m.Key == "UseReactiveMaskForTransparency");
+            Assert.IsNotNull(transparency);
+            Assert.AreEqual("true", transparency.Value);
+
+            var borderless = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FrameGen" && m.Key == "ForceBorderless");
+            Assert.IsNotNull(borderless);
+            Assert.AreEqual("true", borderless.Value);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task NativeDlssG_ConfiguresDirectDlssgOutputAndHardwarePipeline()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"xtr_native_dlssg_plan_{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(tempDir);
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "Cyberpunk2077.exe"), "EXE_CONTENT");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "d3d12.dll"), "DX12_DLL");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "sl.dlss_g.dll"), "SL_DLSSG");
+
+            var pack = await RuntimePack.LoadFromDirectoryAsync(GetBundledPackagePath());
+            Assert.IsNotNull(pack);
+
+            var plan = await DeploymentPlanner.CreatePlanAsync(
+                "cp2077-native-fg-test",
+                "Cyberpunk 2077 Native FG",
+                tempDir,
+                pack,
+                RuntimeIntegrationPreset.NativeDlssG);
+
+            Assert.IsTrue(plan.CanExecute);
+            Assert.AreEqual("Enable Native DLSS 3 Hardware Frame Generation", plan.Headline);
+
+            // Native DLSS-G directly outputs dlssg to optical flow hardware
+            var fgOutput = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FrameGen" && m.Key == "FGOutput");
+            Assert.IsNotNull(fgOutput);
+            Assert.AreEqual("dlssg", fgOutput.Value);
+
+            var upscaler = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Upscalers" && m.Key == "Dx12Upscaler");
+            Assert.IsNotNull(upscaler);
+            Assert.AreEqual("dlss", upscaler.Value);
+
+            var fgInput = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FrameGen" && m.Key == "FGInput");
+            Assert.IsNotNull(fgInput);
+            Assert.AreEqual("dlssg", fgInput.Value);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, recursive: true);
+        }
+    }
 }
