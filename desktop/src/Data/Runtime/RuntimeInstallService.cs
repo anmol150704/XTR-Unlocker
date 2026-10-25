@@ -78,6 +78,7 @@ internal static class RuntimeInstallService
                     RuntimeId = manifest.RuntimeId,
                     RuntimeVersion = manifest.RuntimeVersion,
                     ProxyFileName = manifest.ProxyFileName ?? plan.SelectedProxy,
+                    Api = plan.PreflightResult.DetectedApi,
                     SupportState = plan.Pack.IsTrusted ? "supported" : "experimental",
                     SupportReason = plan.Summary
                 };
@@ -87,6 +88,10 @@ internal static class RuntimeInstallService
                     if (mod.Section.Equals("Upscalers", StringComparison.OrdinalIgnoreCase))
                     {
                         profile.SelectedUpscaler = mod.Value;
+                    }
+                    else if (mod.Section.Equals("FrameGen", StringComparison.OrdinalIgnoreCase) && mod.Key.Equals("Enabled", StringComparison.OrdinalIgnoreCase))
+                    {
+                        profile.FrameGenerationEnabled = mod.Value;
                     }
                     else if (mod.Section.Equals("FrameGen", StringComparison.OrdinalIgnoreCase) && mod.Key.Equals("FGInput", StringComparison.OrdinalIgnoreCase))
                     {

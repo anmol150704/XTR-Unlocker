@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+ï»¿<?xml version="1.0" encoding="utf-8"?>
 <usercontrols:FakeContentDialog
     x:Class="DLSS_Swapper.UserControls.GameControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -574,9 +574,16 @@
                             </Border>
                         </Grid>
 
-                        <!-- Primary Action Button -->
+                        <!-- Primary Action Buttons -->
                         <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            
                             <Button
+                                Grid.Column="0"
+                                Margin="0,0,6,0"
                                 Content="Enable latest DLSS"
                                 Style="{StaticResource XtrPrimaryButtonStyle}"
                                 Command="{x:Bind ViewModel.EnableLatestDlssCommand}"
@@ -587,6 +594,21 @@
                                 FontSize="13"
                                 FontWeight="SemiBold" />
                             <Button
+                                Grid.Column="1"
+                                Margin="6,0,0,0"
+                                Content="Enable Frame Generation"
+                                Style="{StaticResource XtrSecondaryButtonStyle}"
+                                Command="{x:Bind ViewModel.EnableFrameGenerationCommand}"
+                                Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToInverseVisibilityConverter}, Mode=OneWay}"
+                                HorizontalAlignment="Stretch"
+                                Height="40"
+                                CornerRadius="10"
+                                FontSize="13"
+                                FontWeight="SemiBold" />
+
+                            <Button
+                                Grid.Column="0"
+                                Grid.ColumnSpan="2"
                                 Content="Restore original game files"
                                 Style="{StaticResource XtrSecondaryButtonStyle}"
                                 Command="{x:Bind ViewModel.RestoreRuntimeCommand}"
@@ -619,11 +641,11 @@
                                         Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}" />
                                     <DropDownButton
                                         Grid.Column="1"
-                                        Content="Custom package…"
+                                        Content="Custom packageï¿½"
                                         Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToInverseVisibilityConverter}, Mode=OneWay}">
                                         <DropDownButton.Flyout>
                                             <MenuFlyout>
-                                                <MenuFlyoutItem Text="Choose custom package folder…" Command="{x:Bind ViewModel.InstallCustomRuntimeCommand}" />
+                                                <MenuFlyoutItem Text="Choose custom package folderï¿½" Command="{x:Bind ViewModel.InstallCustomRuntimeCommand}" />
                                                 <MenuFlyoutItem Text="Direct install bundled OptiScaler" Command="{x:Bind ViewModel.InstallRuntimeCommand}" />
                                             </MenuFlyout>
                                         </DropDownButton.Flyout>

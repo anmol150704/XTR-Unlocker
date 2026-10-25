@@ -1,4 +1,4 @@
-name: Windows build
+﻿name: Windows build
 
 on:
   push:
@@ -14,8 +14,6 @@ jobs:
     runs-on: windows-2025
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
       - uses: microsoft/setup-msbuild@v2
       - uses: actions/setup-dotnet@v4
         with:
@@ -23,6 +21,9 @@ jobs:
       - name: Build XTR and bundle OptiScaler
         shell: pwsh
         run: .\scripts\build-windows.ps1 -Configuration Release
+      - name: Run automated test suite
+        shell: pwsh
+        run: dotnet test desktop/tests/XTR.Tests/XTR.Tests.csproj --configuration Release --no-build --verbosity normal
       - name: Upload Windows app build
         uses: actions/upload-artifact@v4
         with:

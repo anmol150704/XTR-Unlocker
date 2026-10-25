@@ -1,6 +1,7 @@
-param(
+﻿param(
     [ValidateSet("Release", "Release_Portable")]
-    [string]$Configuration = "Release"
+    [string]$Configuration = "Release",
+    [switch]$SkipTests
 )
 
 $ErrorActionPreference = "Stop"
@@ -15,6 +16,17 @@ if ($null -eq $dotnetCommand) {
 & dotnet build $desktopSolution --configuration $Configuration
 if ($LASTEXITCODE -ne 0) {
     throw "The XTR desktop build failed."
+}
+
+if (-not $SkipTests) {
+    $testsProject = Join-Path $repoRoot "desktop/tests/XTR.Tests/XTR.Tests.csproj"
+    if (Test-Path $testsProject) {
+        Write-Host "Running automated test suite..."
+        & dotnet test $testsProject --configuration $Configuration --no-build
+        if ($LASTEXITCODE -ne 0) {
+            throw "The XTR automated test suite failed."
+        }
+    }
 }
 
 $framework = "net10.0-windows10.0.26100.0"

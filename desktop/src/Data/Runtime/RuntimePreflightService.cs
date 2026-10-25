@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -75,6 +75,7 @@ public static class RuntimePreflightService
         string gameRoot,
         RuntimePack pack,
         string proxyName = "dxgi.dll",
+        string? gameTitle = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(gameId);
@@ -86,6 +87,39 @@ public static class RuntimePreflightService
             GameId = gameId,
             GameRoot = gameRoot
         };
+
+        var compat = CompatibilityDatabase.LookupGame(gameTitle ?? gameId);
+        if (compat is not null)
+        {
+            if (compat.Level == CompatibilityLevel.MultiplayerBlocked)
+            {
+                result.HasAntiCheatRisk = true;
+                result.Status = PreflightStatus.Blocked;
+                result.CanProceed = false;
+                result.Headline = "Online multiplayer protected title";
+                result.Explanation = compat.Notes;
+                result.Checks.Add(new PreflightCheckItem
+                {
+                    Category = "Anti-Cheat & Multiplayer",
+                    Name = "Compatibility policy",
+                    Severity = CheckItemSeverity.Failed,
+                    Message = "Automated deployment blocked for account safety",
+                    Details = compat.Notes
+                });
+                return result;
+            }
+            else if (compat.Level == CompatibilityLevel.VerifiedCompatible)
+            {
+                result.Checks.Add(new PreflightCheckItem
+                {
+                    Category = "Compatibility Record",
+                    Name = "Verified game profile",
+                    Severity = CheckItemSeverity.Passed,
+                    Message = "Officially verified compatibility record",
+                    Details = compat.Notes
+                });
+            }
+        }
 
         // 1. Check game folder existence & executable detection
         if (!Directory.Exists(gameRoot))

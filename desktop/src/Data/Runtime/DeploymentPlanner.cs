@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -74,7 +74,7 @@ public static class DeploymentPlanner
         ArgumentNullException.ThrowIfNull(pack);
 
         var proxy = proxyOverride ?? pack.RecommendedProxy ?? "dxgi.dll";
-        var preflight = await RuntimePreflightService.RunPreflightAsync(gameId, gameRoot, pack, proxy, cancellationToken).ConfigureAwait(false);
+        var preflight = await RuntimePreflightService.RunPreflightAsync(gameId, gameRoot, pack, proxy, gameTitle, cancellationToken).ConfigureAwait(false);
 
         var plan = new DeploymentPlan
         {
@@ -177,27 +177,54 @@ public static class DeploymentPlanner
 
             case RuntimeIntegrationPreset.DlssWithFrameGeneration:
                 plan.Headline = "Enable DLSS + Frame Generation";
-                plan.Summary = $"Configures {pack.DisplayName} with frame generation bridge on {api}.";
+                plan.Summary = $"Configures {pack.DisplayName} with DLSS upscaling and compatible frame generation on {api}.";
                 plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                 {
                     Section = "Upscalers",
-                    Key = api == "DX11" ? "Dx11Upscaler" : "Dx12Upscaler",
+                    Key = api switch
+                    {
+                        "DX11" => "Dx11Upscaler",
+                        "DX12" => "Dx12Upscaler",
+                        "Vulkan" => "VulkanUpscaler",
+                        _ => "Dx12Upscaler"
+                    },
                     Value = "auto",
-                    Reason = "Automatic upscaler selection."
+                    Reason = "Automatic DLSS / provider upscaler selection."
                 });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "FrameGen",
+                    Key = "Enabled",
+                    Value = "true",
+                    Reason = "Activates the frame-generation pipeline."
+                });
+
+                var fgInput = (preflight.NativeDlssGDetected || preflight.StreamlineDetected)
+                    ? "dlssg"
+                    : "auto";
+
                 plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                 {
                     Section = "FrameGen",
                     Key = "FGInput",
-                    Value = "auto",
-                    Reason = "Intercepts native frame-generation inputs."
+                    Value = fgInput,
+                    Reason = fgInput == "dlssg"
+                        ? "Intercepts native DLSS frame-generation calls from the game engine."
+                        : "Automatic frame-generation input detection."
                 });
+
+                var fgOutput = pack.Capabilities.MultiFrameGeneration
+                    ? "dlssg"
+                    : "nukems";
+
                 plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                 {
                     Section = "FrameGen",
                     Key = "FGOutput",
-                    Value = "auto",
-                    Reason = "Routes generated frames through the compatible bridge."
+                    Value = fgOutput,
+                    Reason = pack.Capabilities.MultiFrameGeneration
+                        ? "Routes frame generation through native RTX 20/30/40 hardware pipeline."
+                        : "Routes frame generation through the verified high-performance bridge."
                 });
                 break;
 

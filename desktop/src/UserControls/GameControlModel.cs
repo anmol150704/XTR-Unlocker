@@ -100,8 +100,20 @@ public partial class GameControlModel : ObservableObject
         ? "Restore original files"
         : "Enable latest DLSS";
 
+    public string RuntimeHealthSummaryText
+    {
+        get
+        {
+            if (Game.RuntimeManifest is null)
+                return "Ready for deployment";
+
+            var health = RuntimeHealthService.CheckHealth(Game.RuntimeManifest.InstallRoot, Game.RuntimeManifest.ProxyFileName ?? SelectedRuntimeProxy);
+            return health.Summary;
+        }
+    }
+
     public string PrimaryActionExplanationText => Game.RuntimeManifest is not null
-        ? "Revert game folder to its original verified state before runtime installation."
+        ? RuntimeHealthSummaryText
         : "Installs the latest compatible DLSS runtime and verified configuration.";
 
     public GameControlModel(GameControl gameControl, Game game) : base()
@@ -317,7 +329,12 @@ public partial class GameControlModel : ObservableObject
     }
 
     [RelayCommand]
-    async Task EnableLatestDlssAsync()
+    Task EnableLatestDlssAsync() => DeployPresetAsync(RuntimeIntegrationPreset.LatestDlssOnly, "Enable latest DLSS");
+
+    [RelayCommand]
+    Task EnableFrameGenerationAsync() => DeployPresetAsync(RuntimeIntegrationPreset.DlssWithFrameGeneration, "Enable DLSS + Frame Generation");
+
+    private async Task DeployPresetAsync(RuntimeIntegrationPreset preset, string dialogTitle)
     {
         if (!gameControlWeakReference.TryGetTarget(out var gameControl))
             return;
@@ -341,7 +358,7 @@ public partial class GameControlModel : ObservableObject
             Game.Title,
             Game.InstallPath,
             pack,
-            RuntimeIntegrationPreset.LatestDlssOnly,
+            preset,
             SelectedRuntimeProxy);
 
         if (!plan.CanExecute)
@@ -392,7 +409,7 @@ public partial class GameControlModel : ObservableObject
 
         var dialog = new EasyContentDialog(gameControl.XamlRoot)
         {
-            Title = "Enable latest DLSS",
+            Title = dialogTitle,
             PrimaryButtonText = "Install runtime",
             CloseButtonText = "Cancel",
             DefaultButton = ContentDialogButton.Primary,
@@ -417,7 +434,6 @@ public partial class GameControlModel : ObservableObject
             await ShowRuntimeDialogAsync("Install failed", ex.Message);
         }
     }
-
     [RelayCommand]
     async Task InstallRuntimeAsync()
     {

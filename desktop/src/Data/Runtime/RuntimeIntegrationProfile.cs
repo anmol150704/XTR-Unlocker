@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Security.Cryptography;
@@ -25,6 +25,7 @@ public sealed class RuntimeIntegrationProfile
     public string ProxyFileName { get; set; } = string.Empty;
     public string Api { get; set; } = string.Empty;
     public string SelectedUpscaler { get; set; } = "auto";
+    public string FrameGenerationEnabled { get; set; } = "auto";
     public string FrameGenerationInput { get; set; } = "auto";
     public string FrameGenerationOutput { get; set; } = "auto";
     public string SupportState { get; set; } = "experimental";

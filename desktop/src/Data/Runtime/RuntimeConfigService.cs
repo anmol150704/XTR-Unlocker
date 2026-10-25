@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -41,6 +41,9 @@ internal static class RuntimeConfigService
             content = ReplaceIniValue(content, "Upscalers", upscalerKey, profile.SelectedUpscaler);
         }
 
+        if (!string.IsNullOrWhiteSpace(profile.FrameGenerationEnabled))
+            content = ReplaceIniValue(content, "FrameGen", "Enabled", profile.FrameGenerationEnabled);
+
         if (!string.IsNullOrWhiteSpace(profile.FrameGenerationInput))
             content = ReplaceIniValue(content, "FrameGen", "FGInput", profile.FrameGenerationInput);
         if (!string.IsNullOrWhiteSpace(profile.FrameGenerationOutput))
@@ -61,15 +64,27 @@ internal static class RuntimeConfigService
 
     private static string ReplaceIniValue(string content, string section, string key, string value)
     {
-        var lines = content.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
+        var lines = new List<string>(content.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n'));
         var inSection = false;
         var replaced = false;
-        for (var index = 0; index < lines.Length; index++)
+
+        for (var index = 0; index < lines.Count; index++)
         {
             var trimmed = lines[index].Trim();
             if (trimmed.StartsWith("[", StringComparison.Ordinal) && trimmed.EndsWith("]", StringComparison.Ordinal))
             {
-                inSection = string.Equals(trimmed[1..^1].Trim(), section, StringComparison.OrdinalIgnoreCase);
+                if (inSection)
+                {
+                    // Leaving the target section without having found the key; insert it before the next section
+                    lines.Insert(index, $"{key}={value}");
+                    replaced = true;
+                    break;
+                }
+
+                if (string.Equals(trimmed[1..^1].Trim(), section, StringComparison.OrdinalIgnoreCase))
+                {
+                    inSection = true;
+                }
                 continue;
             }
 
@@ -88,7 +103,18 @@ internal static class RuntimeConfigService
         }
 
         if (!replaced)
-            throw new InvalidDataException($"OptiScaler.ini does not contain [{section}] {key}.");
+        {
+            if (inSection)
+            {
+                lines.Add($"{key}={value}");
+            }
+            else
+            {
+                lines.Add(string.Empty);
+                lines.Add($"[{section}]");
+                lines.Add($"{key}={value}");
+            }
+        }
 
         return string.Join(Environment.NewLine, lines);
     }
