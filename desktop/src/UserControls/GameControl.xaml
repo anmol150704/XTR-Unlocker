@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <usercontrols:FakeContentDialog
     x:Class="DLSS_Swapper.UserControls.GameControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -16,16 +16,16 @@
     VerticalAlignment="Stretch">
 
     <usercontrols:FakeContentDialog.Resources>
-        <x:Double x:Key="ContentDialogMinWidth">700</x:Double>
-        <x:Double x:Key="ContentDialogMaxWidth">1040</x:Double>
-        <ct_converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed"  />
+        <x:Double x:Key="ContentDialogMinWidth">720</x:Double>
+        <x:Double x:Key="ContentDialogMaxWidth">1060</x:Double>
+        <ct_converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed" />
         <ct_converters:BoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" TrueValue="Collapsed" FalseValue="Visible" />
-        <ct_converters:BoolNegationConverter x:Key="BoolNegationConverter"  />
+        <ct_converters:BoolNegationConverter x:Key="BoolNegationConverter" />
         <ct_converters:BoolToVisibilityConverter x:Key="BoolToInvisibilityConverter" TrueValue="Collapsed" FalseValue="Visible" />
         <ct_converters:BoolToObjectConverter x:Key="FavouriteTextConverter" TrueValue="{Binding TranslationProperties.FavouritedText, Mode=OneWay}" FalseValue="{Binding TranslationProperties.ClickToFavouriteText, Mode=OneWay}" />
         <ct_converters:BoolToObjectConverter x:Key="FavouriteGlyphConverter" TrueValue="&#xE735;" FalseValue="&#xE734;" />
         <ct_converters:EmptyObjectToObjectConverter x:Key="NullObjectToBoolConverter" NotEmptyValue="True" EmptyValue="False" />
-        <ct_converters:EmptyCollectionToObjectConverter  x:Key="EmptyCollectionToObjectConverter" NotEmptyValue="True" EmptyValue="False" />
+        <ct_converters:EmptyCollectionToObjectConverter x:Key="EmptyCollectionToObjectConverter" NotEmptyValue="True" EmptyValue="False" />
 
         <converters:DLSSStateVisibilityConverter x:Key="IsDownloadingConverter" DesierdState="Downloading" />
         <converters:DLSSStateVisibilityConverter x:Key="IsDownloadedConverter" DesierdState="Downloaded" />
@@ -33,73 +33,56 @@
         <converters:DLSSStateVisibilityConverter x:Key="IsImportedConverter" DesierdState="Imported" />
         <converters:BitmapImageUriConverter x:Key="BitmapImageUriConverter" />
         <converters:NullableBoolToObjectConverter x:Key="HideGameTextConverter" NullValue="{Binding TranslationProperties.ClickToHideText, Mode=OneWay}" FalseValue="{Binding TranslationProperties.ClickToHideText, Mode=OneWay}" TrueValue="{Binding TranslationProperties.HiddenText, Mode=OneWay}" />
-        <converters:NullableBoolToObjectConverter x:Key="HideGameGlyphConverter" NullValue="&#xE7B3;" FalseValue="&#xE7B3;" TrueValue="&#xED1A;"  />
+        <converters:NullableBoolToObjectConverter x:Key="HideGameGlyphConverter" NullValue="&#xE7B3;" FalseValue="&#xE7B3;" TrueValue="&#xED1A;" />
         <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
         <converters:NullToInverseVisibilityConverter x:Key="NullToInverseVisibilityConverter" />
 
         <Style x:Key="XtrQuietButtonStyle" TargetType="Button" BasedOn="{StaticResource XtrSecondaryButtonStyle}">
             <Setter Property="Background" Value="{ThemeResource XtrElevatedBrush}" />
-            <Setter Property="BorderBrush" Value="{ThemeResource XtrStrokeBrush}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource XtrGlassBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="CornerRadius" Value="14" />
         </Style>
-        
 
         <ControlTemplate x:Key="LeftButtonsControlTemplate" TargetType="ContentControl">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom" XYFocusKeyboardNavigation="Enabled" Padding="{ThemeResource ContentDialogPadding}" Background="{TemplateBinding Background}" Spacing="8">
-
-
-                <Button Command="{Binding LaunchCommand}" ToolTipService.ToolTip="{Binding TranslationProperties.LaunchText, Mode=OneWay}">
+                <Button Command="{Binding LaunchCommand}" ToolTipService.ToolTip="{Binding TranslationProperties.LaunchText, Mode=OneWay}" CornerRadius="12">
                     <Button.Content>
                         <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="&#xE768;" />
                     </Button.Content>
                 </Button>
-
-                <Button ToolTipService.ToolTip="{Binding TranslationProperties.NotesText, Mode=OneWay}" Command="{Binding EditNotesCommand}">
+                <Button ToolTipService.ToolTip="{Binding TranslationProperties.NotesText, Mode=OneWay}" Command="{Binding EditNotesCommand}" CornerRadius="12">
                     <Button.Content>
-                        <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="&#xE70B;"/>
+                        <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="&#xE70B;" />
                     </Button.Content>
                 </Button>
-
-                <Button ToolTipService.ToolTip="{Binding TranslationProperties.HistoryText, Mode=OneWay}" Command="{Binding ViewHistoryCommand}">
+                <Button ToolTipService.ToolTip="{Binding TranslationProperties.HistoryText, Mode=OneWay}" Command="{Binding ViewHistoryCommand}" CornerRadius="12">
                     <Button.Content>
-                        <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="&#xE81C;"/>
+                        <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="&#xE81C;" />
                     </Button.Content>
                 </Button>
-
-                <!--
-                <Button ToolTipService.ToolTip="{Binding TranslationProperties.ResetAllText, Mode=OneWay}" Command="{Binding ResetAllCommand}">
+                <Button Command="{Binding FavouriteCommand}" ToolTipService.ToolTip="{Binding Game.IsFavourite, Converter={StaticResource FavouriteTextConverter}}" CornerRadius="12">
                     <Button.Content>
-                        <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="&#xED62;"/>
+                        <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="{Binding Game.IsFavourite, Converter={StaticResource FavouriteGlyphConverter}}" />
                     </Button.Content>
                 </Button>
-                -->
-
-                <Button Command="{Binding FavouriteCommand}" ToolTipService.ToolTip="{Binding Game.IsFavourite, Converter={StaticResource FavouriteTextConverter}}">
+                <Button Command="{Binding ReloadGameCommand}" ToolTipService.ToolTip="{Binding TranslationProperties.ReloadText, Mode=OneWay}" CornerRadius="12">
                     <Button.Content>
-                        <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="{Binding Game.IsFavourite, Converter={StaticResource FavouriteGlyphConverter}}"/>
+                        <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="&#xE72C;" />
                     </Button.Content>
                 </Button>
-
-                <Button Command="{Binding ReloadGameCommand}" ToolTipService.ToolTip="{Binding TranslationProperties.ReloadText, Mode=OneWay}">
-                    <Button.Content>
-                        <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="&#xE72C;"/>
-                    </Button.Content>
-                </Button>
-
-                <Button Command="{Binding ShowHideGameCommand}" ToolTipService.ToolTip="{Binding Game.IsHidden, Mode=OneWay, Converter={StaticResource HideGameTextConverter}}">
+                <Button Command="{Binding ShowHideGameCommand}" ToolTipService.ToolTip="{Binding Game.IsHidden, Mode=OneWay, Converter={StaticResource HideGameTextConverter}}" CornerRadius="12">
                     <Button.Content>
                         <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="{Binding Game.IsHidden, Mode=OneWay, Converter={StaticResource HideGameGlyphConverter}}" />
                     </Button.Content>
                 </Button>
-
             </StackPanel>
         </ControlTemplate>
 
         <ControlTemplate x:Key="RightButtonsControlTemplate" TargetType="ContentControl">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom" XYFocusKeyboardNavigation="Enabled" Padding="{ThemeResource ContentDialogPadding}" Background="{TemplateBinding Background}" Spacing="8">
-                <Button Content="{Binding TranslationProperties.RemoveText, Mode=OneWay}" Visibility="{Binding IsManuallyAdded, Converter={StaticResource BoolToVisibilityConverter}}" Command="{Binding RemoveCommand}" />
-                <Button x:Name="CloseButton" IsTabStop="False" Content="{Binding TranslationProperties.CloseText, Mode=OneWay}" Style="{ThemeResource DefaultButtonStyle}" ElementSoundMode="FocusOnly" Command="{Binding CloseCommand}" KeyboardAcceleratorPlacementMode="Hidden">
+                <Button Content="{Binding TranslationProperties.RemoveText, Mode=OneWay}" Visibility="{Binding IsManuallyAdded, Converter={StaticResource BoolToVisibilityConverter}}" Command="{Binding RemoveCommand}" CornerRadius="14" />
+                <Button x:Name="CloseButton" IsTabStop="False" Content="{Binding TranslationProperties.CloseText, Mode=OneWay}" Style="{StaticResource XtrSecondaryButtonStyle}" ElementSoundMode="FocusOnly" Command="{Binding CloseCommand}" KeyboardAcceleratorPlacementMode="Hidden">
                     <Button.KeyboardAccelerators>
                         <KeyboardAccelerator Key="Escape" Modifiers="None" />
                     </Button.KeyboardAccelerators>
@@ -113,7 +96,6 @@
             <Setter Property="Foreground" Value="{ThemeResource InformationalIconColor}" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
-
     </usercontrols:FakeContentDialog.Resources>
 
     <usercontrols:FakeContentDialog.Content>
@@ -123,36 +105,33 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" Orientation="Vertical" Spacing="8">
-                <Grid Width="220" Height="330" CornerRadius="16" BorderThickness="1" ColumnSpacing="0" RowSpacing="0" Margin="0" Background="{ThemeResource XtrSurfaceBrush}" BorderBrush="{ThemeResource XtrStrokeBrush}">
-
-                    <!-- Padding="{ThemeResource ContentDialogPadding}" -->
-
-                    <!-- Weird, but allows image to strecth centered rather than left align -->
-                    <Border BorderThickness="0" Width="220" Height="330" FlowDirection="LeftToRight" CornerRadius="16">
+            <!-- Left Column: Poster Artwork & Profile Controls -->
+            <StackPanel Grid.Column="0" Orientation="Vertical" Spacing="10">
+                <Grid Width="220" Height="330" CornerRadius="18" BorderThickness="1" ColumnSpacing="0" RowSpacing="0" Margin="0" Background="{ThemeResource XtrSurfaceBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}">
+                    <Border BorderThickness="0" Width="220" Height="330" FlowDirection="LeftToRight" CornerRadius="18">
                         <Border.RenderTransform>
                             <CompositeTransform ScaleX="1" />
                         </Border.RenderTransform>
                         <Border.Background>
                             <ImageBrush Stretch="UniformToFill">
                                 <ImageBrush.ImageSource>
-                                    <BitmapImage CreateOptions="IgnoreImageCache" UriSource="{x:Bind ViewModel.Game.CoverImage, Mode=OneWay, Converter={StaticResource BitmapImageUriConverter}}"/>
+                                    <BitmapImage CreateOptions="IgnoreImageCache" UriSource="{x:Bind ViewModel.Game.CoverImage, Mode=OneWay, Converter={StaticResource BitmapImageUriConverter}}" />
                                 </ImageBrush.ImageSource>
                             </ImageBrush>
                         </Border.Background>
                     </Border>
 
-                    <Border VerticalAlignment="Bottom" Height="104" CornerRadius="0,0,16,16" IsHitTestVisible="False">
+                    <Border VerticalAlignment="Bottom" Height="110" CornerRadius="0,0,18,18" IsHitTestVisible="False">
                         <Border.Background>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                                 <GradientStop Color="#00000000" Offset="0" />
-                                <GradientStop Color="#E6000000" Offset="1" />
+                                <GradientStop Color="#E608090C" Offset="1" />
                             </LinearGradientBrush>
                         </Border.Background>
                     </Border>
 
                     <StackPanel VerticalAlignment="Bottom" Padding="16,10,16,16" Spacing="4" IsHitTestVisible="False">
-                        <TextBlock Text="XTR GAME PROFILE" FontSize="10" CharacterSpacing="95" FontWeight="SemiBold" Foreground="#D8D4FF" />
+                        <TextBlock Text="NATIVE PROFILE" FontSize="10" CharacterSpacing="95" FontWeight="Bold" Foreground="#D8D4FF" />
                         <TextBlock Text="{x:Bind ViewModel.GameTitle, Mode=OneWay}" FontSize="17" FontWeight="SemiBold" Foreground="White" TextWrapping="WrapWholeWords" MaxLines="2" />
                     </StackPanel>
 
@@ -161,373 +140,53 @@
                 <Button Content="{x:Bind ViewModel.TranslationProperties.AddCustomCoverText, Mode=OneWay}" HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.AddCoverImageCommand}" Style="{StaticResource XtrQuietButtonStyle}" />
             </StackPanel>
 
-            <Grid Grid.Column="1" >
-
-                <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" Spacing="4">
-
+            <!-- Right Column: Game Details, DLSS & Frame Gen Engine Controls -->
+            <Grid Grid.Column="1">
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" Spacing="6">
                     <InfoBar
                         Visibility="{x:Bind ViewModel.Game.IsReadyToPlay, Mode=OneWay, Converter={StaticResource InverseBoolToVisibilityConverter}}"
                         Severity="Warning"
                         IsOpen="True"
                         IsClosable="False"
+                        CornerRadius="14"
                         Message="{x:Bind ViewModel.TranslationProperties.GameNotReadyToPlayStateText, Mode=OneWay}">
                         <InfoBar.ActionButton>
                             <Button Content="{x:Bind ViewModel.TranslationProperties.HelpText, Mode=OneWay}" Command="{x:Bind ViewModel.ReadyToPlayStateMoreInformationCommand}" HorizontalAlignment="Right" />
                         </InfoBar.ActionButton>
                     </InfoBar>
 
-                    <TextBlock Text="{x:Bind ViewModel.TranslationProperties.NameText, Mode=OneWay}" FontWeight="Bold" />
+                    <!-- Game Name -->
+                    <TextBlock Text="{x:Bind ViewModel.TranslationProperties.NameText, Mode=OneWay}" FontWeight="SemiBold" FontSize="12" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
                     <Grid HorizontalAlignment="Stretch" ColumnSpacing="8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBox Grid.Column="0" VerticalAlignment="Stretch" Text="{x:Bind ViewModel.GameTitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{x:Bind ViewModel.IsManuallyAdded, Converter={StaticResource BoolNegationConverter}}" />
-                        <Button Grid.Column="1" VerticalAlignment="Stretch" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.SaveText, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsManuallyAdded, Converter={StaticResource BoolToVisibilityConverter}}" IsEnabled="{x:Bind ViewModel.GameTitleHasChanged, Mode=OneWay}" Command="{x:Bind ViewModel.SaveTitleCommand}">
+                        <TextBox Grid.Column="0" VerticalAlignment="Stretch" CornerRadius="12" Background="{ThemeResource XtrSurfaceBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" Text="{x:Bind ViewModel.GameTitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{x:Bind ViewModel.IsManuallyAdded, Converter={StaticResource BoolNegationConverter}}" />
+                        <Button Grid.Column="1" VerticalAlignment="Stretch" CornerRadius="12" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.SaveText, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsManuallyAdded, Converter={StaticResource BoolToVisibilityConverter}}" IsEnabled="{x:Bind ViewModel.GameTitleHasChanged, Mode=OneWay}" Command="{x:Bind ViewModel.SaveTitleCommand}">
                             <Button.Content>
-                                <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="&#xE74E;"/>
+                                <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="&#xE74E;" />
                             </Button.Content>
                         </Button>
                     </Grid>
 
-                    <TextBlock Text="{x:Bind ViewModel.TranslationProperties.InstallPathText, Mode=OneWay}" FontWeight="Bold" Padding="0,8,0,0" />
+                    <!-- Game Install Path -->
+                    <TextBlock Text="{x:Bind ViewModel.TranslationProperties.InstallPathText, Mode=OneWay}" FontWeight="SemiBold" FontSize="12" Foreground="{ThemeResource XtrSecondaryTextBrush}" Padding="0,4,0,0" />
                     <Grid HorizontalAlignment="Stretch" ColumnSpacing="8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBox Grid.Column="0" IsReadOnly="True" Text="{x:Bind ViewModel.Game.InstallPath}" VerticalAlignment="Stretch" />
-                        <Button Grid.Column="1" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.OpenFolderText, Mode=OneWay}" VerticalAlignment="Stretch" Command="{x:Bind ViewModel.OpenInstallPathCommand}">
+                        <TextBox Grid.Column="0" IsReadOnly="True" CornerRadius="12" Background="{ThemeResource XtrSurfaceBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" Text="{x:Bind ViewModel.Game.InstallPath}" VerticalAlignment="Stretch" />
+                        <Button Grid.Column="1" CornerRadius="12" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.OpenFolderText, Mode=OneWay}" VerticalAlignment="Stretch" Command="{x:Bind ViewModel.OpenInstallPathCommand}">
                             <Button.Content>
-                                <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="&#xE8A7;"/>
+                                <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="&#xE8A7;" />
                             </Button.Content>
                         </Button>
                     </Grid>
 
-                    <StackPanel Margin="0,18,0,0" Spacing="4">
-                        <TextBlock Text="Rendering components" FontSize="16" FontWeight="SemiBold" />
-                        <TextBlock Text="Choose a detected component to manage its installed version. Preset controls apply only when supported." FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
-                    </StackPanel>
-
-                    <Grid HorizontalAlignment="Stretch" ColumnSpacing="16" RowSpacing="8" Padding="16" Margin="0,12,0,0" Background="{ThemeResource XtrElevatedBrush}" CornerRadius="14">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="0" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="0" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-
-                        <!-- // NOTE: DLL type -->
-                        <StackPanel Orientation="Horizontal" Padding="0" Spacing="6" Grid.Column="0" Grid.Row="0">
-                            <TextBlock Text="{x:Bind data:DLLManager.Instance.GetAssetTypeName(data:GameAssetType.DLSS)}" FontWeight="Bold" VerticalAlignment="Center" Margin="0" Padding="0" />
-                            <Button Style="{StaticResource TextBlockButtonStyle}" Visibility="{x:Bind ViewModel.Game.MultipleDLSSFound, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{Binding MultipleDLLsFoundCommand}" CommandParameter="{x:Bind data:GameAssetType.DLSS}" Padding="0" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.MultipleDllsFoundText, Mode=OneWay}">
-                                <Button.Content>
-                                    <FontIcon Style="{StaticResource InformationalFontIcon}" />
-                                </Button.Content>
-                            </Button>
-                        </StackPanel>
-
-                        <DropDownButton Grid.Column="0" Grid.Row="1" IsEnabled="{x:Bind ViewModel.Game.CurrentDLSS, Converter={StaticResource NullObjectToBoolConverter}}" Command="{x:Bind ViewModel.ChangeRecordCommand}" CommandParameter="{x:Bind data:GameAssetType.DLSS}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
-                            <DropDownButton.Content>
-                                <StackPanel>
-                                    <TextBlock Text="{x:Bind ViewModel.Game.CurrentDLSS.DisplayName, FallbackValue='', Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentDLSS, Converter={StaticResource NullToVisibilityConverter}}" />
-                                    <TextBlock Text="{x:Bind ViewModel.TranslationProperties.NotFoundText, Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentDLSS, Converter={StaticResource NullToInverseVisibilityConverter}}" />
-                                </StackPanel>
-                            </DropDownButton.Content>
-                        </DropDownButton>
-
-                        <StackPanel Grid.Column="1" Grid.Row="0" Spacing="6" Orientation="Horizontal">
-                            <TextBlock Text="{x:Bind ViewModel.TranslationProperties.DLSSPresetText, Mode=OneWay}" FontWeight="Bold"/>
-                            <Button Style="{StaticResource TextBlockButtonStyle}" Visibility="{x:Bind ViewModel.CanSelectDlssPreset, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{Binding DLSSPresetInfoCommand}" Padding="0" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.DLSSPresetInfoTooltipText, Mode=OneWay}">
-                                <Button.Content>
-                                    <FontIcon Style="{StaticResource InformationalFontIcon}" />
-                                </Button.Content>
-                            </Button>
-                        </StackPanel>
-
-                        <Grid Grid.Column="1" Grid.Row="1" HorizontalAlignment="Stretch">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            
-                            <ComboBox
-                                Grid.Column="0"
-                                HorizontalAlignment="Stretch"
-                                SelectedItem="{x:Bind ViewModel.SelectedDlssPreset, Mode=TwoWay}"
-                                ItemsSource="{x:Bind ViewModel.DlssPresetOptions}"
-                                DisplayMemberPath="Name"
-                                IsEnabled="{x:Bind ViewModel.CanSelectDlssPreset, Mode=OneWay}" />
-
-                            <Button Grid.Column="1" Padding="12,0,0,0" Visibility="{x:Bind helpers:NVAPIHelper.Instance.PermissionIssue, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{x:Bind ViewModel.NVAPIErrorCommand, Mode=OneTime}" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.NVAPIErrorTooltipText, Mode=OneWay}" Style="{StaticResource TextBlockButtonStyle}" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                <Button.Content>
-                                    <FontIcon Style="{StaticResource ErrorFontIcon}" />
-                                </Button.Content>
-                            </Button>
-                        </Grid>
-
-
-                        <StackPanel Orientation="Horizontal" Padding="0" Spacing="6" Grid.Column="0" Grid.Row="3">
-                            <TextBlock Text="{x:Bind data:DLLManager.Instance.GetAssetTypeName(data:GameAssetType.DLSS_D)}" FontWeight="Bold" />
-                            <Button Style="{StaticResource TextBlockButtonStyle}" Visibility="{x:Bind ViewModel.Game.MultipleDLSSDFound, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{Binding MultipleDLLsFoundCommand}" CommandParameter="{x:Bind data:GameAssetType.DLSS_D}" Padding="0" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.MultipleDllsFoundText, Mode=OneWay}">
-                                <Button.Content>
-                                    <FontIcon Style="{StaticResource InformationalFontIcon}" />
-                                </Button.Content>
-                            </Button>
-                        </StackPanel>
-
-                        <DropDownButton Grid.Column="0" Grid.Row="4" IsEnabled="{x:Bind ViewModel.Game.CurrentDLSS_D, Converter={StaticResource NullObjectToBoolConverter}}" Command="{x:Bind ViewModel.ChangeRecordCommand}" CommandParameter="{x:Bind data:GameAssetType.DLSS_D}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
-                            <DropDownButton.Content>
-                                <StackPanel>
-                                    <TextBlock Text="{x:Bind ViewModel.Game.CurrentDLSS_D.DisplayName, FallbackValue='', Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentDLSS_D, Converter={StaticResource NullToVisibilityConverter}}" />
-                                    <TextBlock Text="{x:Bind ViewModel.TranslationProperties.NotFoundText, Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentDLSS_D, Converter={StaticResource NullToInverseVisibilityConverter}}" />
-                                </StackPanel>
-                            </DropDownButton.Content>
-                        </DropDownButton>
-
-                        <StackPanel Grid.Column="1" Grid.Row="3" Spacing="6" Orientation="Horizontal">
-                            <TextBlock Text="{x:Bind ViewModel.TranslationProperties.DLSSDPresetText, Mode=OneWay}" FontWeight="Bold"/>
-                            <Button Style="{StaticResource TextBlockButtonStyle}" Visibility="{x:Bind ViewModel.CanSelectDlssDPreset, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{Binding DLSSPresetInfoCommand}" Padding="0" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.DLSSPresetInfoTooltipText, Mode=OneWay}">
-                                <Button.Content>
-                                    <FontIcon Style="{StaticResource InformationalFontIcon}" />
-                                </Button.Content>
-                            </Button>
-                        </StackPanel>
-
-
-
-                        <Grid Grid.Column="1" Grid.Row="4" HorizontalAlignment="Stretch">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            
-                            <ComboBox Grid.Column="0"
-                                HorizontalAlignment="Stretch"
-                                SelectedItem="{x:Bind ViewModel.SelectedDlssDPreset, Mode=TwoWay}"
-                                ItemsSource="{x:Bind ViewModel.DlssDPresetOptions}"
-                                DisplayMemberPath="Name"
-                                IsEnabled="{x:Bind ViewModel.CanSelectDlssDPreset, Mode=OneWay}" />
-
-                            <Button Grid.Column="1" Padding="12,0,0,0" Visibility="{x:Bind helpers:NVAPIHelper.Instance.PermissionIssue, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{x:Bind ViewModel.NVAPIErrorCommand, Mode=OneTime}" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.NVAPIErrorTooltipText, Mode=OneWay}" Style="{StaticResource TextBlockButtonStyle}" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                <Button.Content>
-                                    <FontIcon Style="{StaticResource ErrorFontIcon}" />
-                                </Button.Content>
-                            </Button>
-                        </Grid>
-
-
-
-
-                        <StackPanel Orientation="Horizontal" Padding="0" Spacing="6" Grid.Column="0" Grid.Row="6" >
-                            <TextBlock Text="{x:Bind data:DLLManager.Instance.GetAssetTypeName(data:GameAssetType.DLSS_G)}" FontWeight="Bold" />
-                            <Button Style="{StaticResource TextBlockButtonStyle}" Visibility="{x:Bind ViewModel.Game.MultipleDLSSGFound, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{Binding MultipleDLLsFoundCommand}" CommandParameter="{x:Bind data:GameAssetType.DLSS_G}" Padding="0" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.MultipleDllsFoundText, Mode=OneWay}">
-                                <Button.Content>
-                                    <FontIcon Style="{StaticResource InformationalFontIcon}" />
-                                </Button.Content>
-                            </Button>
-                        </StackPanel>
-
-                        <DropDownButton Grid.Column="0" Grid.Row="7" IsEnabled="{x:Bind ViewModel.Game.CurrentDLSS_G, Converter={StaticResource NullObjectToBoolConverter}}" Command="{x:Bind ViewModel.ChangeRecordCommand}" CommandParameter="{x:Bind data:GameAssetType.DLSS_G}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
-                            <DropDownButton.Content>
-                                <StackPanel>
-                                    <TextBlock Text="{x:Bind ViewModel.Game.CurrentDLSS_G.DisplayName, FallbackValue='', Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentDLSS_G, Converter={StaticResource NullToVisibilityConverter}}" />
-                                    <TextBlock Text="{x:Bind ViewModel.TranslationProperties.NotFoundText, Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentDLSS_G, Converter={StaticResource NullToInverseVisibilityConverter}}" />
-                                </StackPanel>
-                            </DropDownButton.Content>
-                        </DropDownButton>
-
-
-                        <StackPanel Grid.Column="1" Grid.Row="6" Spacing="6" Orientation="Horizontal">
-                            <TextBlock Text="{x:Bind ViewModel.TranslationProperties.DLSSGPresetText, Mode=OneWay}" FontWeight="Bold"/>
-                            <Button Style="{StaticResource TextBlockButtonStyle}" Visibility="{x:Bind ViewModel.CanSelectDlssGPreset, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{Binding DLSSPresetInfoCommand}" Padding="0" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.DLSSPresetInfoTooltipText, Mode=OneWay}">
-                                <Button.Content>
-                                    <FontIcon Style="{StaticResource InformationalFontIcon}" />
-                                </Button.Content>
-                            </Button>
-                        </StackPanel>
-
-
-                        <Grid Grid.Column="1" Grid.Row="7" HorizontalAlignment="Stretch">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-
-                            <ComboBox Grid.Column="0"
-                                 HorizontalAlignment="Stretch"
-                                 SelectedItem="{x:Bind ViewModel.SelectedDlssGPreset, Mode=TwoWay}"
-                                 ItemsSource="{x:Bind ViewModel.DlssGPresetOptions}"
-                                 DisplayMemberPath="Name"
-                                 IsEnabled="{x:Bind ViewModel.CanSelectDlssGPreset, Mode=OneWay}" />
-
-                            <Button Grid.Column="1" Padding="12,0,0,0" Visibility="{x:Bind helpers:NVAPIHelper.Instance.PermissionIssue, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{x:Bind ViewModel.NVAPIErrorCommand, Mode=OneTime}" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.NVAPIErrorTooltipText, Mode=OneWay}" Style="{StaticResource TextBlockButtonStyle}" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                <Button.Content>
-                                    <FontIcon Style="{StaticResource ErrorFontIcon}" />
-                                </Button.Content>
-                            </Button>
-                        </Grid>
-
-
-
-
-                    </Grid>
-
-
-                    <Expander Header="Other rendering components" IsExpanded="False" Margin="0,12,0,0" HorizontalAlignment="Stretch">
-                        <StackPanel Spacing="0">
-                    <Grid HorizontalAlignment="Stretch" ColumnSpacing="16" RowSpacing="8" Padding="16" Margin="0,0,0,0" Background="{ThemeResource XtrElevatedBrush}" CornerRadius="14">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-
-                        <StackPanel Orientation="Horizontal" Padding="0" Spacing="6" Grid.Column="0" Grid.Row="0">
-                            <TextBlock Text="{x:Bind data:DLLManager.Instance.GetAssetTypeName(data:GameAssetType.FSR_31_DX12)}" FontWeight="Bold" />
-                            <Button Style="{StaticResource TextBlockButtonStyle}" Visibility="{x:Bind ViewModel.Game.MultipleFSR31DX12Found, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{Binding MultipleDLLsFoundCommand}" CommandParameter="{x:Bind data:GameAssetType.FSR_31_DX12}" Padding="0" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.MultipleDllsFoundText, Mode=OneWay}">
-                                <Button.Content>
-                                    <FontIcon Style="{StaticResource InformationalFontIcon}" />
-                                </Button.Content>
-                            </Button>
-                        </StackPanel>
-
-                        <DropDownButton Grid.Column="0" Grid.Row="1" IsEnabled="{x:Bind ViewModel.Game.CurrentFSR_31_DX12, Converter={StaticResource NullObjectToBoolConverter}}" Command="{x:Bind ViewModel.ChangeRecordCommand}" CommandParameter="{x:Bind data:GameAssetType.FSR_31_DX12}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
-                            <DropDownButton.Content>
-                                <StackPanel>
-                                    <TextBlock Text="{x:Bind ViewModel.Game.CurrentFSR_31_DX12.DisplayName, FallbackValue='', Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentFSR_31_DX12, Converter={StaticResource NullToVisibilityConverter}}" />
-                                    <TextBlock Text="{x:Bind ViewModel.TranslationProperties.NotFoundText, Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentFSR_31_DX12, Converter={StaticResource NullToInverseVisibilityConverter}}" />
-                                </StackPanel>
-                            </DropDownButton.Content>
-                        </DropDownButton>
-
-
-                        <StackPanel Orientation="Horizontal" Padding="0" Spacing="6" Grid.Column="1" Grid.Row="0">
-                            <TextBlock Text="{x:Bind data:DLLManager.Instance.GetAssetTypeName(data:GameAssetType.FSR_31_VK)}" FontWeight="Bold" />
-                            <Button Style="{StaticResource TextBlockButtonStyle}" Visibility="{x:Bind ViewModel.Game.MultipleFSR31VKFound, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{Binding MultipleDLLsFoundCommand}" CommandParameter="{x:Bind data:GameAssetType.FSR_31_VK}" Padding="0" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.MultipleDllsFoundText, Mode=OneWay}">
-                                <Button.Content>
-                                    <FontIcon Style="{StaticResource InformationalFontIcon}" />
-                                </Button.Content>
-                            </Button>
-                        </StackPanel>
-
-                        <DropDownButton Grid.Column="1" Grid.Row="1" IsEnabled="{x:Bind ViewModel.Game.CurrentFSR_31_VK, Converter={StaticResource NullObjectToBoolConverter}}" Command="{x:Bind ViewModel.ChangeRecordCommand}" CommandParameter="{x:Bind data:GameAssetType.FSR_31_VK}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
-                            <DropDownButton.Content>
-                                <StackPanel>
-                                    <TextBlock Text="{x:Bind ViewModel.Game.CurrentFSR_31_VK.DisplayName, FallbackValue='', Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentFSR_31_VK, Converter={StaticResource NullToVisibilityConverter}}" />
-                                    <TextBlock Text="{x:Bind ViewModel.TranslationProperties.NotFoundText, Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentFSR_31_VK, Converter={StaticResource NullToInverseVisibilityConverter}}" />
-                                </StackPanel>
-                            </DropDownButton.Content>
-                        </DropDownButton>
-
-                    </Grid>
-
-
-                    <Grid HorizontalAlignment="Stretch" ColumnSpacing="16" RowSpacing="8" Padding="16" Margin="0,12,0,0" Background="{ThemeResource XtrElevatedBrush}" CornerRadius="14">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="0" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-
-                        <StackPanel Orientation="Horizontal" Padding="0" Spacing="6" Grid.Column="0" Grid.Row="0">
-                            <TextBlock Text="{x:Bind data:DLLManager.Instance.GetAssetTypeName(data:GameAssetType.XeSS)}" FontWeight="Bold" />
-                            <Button Style="{StaticResource TextBlockButtonStyle}" Visibility="{x:Bind ViewModel.Game.MultipleXeSSFound, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{Binding MultipleDLLsFoundCommand}" CommandParameter="{x:Bind data:GameAssetType.XeSS}" Padding="0" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.MultipleDllsFoundText, Mode=OneWay}">
-                                <Button.Content>
-                                    <FontIcon Style="{StaticResource InformationalFontIcon}" />
-                                </Button.Content>
-                            </Button>
-                        </StackPanel>
-
-                        <DropDownButton Grid.Column="0" Grid.Row="1" IsEnabled="{x:Bind ViewModel.Game.CurrentXeSS, Converter={StaticResource NullObjectToBoolConverter}}" Command="{x:Bind ViewModel.ChangeRecordCommand}" CommandParameter="{x:Bind data:GameAssetType.XeSS}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
-                            <DropDownButton.Content>
-                                <StackPanel>
-                                    <TextBlock Text="{x:Bind ViewModel.Game.CurrentXeSS.DisplayName, FallbackValue='', Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentXeSS, Converter={StaticResource NullToVisibilityConverter}}" />
-                                    <TextBlock Text="{x:Bind ViewModel.TranslationProperties.NotFoundText, Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentXeSS, Converter={StaticResource NullToInverseVisibilityConverter}}" />
-                                </StackPanel>
-                            </DropDownButton.Content>
-                        </DropDownButton>
-
-
-                        <StackPanel Orientation="Horizontal" Padding="0" Spacing="6" Grid.Column="1" Grid.Row="0">
-                            <TextBlock Text="{x:Bind data:DLLManager.Instance.GetAssetTypeName(data:GameAssetType.XeSS_FG)}" FontWeight="Bold" />
-                            <Button Style="{StaticResource TextBlockButtonStyle}" Visibility="{x:Bind ViewModel.Game.MultipleXeSSFGFound, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{Binding MultipleDLLsFoundCommand}" CommandParameter="{x:Bind data:GameAssetType.XeSS_FG}" Padding="0" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.MultipleDllsFoundText, Mode=OneWay}">
-                                <Button.Content>
-                                    <FontIcon Style="{StaticResource InformationalFontIcon}" />
-                                </Button.Content>
-                            </Button>
-                        </StackPanel>
-
-                        <DropDownButton Grid.Column="1" Grid.Row="1" IsEnabled="{x:Bind ViewModel.Game.CurrentXeSS_FG, Converter={StaticResource NullObjectToBoolConverter}}" Command="{x:Bind ViewModel.ChangeRecordCommand}" CommandParameter="{x:Bind data:GameAssetType.XeSS_FG}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
-                            <DropDownButton.Content>
-                                <StackPanel>
-                                    <TextBlock Text="{x:Bind ViewModel.Game.CurrentXeSS_FG.DisplayName, FallbackValue='', Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentXeSS_FG, Converter={StaticResource NullToVisibilityConverter}}" />
-                                    <TextBlock Text="{x:Bind ViewModel.TranslationProperties.NotFoundText, Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentXeSS_FG, Converter={StaticResource NullToInverseVisibilityConverter}}" />
-                                </StackPanel>
-                            </DropDownButton.Content>
-                        </DropDownButton>
-
-
-                        <StackPanel Orientation="Horizontal" Padding="0" Spacing="6" Grid.Column="0" Grid.Row="3">
-                            <TextBlock Text="{x:Bind data:DLLManager.Instance.GetAssetTypeName(data:GameAssetType.XeSS_DX11)}" FontWeight="Bold" />
-                            <Button Style="{StaticResource TextBlockButtonStyle}" Visibility="{x:Bind ViewModel.Game.MultipleXeSSDX11Found, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{Binding MultipleDLLsFoundCommand}" CommandParameter="{x:Bind data:GameAssetType.XeSS_DX11}" Padding="0" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.MultipleDllsFoundText, Mode=OneWay}">
-                                <Button.Content>
-                                    <FontIcon Style="{StaticResource InformationalFontIcon}" />
-                                </Button.Content>
-                            </Button>
-                        </StackPanel>
-                        <DropDownButton Grid.Column="0" Grid.Row="4" IsEnabled="{x:Bind ViewModel.Game.CurrentXeSS_DX11, Converter={StaticResource NullObjectToBoolConverter}}" Command="{x:Bind ViewModel.ChangeRecordCommand}" CommandParameter="{x:Bind data:GameAssetType.XeSS_DX11}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
-                            <DropDownButton.Content>
-                                <StackPanel>
-                                    <TextBlock Text="{x:Bind ViewModel.Game.CurrentXeSS_DX11.DisplayName, FallbackValue='', Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentXeSS_DX11, Converter={StaticResource NullToVisibilityConverter}}" />
-                                    <TextBlock Text="{x:Bind ViewModel.TranslationProperties.NotFoundText, Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentXeSS_DX11, Converter={StaticResource NullToInverseVisibilityConverter}}" />
-                                </StackPanel>
-                            </DropDownButton.Content>
-                        </DropDownButton>
-
-
-                        <StackPanel Orientation="Horizontal" Padding="0" Spacing="6" Grid.Column="1" Grid.Row="3">
-                            <TextBlock Text="{x:Bind data:DLLManager.Instance.GetAssetTypeName(data:GameAssetType.XeLL)}" FontWeight="Bold" />
-                            <Button Style="{StaticResource TextBlockButtonStyle}" Visibility="{x:Bind ViewModel.Game.MultipleXeLLFound, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{Binding MultipleDLLsFoundCommand}" CommandParameter="{x:Bind data:GameAssetType.XeLL}" Padding="0" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.MultipleDllsFoundText, Mode=OneWay}">
-                                <Button.Content>
-                                    <FontIcon Style="{StaticResource InformationalFontIcon}" />
-                                </Button.Content>
-                            </Button>
-                        </StackPanel>
-                        <DropDownButton Grid.Column="1" Grid.Row="4" IsEnabled="{x:Bind ViewModel.Game.CurrentXeLL, Converter={StaticResource NullObjectToBoolConverter}}" Command="{x:Bind ViewModel.ChangeRecordCommand}" CommandParameter="{x:Bind data:GameAssetType.XeLL}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
-                            <DropDownButton.Content>
-                                <StackPanel>
-                                    <TextBlock Text="{x:Bind ViewModel.Game.CurrentXeLL.DisplayName, FallbackValue='', Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentXeLL, Converter={StaticResource NullToVisibilityConverter}}" />
-                                    <TextBlock Text="{x:Bind ViewModel.TranslationProperties.NotFoundText, Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentXeLL, Converter={StaticResource NullToInverseVisibilityConverter}}" />
-                                </StackPanel>
-                            </DropDownButton.Content>
-                        </DropDownButton>
-                    </Grid>
-
-                        </StackPanel>
-                    </Expander>
-
-                    <Grid Padding="18" Margin="0,14,0,0" Background="{ThemeResource XtrElevatedBrush}" CornerRadius="16" RowSpacing="12">
+                    <!-- Apple Liquid Glass Hero Card: Native DLSS & Frame Generation Engine -->
+                    <Grid Padding="18" Margin="0,12,0,0" Background="{ThemeResource XtrElevatedBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1" CornerRadius="20" RowSpacing="12">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -536,88 +195,105 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <!-- Header & Primary Status -->
+                        <!-- Header & Status Pill -->
                         <Grid Grid.Row="0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel Spacing="3">
-                                <TextBlock Text="DLSS &amp; Runtime Setup" FontSize="16" FontWeight="SemiBold" />
-                                <TextBlock
-                                    Text="{x:Bind ViewModel.PrimaryActionExplanationText, Mode=OneWay}"
-                                    FontSize="12"
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    TextWrapping="Wrap" />
+                                <TextBlock Text="Native DLSS &amp; Frame Generation Engine" FontSize="16" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
+                                <TextBlock Text="{x:Bind ViewModel.PrimaryActionExplanationText, Mode=OneWay}"
+                                           FontSize="12"
+                                           Foreground="{ThemeResource XtrSecondaryTextBrush}"
+                                           TextWrapping="Wrap" />
                             </StackPanel>
-                            <Border Grid.Column="1" VerticalAlignment="Top" Padding="10,4" CornerRadius="8" Background="{ThemeResource XtrSurfaceBrush}" BorderBrush="{ThemeResource XtrStrokeBrush}" BorderThickness="1">
-                                <TextBlock Text="{x:Bind ViewModel.RuntimeStatusText, Mode=OneWay}" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
+                            <Border Grid.Column="1" VerticalAlignment="Top" Padding="12,5" CornerRadius="12" Background="{ThemeResource XtrSurfaceBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1">
+                                <TextBlock Text="{x:Bind ViewModel.RuntimeStatusText, Mode=OneWay}" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource XtrAccentBrush}" />
                             </Border>
                         </Grid>
 
-                        <!-- High Clarity Status Row -->
+                        <!-- PROMINENT DLSS VERSION & FRAME GEN STATUS ROW -->
                         <Grid Grid.Row="1" ColumnSpacing="12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Padding="12" CornerRadius="10" Background="{ThemeResource XtrSurfaceBrush}">
-                                <StackPanel Spacing="2">
-                                    <TextBlock Text="NATIVE DLSS" FontSize="10" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
-                                    <TextBlock Text="{x:Bind ViewModel.Game.CurrentDLSS.DisplayName, FallbackValue='Not detected', Mode=OneWay}" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+
+                            <!-- DLSS Version Tile -->
+                            <Border Grid.Column="0" Padding="14,12" CornerRadius="14" Background="{ThemeResource XtrSurfaceBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1">
+                                <StackPanel Spacing="3">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <Ellipse Width="6" Height="6" Fill="#818CF8" VerticalAlignment="Center" />
+                                        <TextBlock Text="ACTIVE DLSS VERSION" FontSize="10" FontWeight="Bold" CharacterSpacing="60" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
+                                    </StackPanel>
+                                    <TextBlock FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource XtrAccentBrush}">
+                                        <Run Text="{x:Bind ViewModel.Game.DlssVersionLabel, FallbackValue='DLSS not detected', Mode=OneWay}" />
+                                    </TextBlock>
+                                    <TextBlock FontSize="11" Foreground="{ThemeResource XtrSecondaryTextBrush}">
+                                        <Run Text="Game engine using " />
+                                        <Run Text="{x:Bind ViewModel.Game.DlssGenerationText, Mode=OneWay}" />
+                                    </TextBlock>
                                 </StackPanel>
                             </Border>
-                            <Border Grid.Column="1" Padding="12" CornerRadius="10" Background="{ThemeResource XtrSurfaceBrush}">
-                                <StackPanel Spacing="2">
-                                    <TextBlock Text="FRAME GENERATION" FontSize="10" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
-                                    <TextBlock Text="{x:Bind ViewModel.FrameGenerationStatusText, Mode=OneWay}" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+
+                            <!-- Frame Generation Tile -->
+                            <Border Grid.Column="1" Padding="14,12" CornerRadius="14" Background="{ThemeResource XtrSurfaceBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1">
+                                <StackPanel Spacing="3">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <Ellipse Width="6" Height="6" Fill="{ThemeResource XtrSuccessBrush}" VerticalAlignment="Center" />
+                                        <TextBlock Text="FRAME GENERATION ENGINE" FontSize="10" FontWeight="Bold" CharacterSpacing="60" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
+                                    </StackPanel>
+                                    <TextBlock Text="{x:Bind ViewModel.FrameGenerationStatusText, Mode=OneWay}" FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource XtrSuccessBrush}" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="FSR 3.1 Swapchain + Streamline DLSS-G" FontSize="11" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
                                 </StackPanel>
                             </Border>
                         </Grid>
 
-                        <!-- Primary Action Buttons -->
+                        <!-- Primary Action Buttons: Enable Frame Generation & DLSS -->
                         <Grid Grid.Row="2">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            
+
                             <Button
                                 Grid.Column="0"
                                 Margin="0,0,6,0"
-                                Content="Enable latest DLSS"
+                                Content="⚡ Enable Frame Generation"
                                 Style="{StaticResource XtrPrimaryButtonStyle}"
-                                Command="{x:Bind ViewModel.EnableLatestDlssCommand}"
-                                Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToInverseVisibilityConverter}, Mode=OneWay}"
-                                HorizontalAlignment="Stretch"
-                                Height="40"
-                                CornerRadius="10"
-                                FontSize="13"
-                                FontWeight="SemiBold" />
-                            <Button
-                                Grid.Column="1"
-                                Margin="6,0,0,0"
-                                Content="Enable Frame Generation"
-                                Style="{StaticResource XtrSecondaryButtonStyle}"
                                 Command="{x:Bind ViewModel.EnableFrameGenerationCommand}"
                                 Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToInverseVisibilityConverter}, Mode=OneWay}"
                                 HorizontalAlignment="Stretch"
-                                Height="40"
-                                CornerRadius="10"
-                                FontSize="13"
+                                Height="42"
+                                CornerRadius="18"
+                                FontSize="13.5"
+                                FontWeight="SemiBold" />
+
+                            <Button
+                                Grid.Column="1"
+                                Margin="6,0,0,0"
+                                Content="✦ Enable Latest DLSS"
+                                Style="{StaticResource XtrSecondaryButtonStyle}"
+                                Command="{x:Bind ViewModel.EnableLatestDlssCommand}"
+                                Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToInverseVisibilityConverter}, Mode=OneWay}"
+                                HorizontalAlignment="Stretch"
+                                Height="42"
+                                CornerRadius="18"
+                                FontSize="13.5"
                                 FontWeight="SemiBold" />
 
                             <Button
                                 Grid.Column="0"
                                 Grid.ColumnSpan="2"
-                                Content="Restore original game files"
+                                Content="↺ Restore original game files"
                                 Style="{StaticResource XtrSecondaryButtonStyle}"
                                 Command="{x:Bind ViewModel.RestoreRuntimeCommand}"
                                 Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
                                 HorizontalAlignment="Stretch"
-                                Height="40"
-                                CornerRadius="10"
-                                FontSize="13" />
+                                Height="42"
+                                CornerRadius="18"
+                                FontSize="13.5" />
                         </Grid>
 
                         <!-- Live Detection & In-Game Controls Panel -->
@@ -625,9 +301,9 @@
                             Grid.Row="3"
                             Padding="14"
                             Background="{ThemeResource XtrSurfaceBrush}"
-                            BorderBrush="{ThemeResource XtrStrokeBrush}"
+                            BorderBrush="{ThemeResource XtrGlassBorderBrush}"
                             BorderThickness="1"
-                            CornerRadius="12"
+                            CornerRadius="14"
                             Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}">
                             <StackPanel Spacing="10">
                                 <Grid>
@@ -636,7 +312,7 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                        <Ellipse Width="8" Height="8" Fill="#107C41" />
+                                        <Ellipse Width="8" Height="8" Fill="{ThemeResource XtrSuccessBrush}" />
                                         <TextBlock Text="LIVE RUNTIME &amp; FRAME GEN DETECTION" FontSize="11" FontWeight="Bold" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
                                     </StackPanel>
                                     <Button
@@ -644,28 +320,28 @@
                                         Content="Refresh Detection"
                                         FontSize="11"
                                         Height="28"
-                                        Padding="10,0"
-                                        CornerRadius="6"
+                                        Padding="12,0"
+                                        CornerRadius="10"
                                         Command="{x:Bind ViewModel.RefreshDiagnosticsCommand}" />
                                 </Grid>
 
-                                <TextBlock Text="{x:Bind ViewModel.RuntimeHealthSummaryText, Mode=OneWay}" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                <TextBlock Text="{x:Bind ViewModel.RuntimeHealthSummaryText, Mode=OneWay}" FontSize="12.5" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" TextWrapping="Wrap" />
 
-                                <Border Background="{ThemeResource XtrElevatedBrush}" CornerRadius="8" Padding="12,8">
+                                <Border Background="{ThemeResource XtrElevatedBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="12,8">
                                     <StackPanel Spacing="4">
-                                        <TextBlock Text="IN-GAME DETECTION &amp; OVERLAY HOTKEYS" FontSize="10" FontWeight="Bold" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
-                                        <TextBlock Text="• [Insert] key — Open / close in-game OptiScaler settings menu" FontSize="11" />
-                                        <TextBlock Text="• [Page Up] key — Toggle real-time FPS &amp; Frame Generation HUD" FontSize="11" />
-                                        <TextBlock Text="• [End] key — Toggle Frame Generation on / off dynamically" FontSize="11" />
+                                        <TextBlock Text="IN-GAME DETECTION &amp; OVERLAY HOTKEYS" FontSize="10" FontWeight="Bold" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
+                                        <TextBlock Text="• [Insert] key — Open / close in-game OptiScaler settings menu" FontSize="11.5" Foreground="{ThemeResource XtrTextBrush}" />
+                                        <TextBlock Text="• [Page Up] key — Toggle real-time FPS &amp; Frame Generation HUD" FontSize="11.5" Foreground="{ThemeResource XtrTextBrush}" />
+                                        <TextBlock Text="• [End] key — Toggle Frame Generation on / off dynamically" FontSize="11.5" Foreground="{ThemeResource XtrTextBrush}" />
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
                         </Border>
 
                         <!-- Progressive Disclosure: Advanced Settings -->
-                        <Expander Grid.Row="4" Header="Advanced runtime options" IsExpanded="False" HorizontalAlignment="Stretch">
+                        <Expander Grid.Row="4" Header="Advanced runtime options" IsExpanded="False" HorizontalAlignment="Stretch" CornerRadius="12">
                             <StackPanel Spacing="10" Padding="0,8,0,0">
-                                <TextBlock Text="Proxy selection and custom packages are optional. XTR manages these automatically by default." FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                                <TextBlock Text="Proxy selection and custom packages are optional. XTR manages these automatically by default." FontSize="11" Foreground="{ThemeResource XtrSecondaryTextBrush}" TextWrapping="Wrap" />
                                 <Grid ColumnSpacing="8">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -676,6 +352,7 @@
                                         ItemsSource="{x:Bind ViewModel.RuntimeProxyNames}"
                                         SelectedItem="{x:Bind ViewModel.SelectedRuntimeProxy, Mode=TwoWay}"
                                         HorizontalAlignment="Stretch"
+                                        CornerRadius="10"
                                         Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToInverseVisibilityConverter}, Mode=OneWay}" />
                                     <TextBlock
                                         Grid.Column="0"
@@ -684,11 +361,12 @@
                                         Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}" />
                                     <DropDownButton
                                         Grid.Column="1"
-                                        Content="Custom package�"
+                                        Content="Custom package"
+                                        CornerRadius="10"
                                         Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToInverseVisibilityConverter}, Mode=OneWay}">
                                         <DropDownButton.Flyout>
                                             <MenuFlyout>
-                                                <MenuFlyoutItem Text="Choose custom package folder�" Command="{x:Bind ViewModel.InstallCustomRuntimeCommand}" />
+                                                <MenuFlyoutItem Text="Choose custom package folder..." Command="{x:Bind ViewModel.InstallCustomRuntimeCommand}" />
                                                 <MenuFlyoutItem Text="Direct install bundled OptiScaler" Command="{x:Bind ViewModel.InstallRuntimeCommand}" />
                                             </MenuFlyout>
                                         </DropDownButton.Flyout>
@@ -703,6 +381,316 @@
                             </StackPanel>
                         </Expander>
                     </Grid>
+
+                    <!-- Rendering Components Section -->
+                    <StackPanel Margin="0,14,0,0" Spacing="4">
+                        <TextBlock Text="Rendering components" FontSize="16" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
+                        <TextBlock Text="Manage detected upscaling, ray reconstruction, and frame generation libraries." FontSize="12" Foreground="{ThemeResource XtrSecondaryTextBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+
+                    <Grid HorizontalAlignment="Stretch" ColumnSpacing="16" RowSpacing="8" Padding="16" Margin="0,6,0,0" Background="{ThemeResource XtrElevatedBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1" CornerRadius="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="0" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="0" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- DLSS -->
+                        <StackPanel Orientation="Horizontal" Padding="0" Spacing="6" Grid.Column="0" Grid.Row="0">
+                            <TextBlock Text="{x:Bind data:DLLManager.Instance.GetAssetTypeName(data:GameAssetType.DLSS)}" FontWeight="Bold" VerticalAlignment="Center" Margin="0" Padding="0" />
+                            <Button Style="{StaticResource TextBlockButtonStyle}" Visibility="{x:Bind ViewModel.Game.MultipleDLSSFound, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{Binding MultipleDLLsFoundCommand}" CommandParameter="{x:Bind data:GameAssetType.DLSS}" Padding="0" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.MultipleDllsFoundText, Mode=OneWay}">
+                                <Button.Content>
+                                    <FontIcon Style="{StaticResource InformationalFontIcon}" />
+                                </Button.Content>
+                            </Button>
+                        </StackPanel>
+
+                        <DropDownButton Grid.Column="0" Grid.Row="1" CornerRadius="12" IsEnabled="{x:Bind ViewModel.Game.CurrentDLSS, Converter={StaticResource NullObjectToBoolConverter}}" Command="{x:Bind ViewModel.ChangeRecordCommand}" CommandParameter="{x:Bind data:GameAssetType.DLSS}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                            <DropDownButton.Content>
+                                <StackPanel>
+                                    <TextBlock Text="{x:Bind ViewModel.Game.CurrentDLSS.DisplayName, FallbackValue='', Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentDLSS, Converter={StaticResource NullToVisibilityConverter}}" />
+                                    <TextBlock Text="{x:Bind ViewModel.TranslationProperties.NotFoundText, Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentDLSS, Converter={StaticResource NullToInverseVisibilityConverter}}" />
+                                </StackPanel>
+                            </DropDownButton.Content>
+                        </DropDownButton>
+
+                        <StackPanel Grid.Column="1" Grid.Row="0" Spacing="6" Orientation="Horizontal">
+                            <TextBlock Text="{x:Bind ViewModel.TranslationProperties.DLSSPresetText, Mode=OneWay}" FontWeight="Bold" />
+                            <Button Style="{StaticResource TextBlockButtonStyle}" Visibility="{x:Bind ViewModel.CanSelectDlssPreset, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{Binding DLSSPresetInfoCommand}" Padding="0" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.DLSSPresetInfoTooltipText, Mode=OneWay}">
+                                <Button.Content>
+                                    <FontIcon Style="{StaticResource InformationalFontIcon}" />
+                                </Button.Content>
+                            </Button>
+                        </StackPanel>
+
+                        <Grid Grid.Column="1" Grid.Row="1" HorizontalAlignment="Stretch">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <ComboBox
+                                Grid.Column="0"
+                                HorizontalAlignment="Stretch"
+                                CornerRadius="12"
+                                SelectedItem="{x:Bind ViewModel.SelectedDlssPreset, Mode=TwoWay}"
+                                ItemsSource="{x:Bind ViewModel.DlssPresetOptions}"
+                                DisplayMemberPath="Name"
+                                IsEnabled="{x:Bind ViewModel.CanSelectDlssPreset, Mode=OneWay}" />
+
+                            <Button Grid.Column="1" Padding="12,0,0,0" Visibility="{x:Bind helpers:NVAPIHelper.Instance.PermissionIssue, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{x:Bind ViewModel.NVAPIErrorCommand, Mode=OneTime}" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.NVAPIErrorTooltipText, Mode=OneWay}" Style="{StaticResource TextBlockButtonStyle}" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                <Button.Content>
+                                    <FontIcon Style="{StaticResource ErrorFontIcon}" />
+                                </Button.Content>
+                            </Button>
+                        </Grid>
+
+                        <!-- DLSS-D -->
+                        <StackPanel Orientation="Horizontal" Padding="0" Spacing="6" Grid.Column="0" Grid.Row="3">
+                            <TextBlock Text="{x:Bind data:DLLManager.Instance.GetAssetTypeName(data:GameAssetType.DLSS_D)}" FontWeight="Bold" />
+                            <Button Style="{StaticResource TextBlockButtonStyle}" Visibility="{x:Bind ViewModel.Game.MultipleDLSSDFound, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{Binding MultipleDLLsFoundCommand}" CommandParameter="{x:Bind data:GameAssetType.DLSS_D}" Padding="0" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.MultipleDllsFoundText, Mode=OneWay}">
+                                <Button.Content>
+                                    <FontIcon Style="{StaticResource InformationalFontIcon}" />
+                                </Button.Content>
+                            </Button>
+                        </StackPanel>
+
+                        <DropDownButton Grid.Column="0" Grid.Row="4" CornerRadius="12" IsEnabled="{x:Bind ViewModel.Game.CurrentDLSS_D, Converter={StaticResource NullObjectToBoolConverter}}" Command="{x:Bind ViewModel.ChangeRecordCommand}" CommandParameter="{x:Bind data:GameAssetType.DLSS_D}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                            <DropDownButton.Content>
+                                <StackPanel>
+                                    <TextBlock Text="{x:Bind ViewModel.Game.CurrentDLSS_D.DisplayName, FallbackValue='', Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentDLSS_D, Converter={StaticResource NullToVisibilityConverter}}" />
+                                    <TextBlock Text="{x:Bind ViewModel.TranslationProperties.NotFoundText, Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentDLSS_D, Converter={StaticResource NullToInverseVisibilityConverter}}" />
+                                </StackPanel>
+                            </DropDownButton.Content>
+                        </DropDownButton>
+
+                        <StackPanel Grid.Column="1" Grid.Row="3" Spacing="6" Orientation="Horizontal">
+                            <TextBlock Text="{x:Bind ViewModel.TranslationProperties.DLSSDPresetText, Mode=OneWay}" FontWeight="Bold" />
+                            <Button Style="{StaticResource TextBlockButtonStyle}" Visibility="{x:Bind ViewModel.CanSelectDlssDPreset, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{Binding DLSSPresetInfoCommand}" Padding="0" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.DLSSPresetInfoTooltipText, Mode=OneWay}">
+                                <Button.Content>
+                                    <FontIcon Style="{StaticResource InformationalFontIcon}" />
+                                </Button.Content>
+                            </Button>
+                        </StackPanel>
+
+                        <Grid Grid.Column="1" Grid.Row="4" HorizontalAlignment="Stretch">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <ComboBox Grid.Column="0"
+                                      HorizontalAlignment="Stretch"
+                                      CornerRadius="12"
+                                      SelectedItem="{x:Bind ViewModel.SelectedDlssDPreset, Mode=TwoWay}"
+                                      ItemsSource="{x:Bind ViewModel.DlssDPresetOptions}"
+                                      DisplayMemberPath="Name"
+                                      IsEnabled="{x:Bind ViewModel.CanSelectDlssDPreset, Mode=OneWay}" />
+
+                            <Button Grid.Column="1" Padding="12,0,0,0" Visibility="{x:Bind helpers:NVAPIHelper.Instance.PermissionIssue, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{x:Bind ViewModel.NVAPIErrorCommand, Mode=OneTime}" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.NVAPIErrorTooltipText, Mode=OneWay}" Style="{StaticResource TextBlockButtonStyle}" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                <Button.Content>
+                                    <FontIcon Style="{StaticResource ErrorFontIcon}" />
+                                </Button.Content>
+                            </Button>
+                        </Grid>
+
+                        <!-- DLSS-G -->
+                        <StackPanel Orientation="Horizontal" Padding="0" Spacing="6" Grid.Column="0" Grid.Row="6">
+                            <TextBlock Text="{x:Bind data:DLLManager.Instance.GetAssetTypeName(data:GameAssetType.DLSS_G)}" FontWeight="Bold" />
+                            <Button Style="{StaticResource TextBlockButtonStyle}" Visibility="{x:Bind ViewModel.Game.MultipleDLSSGFound, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{Binding MultipleDLLsFoundCommand}" CommandParameter="{x:Bind data:GameAssetType.DLSS_G}" Padding="0" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.MultipleDllsFoundText, Mode=OneWay}">
+                                <Button.Content>
+                                    <FontIcon Style="{StaticResource InformationalFontIcon}" />
+                                </Button.Content>
+                            </Button>
+                        </StackPanel>
+
+                        <DropDownButton Grid.Column="0" Grid.Row="7" CornerRadius="12" IsEnabled="{x:Bind ViewModel.Game.CurrentDLSS_G, Converter={StaticResource NullObjectToBoolConverter}}" Command="{x:Bind ViewModel.ChangeRecordCommand}" CommandParameter="{x:Bind data:GameAssetType.DLSS_G}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                            <DropDownButton.Content>
+                                <StackPanel>
+                                    <TextBlock Text="{x:Bind ViewModel.Game.CurrentDLSS_G.DisplayName, FallbackValue='', Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentDLSS_G, Converter={StaticResource NullToVisibilityConverter}}" />
+                                    <TextBlock Text="{x:Bind ViewModel.TranslationProperties.NotFoundText, Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentDLSS_G, Converter={StaticResource NullToInverseVisibilityConverter}}" />
+                                </StackPanel>
+                            </DropDownButton.Content>
+                        </DropDownButton>
+
+                        <StackPanel Grid.Column="1" Grid.Row="6" Spacing="6" Orientation="Horizontal">
+                            <TextBlock Text="{x:Bind ViewModel.TranslationProperties.DLSSGPresetText, Mode=OneWay}" FontWeight="Bold" />
+                            <Button Style="{StaticResource TextBlockButtonStyle}" Visibility="{x:Bind ViewModel.CanSelectDlssGPreset, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{Binding DLSSPresetInfoCommand}" Padding="0" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.DLSSPresetInfoTooltipText, Mode=OneWay}">
+                                <Button.Content>
+                                    <FontIcon Style="{StaticResource InformationalFontIcon}" />
+                                </Button.Content>
+                            </Button>
+                        </StackPanel>
+
+                        <Grid Grid.Column="1" Grid.Row="7" HorizontalAlignment="Stretch">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <ComboBox Grid.Column="0"
+                                      HorizontalAlignment="Stretch"
+                                      CornerRadius="12"
+                                      SelectedItem="{x:Bind ViewModel.SelectedDlssGPreset, Mode=TwoWay}"
+                                      ItemsSource="{x:Bind ViewModel.DlssGPresetOptions}"
+                                      DisplayMemberPath="Name"
+                                      IsEnabled="{x:Bind ViewModel.CanSelectDlssGPreset, Mode=OneWay}" />
+
+                            <Button Grid.Column="1" Padding="12,0,0,0" Visibility="{x:Bind helpers:NVAPIHelper.Instance.PermissionIssue, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{x:Bind ViewModel.NVAPIErrorCommand, Mode=OneTime}" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.NVAPIErrorTooltipText, Mode=OneWay}" Style="{StaticResource TextBlockButtonStyle}" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                <Button.Content>
+                                    <FontIcon Style="{StaticResource ErrorFontIcon}" />
+                                </Button.Content>
+                            </Button>
+                        </Grid>
+                    </Grid>
+
+                    <!-- Additional Components Expander -->
+                    <Expander Header="Other rendering components (FSR, XeSS)" IsExpanded="False" Margin="0,8,0,0" HorizontalAlignment="Stretch" CornerRadius="14">
+                        <StackPanel Spacing="10" Padding="0,4,0,0">
+                            <Grid HorizontalAlignment="Stretch" ColumnSpacing="16" RowSpacing="8" Padding="16" Background="{ThemeResource XtrElevatedBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1" CornerRadius="14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Orientation="Horizontal" Padding="0" Spacing="6" Grid.Column="0" Grid.Row="0">
+                                    <TextBlock Text="{x:Bind data:DLLManager.Instance.GetAssetTypeName(data:GameAssetType.FSR_31_DX12)}" FontWeight="Bold" />
+                                    <Button Style="{StaticResource TextBlockButtonStyle}" Visibility="{x:Bind ViewModel.Game.MultipleFSR31DX12Found, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{Binding MultipleDLLsFoundCommand}" CommandParameter="{x:Bind data:GameAssetType.FSR_31_DX12}" Padding="0" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.MultipleDllsFoundText, Mode=OneWay}">
+                                        <Button.Content>
+                                            <FontIcon Style="{StaticResource InformationalFontIcon}" />
+                                        </Button.Content>
+                                    </Button>
+                                </StackPanel>
+
+                                <DropDownButton Grid.Column="0" Grid.Row="1" CornerRadius="10" IsEnabled="{x:Bind ViewModel.Game.CurrentFSR_31_DX12, Converter={StaticResource NullObjectToBoolConverter}}" Command="{x:Bind ViewModel.ChangeRecordCommand}" CommandParameter="{x:Bind data:GameAssetType.FSR_31_DX12}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                                    <DropDownButton.Content>
+                                        <StackPanel>
+                                            <TextBlock Text="{x:Bind ViewModel.Game.CurrentFSR_31_DX12.DisplayName, FallbackValue='', Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentFSR_31_DX12, Converter={StaticResource NullToVisibilityConverter}}" />
+                                            <TextBlock Text="{x:Bind ViewModel.TranslationProperties.NotFoundText, Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentFSR_31_DX12, Converter={StaticResource NullToInverseVisibilityConverter}}" />
+                                        </StackPanel>
+                                    </DropDownButton.Content>
+                                </DropDownButton>
+
+                                <StackPanel Orientation="Horizontal" Padding="0" Spacing="6" Grid.Column="1" Grid.Row="0">
+                                    <TextBlock Text="{x:Bind data:DLLManager.Instance.GetAssetTypeName(data:GameAssetType.FSR_31_VK)}" FontWeight="Bold" />
+                                    <Button Style="{StaticResource TextBlockButtonStyle}" Visibility="{x:Bind ViewModel.Game.MultipleFSR31VKFound, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{Binding MultipleDLLsFoundCommand}" CommandParameter="{x:Bind data:GameAssetType.FSR_31_VK}" Padding="0" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.MultipleDllsFoundText, Mode=OneWay}">
+                                        <Button.Content>
+                                            <FontIcon Style="{StaticResource InformationalFontIcon}" />
+                                        </Button.Content>
+                                    </Button>
+                                </StackPanel>
+
+                                <DropDownButton Grid.Column="1" Grid.Row="1" CornerRadius="10" IsEnabled="{x:Bind ViewModel.Game.CurrentFSR_31_VK, Converter={StaticResource NullObjectToBoolConverter}}" Command="{x:Bind ViewModel.ChangeRecordCommand}" CommandParameter="{x:Bind data:GameAssetType.FSR_31_VK}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                                    <DropDownButton.Content>
+                                        <StackPanel>
+                                            <TextBlock Text="{x:Bind ViewModel.Game.CurrentFSR_31_VK.DisplayName, FallbackValue='', Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentFSR_31_VK, Converter={StaticResource NullToVisibilityConverter}}" />
+                                            <TextBlock Text="{x:Bind ViewModel.TranslationProperties.NotFoundText, Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentFSR_31_VK, Converter={StaticResource NullToInverseVisibilityConverter}}" />
+                                        </StackPanel>
+                                    </DropDownButton.Content>
+                                </DropDownButton>
+                            </Grid>
+
+                            <Grid HorizontalAlignment="Stretch" ColumnSpacing="16" RowSpacing="8" Padding="16" Background="{ThemeResource XtrElevatedBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1" CornerRadius="14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="0" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Orientation="Horizontal" Padding="0" Spacing="6" Grid.Column="0" Grid.Row="0">
+                                    <TextBlock Text="{x:Bind data:DLLManager.Instance.GetAssetTypeName(data:GameAssetType.XeSS)}" FontWeight="Bold" />
+                                    <Button Style="{StaticResource TextBlockButtonStyle}" Visibility="{x:Bind ViewModel.Game.MultipleXeSSFound, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{Binding MultipleDLLsFoundCommand}" CommandParameter="{x:Bind data:GameAssetType.XeSS}" Padding="0" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.MultipleDllsFoundText, Mode=OneWay}">
+                                        <Button.Content>
+                                            <FontIcon Style="{StaticResource InformationalFontIcon}" />
+                                        </Button.Content>
+                                    </Button>
+                                </StackPanel>
+
+                                <DropDownButton Grid.Column="0" Grid.Row="1" CornerRadius="10" IsEnabled="{x:Bind ViewModel.Game.CurrentXeSS, Converter={StaticResource NullObjectToBoolConverter}}" Command="{x:Bind ViewModel.ChangeRecordCommand}" CommandParameter="{x:Bind data:GameAssetType.XeSS}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                                    <DropDownButton.Content>
+                                        <StackPanel>
+                                            <TextBlock Text="{x:Bind ViewModel.Game.CurrentXeSS.DisplayName, FallbackValue='', Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentXeSS, Converter={StaticResource NullToVisibilityConverter}}" />
+                                            <TextBlock Text="{x:Bind ViewModel.TranslationProperties.NotFoundText, Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentXeSS, Converter={StaticResource NullToInverseVisibilityConverter}}" />
+                                        </StackPanel>
+                                    </DropDownButton.Content>
+                                </DropDownButton>
+
+                                <StackPanel Orientation="Horizontal" Padding="0" Spacing="6" Grid.Column="1" Grid.Row="0">
+                                    <TextBlock Text="{x:Bind data:DLLManager.Instance.GetAssetTypeName(data:GameAssetType.XeSS_FG)}" FontWeight="Bold" />
+                                    <Button Style="{StaticResource TextBlockButtonStyle}" Visibility="{x:Bind ViewModel.Game.MultipleXeSSFGFound, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{Binding MultipleDLLsFoundCommand}" CommandParameter="{x:Bind data:GameAssetType.XeSS_FG}" Padding="0" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.MultipleDllsFoundText, Mode=OneWay}">
+                                        <Button.Content>
+                                            <FontIcon Style="{StaticResource InformationalFontIcon}" />
+                                        </Button.Content>
+                                    </Button>
+                                </StackPanel>
+
+                                <DropDownButton Grid.Column="1" Grid.Row="1" CornerRadius="10" IsEnabled="{x:Bind ViewModel.Game.CurrentXeSS_FG, Converter={StaticResource NullObjectToBoolConverter}}" Command="{x:Bind ViewModel.ChangeRecordCommand}" CommandParameter="{x:Bind data:GameAssetType.XeSS_FG}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                                    <DropDownButton.Content>
+                                        <StackPanel>
+                                            <TextBlock Text="{x:Bind ViewModel.Game.CurrentXeSS_FG.DisplayName, FallbackValue='', Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentXeSS_FG, Converter={StaticResource NullToVisibilityConverter}}" />
+                                            <TextBlock Text="{x:Bind ViewModel.TranslationProperties.NotFoundText, Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentXeSS_FG, Converter={StaticResource NullToInverseVisibilityConverter}}" />
+                                        </StackPanel>
+                                    </DropDownButton.Content>
+                                </DropDownButton>
+
+                                <StackPanel Orientation="Horizontal" Padding="0" Spacing="6" Grid.Column="0" Grid.Row="3">
+                                    <TextBlock Text="{x:Bind data:DLLManager.Instance.GetAssetTypeName(data:GameAssetType.XeSS_DX11)}" FontWeight="Bold" />
+                                    <Button Style="{StaticResource TextBlockButtonStyle}" Visibility="{x:Bind ViewModel.Game.MultipleXeSSDX11Found, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{Binding MultipleDLLsFoundCommand}" CommandParameter="{x:Bind data:GameAssetType.XeSS_DX11}" Padding="0" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.MultipleDllsFoundText, Mode=OneWay}">
+                                        <Button.Content>
+                                            <FontIcon Style="{StaticResource InformationalFontIcon}" />
+                                        </Button.Content>
+                                    </Button>
+                                </StackPanel>
+
+                                <DropDownButton Grid.Column="0" Grid.Row="4" CornerRadius="10" IsEnabled="{x:Bind ViewModel.Game.CurrentXeSS_DX11, Converter={StaticResource NullObjectToBoolConverter}}" Command="{x:Bind ViewModel.ChangeRecordCommand}" CommandParameter="{x:Bind data:GameAssetType.XeSS_DX11}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                                    <DropDownButton.Content>
+                                        <StackPanel>
+                                            <TextBlock Text="{x:Bind ViewModel.Game.CurrentXeSS_DX11.DisplayName, FallbackValue='', Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentXeSS_DX11, Converter={StaticResource NullToVisibilityConverter}}" />
+                                            <TextBlock Text="{x:Bind ViewModel.TranslationProperties.NotFoundText, Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentXeSS_DX11, Converter={StaticResource NullToInverseVisibilityConverter}}" />
+                                        </StackPanel>
+                                    </DropDownButton.Content>
+                                </DropDownButton>
+
+                                <StackPanel Orientation="Horizontal" Padding="0" Spacing="6" Grid.Column="1" Grid.Row="3">
+                                    <TextBlock Text="{x:Bind data:DLLManager.Instance.GetAssetTypeName(data:GameAssetType.XeLL)}" FontWeight="Bold" />
+                                    <Button Style="{StaticResource TextBlockButtonStyle}" Visibility="{x:Bind ViewModel.Game.MultipleXeLLFound, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Command="{Binding MultipleDLLsFoundCommand}" CommandParameter="{x:Bind data:GameAssetType.XeLL}" Padding="0" ToolTipService.ToolTip="{x:Bind ViewModel.TranslationProperties.MultipleDllsFoundText, Mode=OneWay}">
+                                        <Button.Content>
+                                            <FontIcon Style="{StaticResource InformationalFontIcon}" />
+                                        </Button.Content>
+                                    </Button>
+                                </StackPanel>
+
+                                <DropDownButton Grid.Column="1" Grid.Row="4" CornerRadius="10" IsEnabled="{x:Bind ViewModel.Game.CurrentXeLL, Converter={StaticResource NullObjectToBoolConverter}}" Command="{x:Bind ViewModel.ChangeRecordCommand}" CommandParameter="{x:Bind data:GameAssetType.XeLL}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                                    <DropDownButton.Content>
+                                        <StackPanel>
+                                            <TextBlock Text="{x:Bind ViewModel.Game.CurrentXeLL.DisplayName, FallbackValue='', Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentXeLL, Converter={StaticResource NullToVisibilityConverter}}" />
+                                            <TextBlock Text="{x:Bind ViewModel.TranslationProperties.NotFoundText, Mode=OneWay}" Visibility="{x:Bind ViewModel.Game.CurrentXeLL, Converter={StaticResource NullToInverseVisibilityConverter}}" />
+                                        </StackPanel>
+                                    </DropDownButton.Content>
+                                </DropDownButton>
+                            </Grid>
+                        </StackPanel>
+                    </Expander>
                 </StackPanel>
             </Grid>
         </Grid>

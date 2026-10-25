@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using DLSS_Swapper.Extensions;
 using DLSS_Swapper.Helpers;
 using DLSS_Swapper.Interfaces;
@@ -131,12 +131,90 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
     [ObservableProperty]
     [Ignore]
     [NotifyPropertyChangedFor(nameof(IntegrationStatus))]
+    [NotifyPropertyChangedFor(nameof(FrameGenBadgeText))]
     public partial RuntimeInstallManifest? RuntimeManifest { get; set; }
 
     [Ignore]
     public string IntegrationStatus => RuntimeManifest is not null
         ? CurrentDLSS is not null ? "Runtime ready · DLSS detected" : "Runtime installed · DLSS not detected"
         : CurrentDLSS is not null ? "DLSS detected · runtime not installed" : "No runtime configured";
+    [Ignore]
+    public string DlssGenerationText
+    {
+        get
+        {
+            if (CurrentDLSS is null || string.IsNullOrWhiteSpace(CurrentDLSS.DisplayVersion))
+            {
+                return "No DLSS";
+            }
+
+            var ver = CurrentDLSS.DisplayVersion.TrimStart('v', 'V');
+            var firstPart = ver.Split('.')[0];
+            if (int.TryParse(firstPart, out var major))
+            {
+                return $"DLSS {major}";
+            }
+            return "DLSS";
+        }
+    }
+
+    [Ignore]
+    public string DlssVersionLabel
+    {
+        get
+        {
+            if (CurrentDLSS is null || string.IsNullOrWhiteSpace(CurrentDLSS.DisplayVersion))
+            {
+                return "DLSS not detected";
+            }
+
+            var ver = CurrentDLSS.DisplayVersion.TrimStart('v', 'V');
+            var firstPart = ver.Split('.')[0];
+            if (int.TryParse(firstPart, out var major))
+            {
+                return $"DLSS {major} · v{ver}";
+            }
+            return $"DLSS v{ver}";
+        }
+    }
+
+    [Ignore]
+    public string DlssBadgeText
+    {
+        get
+        {
+            if (CurrentDLSS is null || string.IsNullOrWhiteSpace(CurrentDLSS.DisplayVersion))
+            {
+                return "NO DLSS";
+            }
+
+            var ver = CurrentDLSS.DisplayVersion.TrimStart('v', 'V');
+            var firstPart = ver.Split('.')[0];
+            if (int.TryParse(firstPart, out var major))
+            {
+                return $"DLSS {major} · v{ver}";
+            }
+            return $"DLSS v{ver}";
+        }
+    }
+
+    [Ignore]
+    public string FrameGenBadgeText
+    {
+        get
+        {
+            if (RuntimeManifest is not null)
+            {
+                return "⚡ FG ACTIVE";
+            }
+            if (CurrentDLSS_G is not null)
+            {
+                var ver = CurrentDLSS_G.DisplayVersion.TrimStart('v', 'V');
+                return $"DLSS-G v{ver}";
+            }
+            return string.Empty;
+        }
+    }
 
     private readonly object _runtimeStateLoadLock = new();
     private Task? _runtimeStateLoadTask;
@@ -207,6 +285,9 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
     [ObservableProperty]
     [Ignore]
     [NotifyPropertyChangedFor(nameof(IntegrationStatus))]
+    [NotifyPropertyChangedFor(nameof(DlssGenerationText))]
+    [NotifyPropertyChangedFor(nameof(DlssVersionLabel))]
+    [NotifyPropertyChangedFor(nameof(DlssBadgeText))]
     public partial GameAsset? CurrentDLSS { get; set; } = null;
 
     [ObservableProperty]
@@ -215,6 +296,7 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
 
     [ObservableProperty]
     [Ignore]
+    [NotifyPropertyChangedFor(nameof(FrameGenBadgeText))]
     public partial GameAsset? CurrentDLSS_G { get; set; } = null;
 
     [ObservableProperty]

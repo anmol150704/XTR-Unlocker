@@ -3,92 +3,152 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
-            <SolidColorBrush x:Key="XtrBackgroundBrush" Color="#F4F5F8" />
-            <SolidColorBrush x:Key="XtrSidebarBrush" Color="#F8F8FA" />
+            <SolidColorBrush x:Key="XtrBackgroundBrush" Color="#F2F4F7" />
+            <SolidColorBrush x:Key="XtrSidebarBrush" Color="#F8F9FA" />
             <SolidColorBrush x:Key="XtrSurfaceBrush" Color="#FFFFFF" />
-            <SolidColorBrush x:Key="XtrElevatedBrush" Color="#F0F1F5" />
-            <SolidColorBrush x:Key="XtrStrokeBrush" Color="#E2E4E9" />
-            <SolidColorBrush x:Key="XtrTextBrush" Color="#191A1F" />
-            <SolidColorBrush x:Key="XtrSecondaryTextBrush" Color="#696B75" />
-            <SolidColorBrush x:Key="XtrAccentBrush" Color="#6557D9" />
-            <SolidColorBrush x:Key="XtrAccentSoftBrush" Color="#ECEAFF" />
-            <SolidColorBrush x:Key="XtrSuccessBrush" Color="#278B4A" />
+            <SolidColorBrush x:Key="XtrElevatedBrush" Color="#EAECEF" />
+            <SolidColorBrush x:Key="XtrGlassFillBrush" Color="#F0F2F6" />
+            <SolidColorBrush x:Key="XtrGlassBadgeBrush" Color="#E5E8EE" />
+            <SolidColorBrush x:Key="XtrStrokeBrush" Color="#DDE0E8" />
+            <SolidColorBrush x:Key="XtrGlassBorderBrush" Color="#D1D6E2" />
+            <SolidColorBrush x:Key="XtrTextBrush" Color="#111215" />
+            <SolidColorBrush x:Key="XtrSecondaryTextBrush" Color="#64697B" />
+            <SolidColorBrush x:Key="XtrAccentBrush" Color="#5851E8" />
+            <SolidColorBrush x:Key="XtrAccentHoverBrush" Color="#6F68F4" />
+            <SolidColorBrush x:Key="XtrAccentSoftBrush" Color="#EEEDFE" />
+            <SolidColorBrush x:Key="XtrSuccessBrush" Color="#28A745" />
+            <SolidColorBrush x:Key="XtrSuccessSoftBrush" Color="#E6F7EC" />
+            <SolidColorBrush x:Key="XtrWarningBrush" Color="#F59E0B" />
             <SolidColorBrush x:Key="XtrPrimaryButtonForegroundBrush" Color="#FFFFFF" />
-            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="#F8F8FA" />
-            <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#F8F8FA" />
-            <SolidColorBrush x:Key="NavigationViewTopPaneBackground" Color="#F8F8FA" />
+            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="#F8F9FA" />
+            <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#F8F9FA" />
+            <SolidColorBrush x:Key="NavigationViewTopPaneBackground" Color="#F8F9FA" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
-            <SolidColorBrush x:Key="XtrBackgroundBrush" Color="#111216" />
-            <SolidColorBrush x:Key="XtrSidebarBrush" Color="#17181D" />
-            <SolidColorBrush x:Key="XtrSurfaceBrush" Color="#1D1F24" />
-            <SolidColorBrush x:Key="XtrElevatedBrush" Color="#26282E" />
-            <SolidColorBrush x:Key="XtrStrokeBrush" Color="#32343B" />
-            <SolidColorBrush x:Key="XtrTextBrush" Color="#F4F4F6" />
-            <SolidColorBrush x:Key="XtrSecondaryTextBrush" Color="#A6A7AE" />
-            <SolidColorBrush x:Key="XtrAccentBrush" Color="#6C5CD0" />
-            <SolidColorBrush x:Key="XtrAccentSoftBrush" Color="#302D4B" />
-            <SolidColorBrush x:Key="XtrSuccessBrush" Color="#62CF87" />
+            <SolidColorBrush x:Key="XtrBackgroundBrush" Color="#0B0C10" />
+            <SolidColorBrush x:Key="XtrSidebarBrush" Color="#0E1017" />
+            <SolidColorBrush x:Key="XtrSurfaceBrush" Color="#151822" />
+            <SolidColorBrush x:Key="XtrElevatedBrush" Color="#1C1F2E" />
+            <SolidColorBrush x:Key="XtrGlassFillBrush" Color="#181B27" />
+            <SolidColorBrush x:Key="XtrGlassBadgeBrush" Color="#222638" />
+            <SolidColorBrush x:Key="XtrStrokeBrush" Color="#242838" />
+            <SolidColorBrush x:Key="XtrGlassBorderBrush" Color="#2E344A" />
+            <SolidColorBrush x:Key="XtrTextBrush" Color="#F8F9FA" />
+            <SolidColorBrush x:Key="XtrSecondaryTextBrush" Color="#8E94A5" />
+            <SolidColorBrush x:Key="XtrAccentBrush" Color="#6366F1" />
+            <SolidColorBrush x:Key="XtrAccentHoverBrush" Color="#7C7EF6" />
+            <SolidColorBrush x:Key="XtrAccentSoftBrush" Color="#252347" />
+            <SolidColorBrush x:Key="XtrSuccessBrush" Color="#34C759" />
+            <SolidColorBrush x:Key="XtrSuccessSoftBrush" Color="#102E1B" />
+            <SolidColorBrush x:Key="XtrWarningBrush" Color="#FF9F0A" />
             <SolidColorBrush x:Key="XtrPrimaryButtonForegroundBrush" Color="#FFFFFF" />
-            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="#17181D" />
-            <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#17181D" />
-            <SolidColorBrush x:Key="NavigationViewTopPaneBackground" Color="#17181D" />
+            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="#0E1017" />
+            <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#0E1017" />
+            <SolidColorBrush x:Key="NavigationViewTopPaneBackground" Color="#0E1017" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Default">
-            <SolidColorBrush x:Key="XtrBackgroundBrush" Color="#111216" />
-            <SolidColorBrush x:Key="XtrSidebarBrush" Color="#17181D" />
-            <SolidColorBrush x:Key="XtrSurfaceBrush" Color="#1D1F24" />
-            <SolidColorBrush x:Key="XtrElevatedBrush" Color="#26282E" />
-            <SolidColorBrush x:Key="XtrStrokeBrush" Color="#32343B" />
-            <SolidColorBrush x:Key="XtrTextBrush" Color="#F4F4F6" />
-            <SolidColorBrush x:Key="XtrSecondaryTextBrush" Color="#A6A7AE" />
-            <SolidColorBrush x:Key="XtrAccentBrush" Color="#6C5CD0" />
-            <SolidColorBrush x:Key="XtrAccentSoftBrush" Color="#302D4B" />
-            <SolidColorBrush x:Key="XtrSuccessBrush" Color="#62CF87" />
+            <SolidColorBrush x:Key="XtrBackgroundBrush" Color="#0B0C10" />
+            <SolidColorBrush x:Key="XtrSidebarBrush" Color="#0E1017" />
+            <SolidColorBrush x:Key="XtrSurfaceBrush" Color="#151822" />
+            <SolidColorBrush x:Key="XtrElevatedBrush" Color="#1C1F2E" />
+            <SolidColorBrush x:Key="XtrGlassFillBrush" Color="#181B27" />
+            <SolidColorBrush x:Key="XtrGlassBadgeBrush" Color="#222638" />
+            <SolidColorBrush x:Key="XtrStrokeBrush" Color="#242838" />
+            <SolidColorBrush x:Key="XtrGlassBorderBrush" Color="#2E344A" />
+            <SolidColorBrush x:Key="XtrTextBrush" Color="#F8F9FA" />
+            <SolidColorBrush x:Key="XtrSecondaryTextBrush" Color="#8E94A5" />
+            <SolidColorBrush x:Key="XtrAccentBrush" Color="#6366F1" />
+            <SolidColorBrush x:Key="XtrAccentHoverBrush" Color="#7C7EF6" />
+            <SolidColorBrush x:Key="XtrAccentSoftBrush" Color="#252347" />
+            <SolidColorBrush x:Key="XtrSuccessBrush" Color="#34C759" />
+            <SolidColorBrush x:Key="XtrSuccessSoftBrush" Color="#102E1B" />
+            <SolidColorBrush x:Key="XtrWarningBrush" Color="#FF9F0A" />
             <SolidColorBrush x:Key="XtrPrimaryButtonForegroundBrush" Color="#FFFFFF" />
-            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="#17181D" />
-            <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#17181D" />
-            <SolidColorBrush x:Key="NavigationViewTopPaneBackground" Color="#17181D" />
+            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="#0E1017" />
+            <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="#0E1017" />
+            <SolidColorBrush x:Key="NavigationViewTopPaneBackground" Color="#0E1017" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="XtrBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="XtrSidebarBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="XtrSurfaceBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="XtrElevatedBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="XtrGlassFillBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="XtrGlassBadgeBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="XtrStrokeBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="XtrGlassBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="XtrTextBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="XtrSecondaryTextBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="XtrAccentBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="XtrAccentHoverBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="XtrAccentSoftBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="XtrSuccessBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="XtrSuccessSoftBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="XtrWarningBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="XtrPrimaryButtonForegroundBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
             <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="NavigationViewTopPaneBackground" Color="{ThemeResource SystemColorWindowColor}" />
-        </ResourceDictionary>    </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
 
+    <!-- Apple Liquid Primary Button: Smooth continuous pill, luminous gradient feel -->
     <Style x:Key="XtrPrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource AccentButtonStyle}">
         <Setter Property="Background" Value="{ThemeResource XtrAccentBrush}" />
         <Setter Property="Foreground" Value="{ThemeResource XtrPrimaryButtonForegroundBrush}" />
         <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="CornerRadius" Value="11" />
-        <Setter Property="Padding" Value="16,9" />
+        <Setter Property="CornerRadius" Value="18" />
+        <Setter Property="Padding" Value="18,10" />
         <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="13" />
     </Style>
 
+    <!-- Apple Liquid Secondary Button: Frosted translucent pill with subtle glass border -->
     <Style x:Key="XtrSecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+        <Setter Property="Background" Value="{ThemeResource XtrElevatedBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource XtrTextBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource XtrGlassBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="18" />
+        <Setter Property="Padding" Value="16,9" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="FontSize" Value="13" />
+    </Style>
+
+    <!-- Apple Glass Pill Button (Compact) -->
+    <Style x:Key="XtrPillButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
         <Setter Property="Background" Value="{ThemeResource XtrSurfaceBrush}" />
         <Setter Property="Foreground" Value="{ThemeResource XtrTextBrush}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource XtrStrokeBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource XtrGlassBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="11" />
-        <Setter Property="Padding" Value="14,8" />
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="Padding" Value="12,6" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="Medium" />
     </Style>
 
+    <!-- Apple Liquid Glass Card Surface -->
     <Style x:Key="XtrCardBorderStyle" TargetType="Border">
         <Setter Property="Background" Value="{ThemeResource XtrSurfaceBrush}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource XtrStrokeBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource XtrGlassBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="CornerRadius" Value="18" />
+    </Style>
+
+    <!-- Apple Liquid Glass Hero Card -->
+    <Style x:Key="XtrHeroCardBorderStyle" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource XtrElevatedBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource XtrGlassBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="22" />
+    </Style>
+
+    <!-- Apple Glass Pill Badge -->
+    <Style x:Key="XtrBadgeBorderStyle" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource XtrGlassBadgeBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource XtrGlassBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Padding" Value="10,4" />
     </Style>
 </ResourceDictionary>

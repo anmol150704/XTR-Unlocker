@@ -200,7 +200,7 @@
 
                         </VisualStateManager.VisualStateGroups>
                         <Grid x:Name="LayoutRoot" Visibility="Collapsed">
-                            <Rectangle x:Name="SmokeLayerBackground" Fill="{ThemeResource ContentDialogSmokeFill}" />
+                            <Rectangle x:Name="SmokeLayerBackground" Fill="#B306070B" />
                             <Border x:Name="BackgroundElement" Background="{TemplateBinding Background}" FlowDirection="{TemplateBinding FlowDirection}" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" BackgroundSizing="InnerBorderEdge" CornerRadius="{TemplateBinding CornerRadius}" MinWidth="{ThemeResource ContentDialogMinWidth}" MaxWidth="{ThemeResource ContentDialogMaxWidth}" MinHeight="{ThemeResource ContentDialogMinHeight}" MaxHeight="{ThemeResource ContentDialogMaxHeight}" HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
                                 <Border.RenderTransform>
                                     <ScaleTransform x:Name="ScaleTransform" />

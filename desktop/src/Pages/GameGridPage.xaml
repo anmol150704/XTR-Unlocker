@@ -26,23 +26,24 @@
         <converters:BitmapImageUriConverter x:Key="BitmapImageUriConverter" />
         <converters:BoolToOpacityConverter x:Key="BoolToOpacityConverter" TrueValue="0.5" FalseValue="1.0" NullValue="1.0" />
         <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+        <converters:NullToInverseVisibilityConverter x:Key="NullToInverseVisibilityConverter" />
 
         <DataTemplate x:Key="ListViewTemplate" x:DataType="pages:GameGridPageModel">
             <ListView ItemsSource="{x:Bind CurrentCollectionView, Mode=OneWay}"
                       ItemClick="GridAndListView_ItemClick"
                       IsItemClickEnabled="True"
                       SelectionMode="None"
-                      Padding="28,8,28,28"
+                      Padding="32,10,32,32"
                       Background="Transparent">
                 <ListView.GroupStyle>
                     <GroupStyle HidesIfEmpty="True">
                         <GroupStyle.HeaderTemplate>
                             <DataTemplate x:DataType="data:GameGroup">
                                 <TextBlock Text="{x:Bind Name}"
-                                           Margin="0,24,0,10"
+                                           Margin="0,20,0,10"
                                            FontSize="13"
                                            FontWeight="SemiBold"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                           Foreground="{ThemeResource XtrSecondaryTextBrush}"
                                            Visibility="{x:Bind Name, Converter={StaticResource StringVisibilityConverter}}" />
                             </DataTemplate>
                         </GroupStyle.HeaderTemplate>
@@ -57,19 +58,20 @@
                 </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="data:Game">
-                        <Border Padding="12"
-                                CornerRadius="14"
-                                BorderBrush="{ThemeResource XtrStrokeBrush}"
+                        <Border Padding="14"
+                                CornerRadius="16"
+                                BorderBrush="{ThemeResource XtrGlassBorderBrush}"
                                 BorderThickness="1"
                                 Background="{ThemeResource XtrSurfaceBrush}"
                                 Opacity="{x:Bind IsHidden, Mode=OneWay, Converter={StaticResource BoolToOpacityConverter}}">
-                            <Grid ColumnSpacing="14">
+                            <Grid ColumnSpacing="16">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="42" />
+                                    <ColumnDefinition Width="46" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <Border Width="42" Height="62" CornerRadius="8">
+                                <Border Width="46" Height="68" CornerRadius="10">
                                     <Border.Background>
                                         <ImageBrush Stretch="UniformToFill">
                                             <ImageBrush.ImageSource>
@@ -79,19 +81,39 @@
                                     </Border.Background>
                                 </Border>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
-                                    <TextBlock Text="{x:Bind Title, Mode=OneWay}" FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                                    <TextBlock FontSize="12" Foreground="{ThemeResource XtrSecondaryTextBrush}">
-                                        <Run Text="DLSS" />
-                                        <Run Text=" · " />
-                                        <Run Text="{x:Bind CurrentDLSS.DisplayName, FallbackValue='Not detected', Mode=OneWay}" />
-                                    </TextBlock>
-                                    <TextBlock Text="{x:Bind IntegrationStatus, Mode=OneWay}"
-                                               FontSize="11"
-                                               Foreground="{ThemeResource XtrSecondaryTextBrush}"
-                                               TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{x:Bind Title, Mode=OneWay}" FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" TextTrimming="CharacterEllipsis" />
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <!-- Prominent DLSS Version in List View -->
+                                        <Border Padding="8,2" CornerRadius="8" Background="{ThemeResource XtrGlassBadgeBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1">
+                                            <TextBlock FontSize="11.5" FontWeight="SemiBold" Foreground="{ThemeResource XtrAccentBrush}">
+                                                <Run Text="{x:Bind DlssVersionLabel, FallbackValue='DLSS not detected', Mode=OneWay}" />
+                                            </TextBlock>
+                                        </Border>
+                                        <TextBlock Text="{x:Bind IntegrationStatus, Mode=OneWay}"
+                                                   FontSize="11.5"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{ThemeResource XtrSecondaryTextBrush}"
+                                                   TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
                                 </StackPanel>
-                                <muxc:ProgressRing Grid.Column="2" Width="18" Height="18" IsActive="True" Visibility="{x:Bind Processing, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
-                                <FontIcon Grid.Column="2" Glyph="&#xE76C;" FontSize="14" Foreground="{ThemeResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" Visibility="{x:Bind Processing, Converter={StaticResource InverseBoolToVisibilityConverter}, Mode=OneWay}" />
+
+                                <!-- Right side Frame Gen indicator pill -->
+                                <Border Grid.Column="2"
+                                        VerticalAlignment="Center"
+                                        Padding="10,4"
+                                        CornerRadius="12"
+                                        Background="#183D24"
+                                        BorderBrush="#2ECC71"
+                                        BorderThickness="1"
+                                        Visibility="{x:Bind RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}">
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <Ellipse Width="6" Height="6" Fill="#34C759" VerticalAlignment="Center" />
+                                        <TextBlock Text="FG ACTIVE" FontSize="10.5" FontWeight="Bold" Foreground="#E6FCEE" />
+                                    </StackPanel>
+                                </Border>
+
+                                <muxc:ProgressRing Grid.Column="3" Width="18" Height="18" IsActive="True" Visibility="{x:Bind Processing, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+                                <FontIcon Grid.Column="3" Glyph="&#xE76C;" FontSize="14" Foreground="{ThemeResource XtrSecondaryTextBrush}" VerticalAlignment="Center" Visibility="{x:Bind Processing, Converter={StaticResource InverseBoolToVisibilityConverter}, Mode=OneWay}" />
                             </Grid>
                         </Border>
                     </DataTemplate>
@@ -107,15 +129,15 @@
                       IsItemClickEnabled="True"
                       ItemClick="GridAndListView_ItemClick"
                       SelectionMode="None"
-                      Padding="24,8,24,34"
+                      Padding="28,10,28,36"
                       Background="Transparent">
                 <GridView.GroupStyle>
                     <GroupStyle HidesIfEmpty="True">
                         <GroupStyle.HeaderTemplate>
                             <DataTemplate x:DataType="data:GameGroup">
                                 <TextBlock Text="{x:Bind Name}"
-                                           Margin="2,22,0,12"
-                                           FontSize="14"
+                                           Margin="4,22,0,12"
+                                           FontSize="13.5"
                                            FontWeight="SemiBold"
                                            Foreground="{ThemeResource XtrSecondaryTextBrush}"
                                            Visibility="{x:Bind Name, Converter={StaticResource StringVisibilityConverter}}" />
@@ -127,22 +149,24 @@
                     <Style TargetType="GridViewItem">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                         <Setter Property="VerticalContentAlignment" Value="Stretch" />
-                        <Setter Property="Margin" Value="7" />
+                        <Setter Property="Margin" Value="9" />
                         <Setter Property="Padding" Value="0" />
-                        <Setter Property="CornerRadius" Value="16" />
+                        <Setter Property="CornerRadius" Value="18" />
                     </Style>
                 </GridView.ItemContainerStyle>
                 <GridView.ItemTemplate>
                     <DataTemplate x:DataType="data:Game">
+                        <!-- Apple Liquid Squircle Card -->
                         <Border Width="{Binding ElementName=RootGameGridPage, Path=ViewModel.GridViewItemWidth, Mode=OneWay}"
                                 Height="{Binding ElementName=RootGameGridPage, Path=ViewModel.GridViewItemHeight, Mode=OneWay}"
-                                CornerRadius="16"
+                                CornerRadius="18"
                                 BorderThickness="1"
-                                BorderBrush="{ThemeResource XtrStrokeBrush}"
+                                BorderBrush="{ThemeResource XtrGlassBorderBrush}"
                                 Background="{ThemeResource XtrSurfaceBrush}"
                                 Opacity="{x:Bind IsHidden, Mode=OneWay, Converter={StaticResource BoolToOpacityConverter}}">
                             <Grid>
-                                <Border CornerRadius="16">
+                                <!-- Poster Artwork -->
+                                <Border CornerRadius="18">
                                     <Border.Background>
                                         <ImageBrush Stretch="UniformToFill">
                                             <ImageBrush.ImageSource>
@@ -151,53 +175,73 @@
                                         </ImageBrush>
                                     </Border.Background>
                                 </Border>
-                                <Border VerticalAlignment="Bottom" Height="132" CornerRadius="0,0,16,16">
+
+                                <!-- Apple Silky Depth Gradient Scrim -->
+                                <Border VerticalAlignment="Bottom" Height="140" CornerRadius="0,0,18,18">
                                     <Border.Background>
                                         <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                                             <GradientStop Color="#00000000" Offset="0" />
-                                            <GradientStop Color="#C9000000" Offset="0.5" />
-                                            <GradientStop Color="#F0000000" Offset="1" />
+                                            <GradientStop Color="#A6090A0E" Offset="0.45" />
+                                            <GradientStop Color="#F208090C" Offset="1" />
                                         </LinearGradientBrush>
                                     </Border.Background>
                                 </Border>
+
+                                <!-- Top-Left Floating Liquid Glass Badge: VISIBLE DLSS VERSION & GENERATION -->
                                 <Border HorizontalAlignment="Left"
                                         VerticalAlignment="Top"
-                                        Margin="12"
-                                        Padding="10,6"
-                                        CornerRadius="10"
-                                        Background="#B815161A"
-                                        BorderBrush="#45FFFFFF"
+                                        Margin="11"
+                                        Padding="10,5"
+                                        CornerRadius="12"
+                                        Background="#CC161824"
+                                        BorderBrush="#40FFFFFF"
                                         BorderThickness="1">
-                                    <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <Ellipse Width="6" Height="6" Fill="#A99BFF" VerticalAlignment="Center" />
-                                        <TextBlock Text="DLSS" FontSize="11" FontWeight="SemiBold" Foreground="White" />
+                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                        <Ellipse Width="6" Height="6" Fill="#818CF8" VerticalAlignment="Center" />
+                                        <TextBlock Text="{x:Bind DlssBadgeText, Mode=OneWay}"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="White" />
                                     </StackPanel>
                                 </Border>
+
+                                <!-- Top-Right Floating Liquid Badge: FRAME GENERATION ACTIVE / READY -->
                                 <Border HorizontalAlignment="Right"
                                         VerticalAlignment="Top"
-                                        Margin="12"
-                                        Width="28"
-                                        Height="28"
-                                        CornerRadius="14"
-                                        Background="{ThemeResource XtrAccentBrush}"
-                                        ToolTipService.ToolTip="OptiScaler runtime installed"
+                                        Margin="11"
+                                        Padding="9,5"
+                                        CornerRadius="12"
+                                        Background="#DD153720"
+                                        BorderBrush="#6034C759"
+                                        BorderThickness="1"
+                                        ToolTipService.ToolTip="Frame Generation runtime active"
                                         Visibility="{x:Bind RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}">
-                                    <FontIcon Glyph="&#xE8D7;" FontSize="12" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                        <Ellipse Width="6" Height="6" Fill="#34C759" VerticalAlignment="Center" />
+                                        <TextBlock Text="FG ACTIVE" FontSize="10" FontWeight="Bold" Foreground="#E6FCEE" />
+                                    </StackPanel>
                                 </Border>
-                                <muxc:ProgressRing Width="22" Height="22" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="12,48,12,0" IsActive="True" Visibility="{x:Bind Processing, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
-                                <StackPanel VerticalAlignment="Bottom" Padding="15,8,15,15" Spacing="5">
+
+                                <muxc:ProgressRing Width="22" Height="22" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="11,46,11,0" IsActive="True" Visibility="{x:Bind Processing, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+
+                                <!-- Bottom Poster Info & DLSS Version Details -->
+                                <StackPanel VerticalAlignment="Bottom" Padding="15,10,15,15" Spacing="4">
                                     <TextBlock Text="{x:Bind Title, Mode=OneWay}"
-                                               FontSize="17"
+                                               FontSize="16.5"
                                                FontWeight="SemiBold"
                                                Foreground="White"
                                                TextWrapping="WrapWholeWords"
                                                MaxLines="2" />
-                                    <TextBlock FontSize="12" Foreground="#E6FFFFFF" Visibility="{x:Bind Processing, Converter={StaticResource InverseBoolToVisibilityConverter}, Mode=OneWay}">
-                                        <Run Text="{x:Bind CurrentDLSS.DisplayName, FallbackValue='No DLSS detected', Mode=OneWay}" />
+
+                                    <!-- Explicit DLSS Version Line -->
+                                    <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="#C7D2FE" Visibility="{x:Bind Processing, Converter={StaticResource InverseBoolToVisibilityConverter}, Mode=OneWay}">
+                                        <Run Text="{x:Bind DlssVersionLabel, FallbackValue='DLSS not detected', Mode=OneWay}" />
                                     </TextBlock>
+
+                                    <!-- Integration Engine Status -->
                                     <TextBlock Text="{x:Bind IntegrationStatus, Mode=OneWay}"
                                                FontSize="11"
-                                               Foreground="#C9BFFF"
+                                               Foreground="#94A3B8"
                                                TextTrimming="CharacterEllipsis" />
                                 </StackPanel>
                             </Grid>
@@ -219,68 +263,75 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Padding="36,30,36,18">
+        <!-- Apple macOS Style Hero Header -->
+        <Grid Grid.Row="0" Padding="36,28,36,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <StackPanel VerticalAlignment="Center" Spacing="4">
-                <TextBlock Text="{x:Bind ViewModel.TranslationProperties.PageTitle, Mode=OneWay}"
-                           FontSize="30"
+                <TextBlock Text="Game Library"
+                           FontSize="29"
                            FontWeight="SemiBold"
-                           CharacterSpacing="-18" />
+                           CharacterSpacing="-20"
+                           Foreground="{ThemeResource XtrTextBrush}" />
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <TextBlock Text="Manage detected games, rendering files, and runtime profiles"
-                               FontSize="13.5"
+                    <TextBlock Text="Native DLSS upscaling, ray reconstruction &amp; frame generation bridge"
+                               FontSize="13"
                                Foreground="{ThemeResource XtrSecondaryTextBrush}" />
                     <muxc:ProgressRing Width="16" Height="16" IsActive="True" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
                 </StackPanel>
             </StackPanel>
+
+            <!-- Apple Liquid Status Pill -->
             <Border Grid.Column="1"
-                    Padding="12,8"
-                    CornerRadius="12"
+                    Padding="14,8"
+                    CornerRadius="16"
                     VerticalAlignment="Center"
                     Background="{ThemeResource XtrSurfaceBrush}"
-                    BorderBrush="{ThemeResource XtrStrokeBrush}"
+                    BorderBrush="{ThemeResource XtrGlassBorderBrush}"
                     BorderThickness="1">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <Ellipse Width="7" Height="7" Fill="{ThemeResource XtrSuccessBrush}" VerticalAlignment="Center" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource InverseBoolToVisibilityConverter}, Mode=OneWay}" />
                     <muxc:ProgressRing Width="13" Height="13" IsActive="True" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
-                    <TextBlock Text="Ready" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource InverseBoolToVisibilityConverter}, Mode=OneWay}" />
-                    <TextBlock Text="Scanning" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+                    <TextBlock Text="Engine Ready · FSR 3.1 Swapchain Active" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" VerticalAlignment="Center" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource InverseBoolToVisibilityConverter}, Mode=OneWay}" />
+                    <TextBlock Text="Scanning Launchers..." FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" VerticalAlignment="Center" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
                 </StackPanel>
             </Border>
         </Grid>
 
+        <!-- Apple Liquid Toolbar Bar: Spotlight Search + Pill Buttons -->
         <Grid Grid.Row="1" Padding="36,0,36,18" ColumnSpacing="12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
+
+            <!-- Spotlight Search Pill -->
             <Grid ColumnSpacing="9" VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" MinWidth="200" MaxWidth="320" />
+                    <ColumnDefinition Width="*" MinWidth="220" MaxWidth="360" />
                 </Grid.ColumnDefinitions>
-                <FontIcon Glyph="&#xE721;" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                <FontIcon Glyph="&#xE721;" FontSize="14" Foreground="{ThemeResource XtrSecondaryTextBrush}" VerticalAlignment="Center" />
                 <TextBox x:Name="SearchBox"
                          Grid.Column="1"
                          Height="38"
-                         Padding="13,0"
-                         CornerRadius="12"
+                         Padding="14,0"
+                         CornerRadius="19"
                          Background="{ThemeResource XtrSurfaceBrush}"
-                         BorderBrush="{ThemeResource XtrStrokeBrush}"
+                         BorderBrush="{ThemeResource XtrGlassBorderBrush}"
                          BorderThickness="1"
                          AcceptsReturn="False"
                          IsEnabled="{x:Bind ViewModel.IsGameListLoading, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}"
-                         PlaceholderText="Search games"
+                         PlaceholderText="Search games by title..."
                          TextChanged="{x:Bind ViewModel.SearchForGameEvent}" />
                 <Button Grid.Column="1"
                         Width="28"
                         Height="28"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
-                        Margin="0,0,5,0"
+                        Margin="0,0,6,0"
                         Padding="0"
                         Background="Transparent"
                         BorderThickness="0"
@@ -290,12 +341,13 @@
                 </Button>
             </Grid>
 
+            <!-- Action Pill Buttons -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                 <Button Style="{StaticResource XtrSecondaryButtonStyle}"
                         Content="{x:Bind ViewModel.TranslationProperties.RefreshText, Mode=OneWay}"
                         Command="{x:Bind ViewModel.RefreshGamesButtonCommand}"
                         IsEnabled="{x:Bind ViewModel.CanRefresh, Mode=OneWay}"
-                        ToolTipService.ToolTip="Scan your game launchers again">
+                        ToolTipService.ToolTip="Rescan your game launchers">
                     <Button.KeyboardAccelerators>
                         <KeyboardAccelerator Key="R" Modifiers="Control" />
                     </Button.KeyboardAccelerators>
@@ -305,15 +357,15 @@
                         Command="{x:Bind ViewModel.AddManualGameButtonCommand}"
                         IsEnabled="{x:Bind ViewModel.CanAddGameAndChangeView, Mode=OneWay}" />
                 <Button Style="{StaticResource XtrSecondaryButtonStyle}"
-                        Content="More"
+                        Content="View Options"
                         IsEnabled="{x:Bind ViewModel.IsGameListLoading, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}">
                     <Button.Flyout>
                         <MenuFlyout>
                             <MenuFlyoutItem Text="{x:Bind ViewModel.TranslationProperties.BulkSwapText, Mode=OneWay}" Command="{x:Bind ViewModel.ToggleSelectionModeCommand}" />
                             <MenuFlyoutItem Text="{x:Bind ViewModel.TranslationProperties.FilterText, Mode=OneWay}" Command="{x:Bind ViewModel.FilterGamesButtonCommand}" />
                             <MenuFlyoutSeparator />
-                            <MenuFlyoutItem Text="Grid view" Command="{x:Bind ViewModel.ChangeGameGridViewCommand}" CommandParameter="{x:Bind pages:GameGridViewType.GridView}" />
-                            <MenuFlyoutItem Text="List view" Command="{x:Bind ViewModel.ChangeGameGridViewCommand}" CommandParameter="{x:Bind pages:GameGridViewType.ListView}" />
+                            <MenuFlyoutItem Text="Grid View" Command="{x:Bind ViewModel.ChangeGameGridViewCommand}" CommandParameter="{x:Bind pages:GameGridViewType.GridView}" />
+                            <MenuFlyoutItem Text="List View" Command="{x:Bind ViewModel.ChangeGameGridViewCommand}" CommandParameter="{x:Bind pages:GameGridViewType.ListView}" />
                         </MenuFlyout>
                     </Button.Flyout>
                 </Button>
@@ -334,6 +386,7 @@
                      IsOpen="True"
                      Severity="Warning"
                      IsClosable="False"
+                     CornerRadius="14"
                      Title="Running as administrator"
                      Message="{x:Bind ViewModel.TranslationProperties.ApplicationRunsInAdministrativeModeInfo, Mode=OneWay}"
                      Visibility="{x:Bind system:Environment.IsPrivilegedProcess, Converter={StaticResource BoolToVisibilityConverter}}" />
@@ -341,18 +394,18 @@
             <Border VerticalAlignment="Bottom"
                     HorizontalAlignment="Center"
                     Margin="0,0,0,24"
-                    Padding="14,10"
-                    CornerRadius="14"
+                    Padding="16,10"
+                    CornerRadius="18"
                     BorderThickness="1"
                     Background="{ThemeResource XtrSurfaceBrush}"
-                    BorderBrush="{ThemeResource XtrStrokeBrush}"
+                    BorderBrush="{ThemeResource XtrGlassBorderBrush}"
                     Visibility="{x:Bind ViewModel.IsSelectionMode, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock Text="{x:Bind ViewModel.SelectedGamesCountText, Mode=OneWay}" VerticalAlignment="Center" Margin="0,0,6,0" />
-                    <Button Content="{x:Bind ViewModel.TranslationProperties.SelectAllText, Mode=OneWay}" Command="{x:Bind ViewModel.SelectAllVisibleCommand}" />
-                    <Button Content="{x:Bind ViewModel.TranslationProperties.SelectNoneText, Mode=OneWay}" Command="{x:Bind ViewModel.ClearSelectionCommand}" />
+                    <Button Style="{StaticResource XtrSecondaryButtonStyle}" Content="{x:Bind ViewModel.TranslationProperties.SelectAllText, Mode=OneWay}" Command="{x:Bind ViewModel.SelectAllVisibleCommand}" />
+                    <Button Style="{StaticResource XtrSecondaryButtonStyle}" Content="{x:Bind ViewModel.TranslationProperties.SelectNoneText, Mode=OneWay}" Command="{x:Bind ViewModel.ClearSelectionCommand}" />
                     <Button Style="{StaticResource XtrPrimaryButtonStyle}" Content="{x:Bind ViewModel.TranslationProperties.SelectDllsText, Mode=OneWay}" Command="{x:Bind ViewModel.ApplyBatchDllCommand}" />
-                    <Button Content="{x:Bind ViewModel.TranslationProperties.CloseText, Mode=OneWay}" Command="{x:Bind ViewModel.ToggleSelectionModeCommand}" />
+                    <Button Style="{StaticResource XtrSecondaryButtonStyle}" Content="{x:Bind ViewModel.TranslationProperties.CloseText, Mode=OneWay}" Command="{x:Bind ViewModel.ToggleSelectionModeCommand}" />
                 </StackPanel>
             </Border>
         </Grid>
