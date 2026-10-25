@@ -3,3 +3,7 @@ runtime/downloads/
 .agents/
 GHelper.exe
 *.exe
+[Bb]in/
+[Oo]bj/
+dist/
+
