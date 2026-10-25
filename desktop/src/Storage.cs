@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Text.Json;
 
@@ -12,18 +12,23 @@ namespace DLSS_Swapper;
  */
 static class Storage
 {
+    public static string? StoragePathOverride { get; set; }
+    public static string? TempPathOverride { get; set; }
     static string? _storagePath;
+    public static string StoragePath => StoragePathOverride ?? GetDefaultStoragePath();
+
+    private static string GetDefaultStoragePath()
+    {
 #if   PORTABLE && DEBUG
-    //public static string StoragePath => _storagePath ??= Path.Combine(AppContext.BaseDirectory, "StoredData", "DEBUG", Guid.NewGuid().ToString());
-    public static string StoragePath => _storagePath ??= Path.Combine(AppContext.BaseDirectory, "StoredData", "DEBUG");
+        return _storagePath ??= Path.Combine(AppContext.BaseDirectory, "StoredData", "DEBUG");
 #elif PORTABLE && !DEBUG
-    public static string StoragePath => _storagePath ??= Path.Combine(AppContext.BaseDirectory, "StoredData");
+        return _storagePath ??= Path.Combine(AppContext.BaseDirectory, "StoredData");
 #elif !PORTABLE && DEBUG
-    //public static string StoragePath => _storagePath ??= Path.Combine(Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%"), AppIdentity.Name, "DEBUG", Guid.NewGuid().ToString());
-    public static string StoragePath => _storagePath ??= Path.Combine(Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%"), AppIdentity.Name, "DEBUG");
+        return _storagePath ??= Path.Combine(Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%"), AppIdentity.Name, "DEBUG");
 #elif !PORTABLE && !DEBUG
-    public static string StoragePath => _storagePath  ??= Path.Combine(Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%"), AppIdentity.Name);
+        return _storagePath ??= Path.Combine(Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%"), AppIdentity.Name);
 #endif
+    }
 
 
     static Storage()
@@ -37,6 +42,11 @@ static class Storage
 
     public static string GetTemp()
     {
+        if (TempPathOverride is not null)
+        {
+            CreateDirectoryIfNotExists(TempPathOverride);
+            return TempPathOverride;
+        }
 #if PORTABLE
         var path = Path.Combine(StoragePath, "temp");
         CreateDirectoryIfNotExists(path);
@@ -164,6 +174,7 @@ static class Storage
         }
     }
 
+#if !XTR_TESTS
     /// <summary>
     /// Saves the current settings object to settings.json in the apps dynamic json folder.
     /// </summary>
@@ -212,4 +223,5 @@ static class Storage
             return null;
         }
     }
+#endif
 }

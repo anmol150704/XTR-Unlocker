@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -85,6 +85,24 @@ public partial class GameControlModel : ObservableObject
     public string RuntimeComponentsText => Game.RuntimeManifest?.Components is { Count: > 0 } components
         ? string.Join(" · ", components)
         : "Engine components not recorded";
+
+    public string RuntimeStatusText => Game.RuntimeManifest is not null
+        ? "Restore available"
+        : "Ready";
+
+    public string FrameGenerationStatusText => Game.CurrentDLSS_G is not null
+        ? "Native DLSS-G detected"
+        : Game.RuntimeManifest is not null
+            ? "Frame generation bridge active"
+            : "Available via runtime";
+
+    public string PrimaryActionText => Game.RuntimeManifest is not null
+        ? "Restore original files"
+        : "Enable latest DLSS";
+
+    public string PrimaryActionExplanationText => Game.RuntimeManifest is not null
+        ? "Revert game folder to its original verified state before runtime installation."
+        : "Installs the latest compatible DLSS runtime and verified configuration.";
 
     public GameControlModel(GameControl gameControl, Game game) : base()
     {
@@ -295,6 +313,108 @@ public partial class GameControlModel : ObservableObject
                 };
                 await dialog.ShowAsync();
             }
+        }
+    }
+
+    [RelayCommand]
+    async Task EnableLatestDlssAsync()
+    {
+        if (!gameControlWeakReference.TryGetTarget(out var gameControl))
+            return;
+
+        var packagePath = RuntimeInstallService.GetBundledPackagePath();
+        if (packagePath is null)
+        {
+            await ShowRuntimeDialogAsync("Bundled runtime unavailable", "This XTR build does not include the baseline OptiScaler runtime. Choose a custom package under Advanced.");
+            return;
+        }
+
+        var pack = await RuntimePack.LoadFromDirectoryAsync(packagePath);
+        if (pack is null)
+        {
+            await ShowRuntimeDialogAsync("Runtime load error", "Could not load the bundled runtime package.");
+            return;
+        }
+
+        var plan = await DeploymentPlanner.CreatePlanAsync(
+            Game.ID,
+            Game.Title,
+            Game.InstallPath,
+            pack,
+            RuntimeIntegrationPreset.LatestDlssOnly,
+            SelectedRuntimeProxy);
+
+        if (!plan.CanExecute)
+        {
+            await ShowRuntimeDialogAsync(plan.Headline, plan.Summary);
+            return;
+        }
+
+        var planPanel = new StackPanel { Spacing = 12 };
+        var summaryText = new TextBlock
+        {
+            Text = plan.Summary,
+            FontSize = 13,
+            TextWrapping = TextWrapping.Wrap
+        };
+        planPanel.Children.Add(summaryText);
+
+        var preflightInfo = new Border
+        {
+            Padding = new Thickness(12),
+            CornerRadius = new CornerRadius(10),
+            Background = (Microsoft.UI.Xaml.Media.Brush)App.CurrentApp.Resources["XtrElevatedBrush"],
+            BorderBrush = (Microsoft.UI.Xaml.Media.Brush)App.CurrentApp.Resources["XtrStrokeBrush"],
+            BorderThickness = new Thickness(1),
+            Child = new TextBlock
+            {
+                Text = $"Preflight: {plan.PreflightResult.Headline} · {plan.PlannedCopies.Count} files to deploy · {plan.PlannedBackups.Count} backups planned\nProxy: {plan.SelectedProxy} ({plan.PreflightResult.DetectedApi})",
+                FontSize = 12,
+                Foreground = (Microsoft.UI.Xaml.Media.Brush)App.CurrentApp.Resources["XtrSecondaryTextBrush"],
+                TextWrapping = TextWrapping.Wrap
+            }
+        };
+        planPanel.Children.Add(preflightInfo);
+
+        var detailsExpander = new Expander
+        {
+            Header = "Review dry-run plan details",
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            Content = new TextBlock
+            {
+                Text = string.Join(Environment.NewLine, plan.PlannedCopies.Select(c => $"• {c.RelativePath}{(c.RequiresBackup ? " (backs up original)" : "")}")),
+                FontSize = 11,
+                Foreground = (Microsoft.UI.Xaml.Media.Brush)App.CurrentApp.Resources["XtrSecondaryTextBrush"],
+                TextWrapping = TextWrapping.Wrap
+            }
+        };
+        planPanel.Children.Add(detailsExpander);
+
+        var dialog = new EasyContentDialog(gameControl.XamlRoot)
+        {
+            Title = "Enable latest DLSS",
+            PrimaryButtonText = "Install runtime",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Primary,
+            Content = planPanel
+        };
+
+        var dialogResult = await dialog.ShowAsync();
+        if (dialogResult != ContentDialogResult.Primary)
+        {
+            return;
+        }
+
+        try
+        {
+            var manifest = await RuntimeInstallService.InstallPlanAsync(plan);
+            await Game.SaveRuntimeManifestAsync(manifest);
+            await ShowRuntimeDialogAsync("Runtime installed", $"{pack.DisplayName} is active for {Game.Title}. Reversible backups recorded.");
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex);
+            await ShowRuntimeDialogAsync("Install failed", ex.Message);
         }
     }
 
@@ -697,6 +817,10 @@ public partial class GameControlModel : ObservableObject
         if (e.PropertyName == nameof(Game.RuntimeManifest))
         {
             OnPropertyChanged(nameof(RuntimeComponentsText));
+            OnPropertyChanged(nameof(RuntimeStatusText));
+            OnPropertyChanged(nameof(FrameGenerationStatusText));
+            OnPropertyChanged(nameof(PrimaryActionText));
+            OnPropertyChanged(nameof(PrimaryActionExplanationText));
         }
 
         if (e.PropertyName == nameof(Game.Processing))

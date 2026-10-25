@@ -1,15 +1,152 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "optiscaler-0.9.4-xtr",
-  "displayName": "OptiScaler 0.9.4",
+  "displayName": "OptiScaler 0.9.4 Baseline",
   "version": "0.9.4",
-  "source": "https://github.com/optiscaler/OptiScaler/releases/tag/v0.9.4",
+  "sourceUrl": "https://github.com/optiscaler/OptiScaler/releases/tag/v0.9.4",
+  "releaseDate": "2024-09-01T00:00:00Z",
+  "releaseChannel": "Stable",
   "components": [
     "OptiScaler engine",
     "FSR and XeSS providers",
     "DLSSG-to-FSR3 bridge"
   ],
-  "supportedApis": [ "DX11", "DX12", "Vulkan" ],
-  "frameGenerationModes": [ "FSR3 bridge" ],
-  "notes": "Baseline engine bundle. A DLSS Unlocked package can be selected as an external runtime when DLSS-NR, native RTX 20/30 MFG, or newer Streamline components are required."
+  "supportedApis": [
+    "DX11",
+    "DX12",
+    "Vulkan"
+  ],
+  "supportedGpuFamilies": [
+    "NVIDIA RTX 20/30/40",
+    "AMD RDNA",
+    "Intel Arc"
+  ],
+  "proxyChoices": [
+    "dxgi.dll",
+    "winmm.dll",
+    "d3d12.dll",
+    "version.dll",
+    "dbghelp.dll",
+    "winhttp.dll",
+    "wininet.dll"
+  ],
+  "recommendedProxy": "dxgi.dll",
+  "configurationSchema": "optiscaler-ini-v1",
+  "capabilities": {
+    "dlssUpdate": true,
+    "dlssFrameGeneration": false,
+    "multiFrameGeneration": false,
+    "dlssNeuralRendering": false,
+    "fsrXeSsFallback": true
+  },
+  "fileHashes": [
+    {
+      "path": "amd_fidelityfx_dx12.dll",
+      "sha256": "e2d85aa05a9bd9ed8b38935fdf5199372cca6f74c12015143bb6f945ee1608aa",
+      "sizeBytes": 26376
+    },
+    {
+      "path": "amd_fidelityfx_framegeneration_dx12.dll",
+      "sha256": "02297beedd285e822d3a64f314cf00faf378dcec0edc47ff0c4dd71b3a8c2f18",
+      "sizeBytes": 40085776
+    },
+    {
+      "path": "amd_fidelityfx_upscaler_dx12.dll",
+      "sha256": "d0dcccc74a43c44ba435b7a369b456e0970d8a4464e4bd683119b374f2c9fb46",
+      "sizeBytes": 28761864
+    },
+    {
+      "path": "amd_fidelityfx_vk.dll",
+      "sha256": "a1624cc4238fef046f30c4d80ce3f47be63fc5f5373f49e3ee9edb9960f54c78",
+      "sizeBytes": 9332432
+    },
+    {
+      "path": "dlssg_to_fsr3_amd_is_better.dll",
+      "sha256": "806020c0444f7841a3a9f661295c16fc482e981e0666d0b9624bf6ccd19c4b5e",
+      "sizeBytes": 3038208
+    },
+    {
+      "path": "fakenvapi.dll",
+      "sha256": "373e73dc06e2d66e90083fde3bc99ef5c1ed0bef98d1f7eda56c8b073269c3f1",
+      "sizeBytes": 415232
+    },
+    {
+      "path": "fakenvapi.ini",
+      "sha256": "a4bfa3ec7b4badd93ae5e1ad74a582238082d871f54f38f68e7d9fb6384ce772",
+      "sizeBytes": 466
+    },
+    {
+      "path": "libxell.dll",
+      "sha256": "61aeeab7fdcfb6d1742f86c14c68c663d759607d01a6132645c857291eaebb86",
+      "sizeBytes": 411504
+    },
+    {
+      "path": "libxess.dll",
+      "sha256": "251659dd84a3e84de67c886a4186e01f3eca49b00641906fe38bb6b807e5d5b7",
+      "sizeBytes": 77795704
+    },
+    {
+      "path": "libxess_dx11.dll",
+      "sha256": "c7cfe86f0c9d94e4fb3696d3cd5035e2bbb6a8b1b0572f8b7395a4cdfd0c625e",
+      "sizeBytes": 156016
+    },
+    {
+      "path": "libxess_fg.dll",
+      "sha256": "ec5e0c65e075570c6ede72618bb666d0be0c2e10b2ea9762c0fe8cb8e375ab27",
+      "sizeBytes": 22957432
+    },
+    {
+      "path": "OptiScaler.dll",
+      "sha256": "fbfb6676b829dad7e020fb830586a16aa0ec6add78016db48ef12e2ae1803231",
+      "sizeBytes": 25379632
+    },
+    {
+      "path": "OptiScaler.ini",
+      "sha256": "6d7ed07e2e9df3d611b6f59047716bcbc0b67834296b8e4414816189b1233aa7",
+      "sizeBytes": 47477
+    },
+    {
+      "path": "D3D12_Optiscaler/D3D12Core.dll",
+      "sha256": "07d286c306f8117321422affd9e6388c12d0fb4be1c7fc689d9e899324feeb24",
+      "sizeBytes": 3351064
+    },
+    {
+      "path": "Licenses/DirectX_LICENSE.txt",
+      "sha256": "5239850894610071566f7ecee0b751fde43c862032d92b99d7d0f596b3433ebd",
+      "sizeBytes": 13147
+    },
+    {
+      "path": "Licenses/FidelityFX_v1_LICENSE.md",
+      "sha256": "a335c2bb2bd28184b9a30b6e35b0c7e4aa7826abd1c388fc2aa02405e9d04f03",
+      "sizeBytes": 1142
+    },
+    {
+      "path": "Licenses/FidelityFX_v2_LICENSE.md",
+      "sha256": "f0da09d71ad5c82759a179e774535d4a829e5c96c49294167c1152402b2cb400",
+      "sizeBytes": 61784
+    },
+    {
+      "path": "Licenses/XeSS_LICENSE.txt",
+      "sha256": "784be42c39a4a4d03cf85d88e15e59d75828fca773ce45b8dbfffbd7eaf208df",
+      "sizeBytes": 4194
+    }
+  ],
+  "licenses": [
+    {
+      "name": "DirectX Agility SDK",
+      "relativePath": "Licenses/DirectX_LICENSE.txt",
+      "notice": "Microsoft DirectX Agility SDK license"
+    },
+    {
+      "name": "AMD FidelityFX SDK",
+      "relativePath": "Licenses/FidelityFX_v2_LICENSE.md",
+      "notice": "AMD FidelityFX MIT License"
+    },
+    {
+      "name": "Intel XeSS SDK",
+      "relativePath": "Licenses/XeSS_LICENSE.txt",
+      "notice": "Intel XeSS Community License"
+    }
+  ],
+  "notes": "Baseline official OptiScaler engine bundle. Safe and verified across DirectX 11, 12, and Vulkan games."
 }

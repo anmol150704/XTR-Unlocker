@@ -527,62 +527,116 @@
                         </StackPanel>
                     </Expander>
 
-                    <Grid Padding="18" Margin="0,14,0,0" Background="{ThemeResource XtrElevatedBrush}" CornerRadius="16" RowSpacing="10">
+                    <Grid Padding="18" Margin="0,14,0,0" Background="{ThemeResource XtrElevatedBrush}" CornerRadius="16" RowSpacing="12">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <StackPanel Spacing="4">
-                            <TextBlock Text="Runtime integration" FontSize="16" FontWeight="SemiBold" />
-                            <TextBlock
-                                Text="Install the bundled OptiScaler runtime or choose another extracted package. XTR backs up files it replaces and checks ownership before restoring them."
-                                FontSize="12"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                        <TextBlock Grid.Row="1" Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
-                            Text="{x:Bind ViewModel.Game.RuntimeManifest.RuntimeVersion, Mode=OneWay}" FontSize="13" FontWeight="SemiBold" />
-                        <TextBlock Grid.Row="1" Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToInverseVisibilityConverter}, Mode=OneWay}"
-                            Text="No runtime installed for this game" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <TextBlock Grid.Row="2" Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
-                            Text="{x:Bind ViewModel.Game.RuntimeManifest.InstallRoot, Mode=OneWay}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
-                        <TextBlock Grid.Row="3" Margin="0,8,0,0" Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
-                            Text="{x:Bind ViewModel.RuntimeComponentsText, Mode=OneWay}" FontSize="12" Foreground="{ThemeResource XtrSecondaryTextBrush}" TextWrapping="Wrap" />
-                        <Grid Grid.Row="4" ColumnSpacing="8">
+
+                        <!-- Header & Primary Status -->
+                        <Grid Grid.Row="0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <ComboBox
-                                Grid.Column="0"
-                                ItemsSource="{x:Bind ViewModel.RuntimeProxyNames}"
-                                SelectedItem="{x:Bind ViewModel.SelectedRuntimeProxy, Mode=TwoWay}"
-                                Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToInverseVisibilityConverter}, Mode=OneWay}" />
-                            <TextBlock
-                                Grid.Column="0"
-                                VerticalAlignment="Center"
-                                Text="{x:Bind ViewModel.Game.RuntimeManifest.ProxyFileName, Mode=OneWay, TargetNullValue=Proxy file not recorded}"
-                                Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}" />
-                            <DropDownButton
-                                Grid.Column="1"
-                                Content="Install runtime"
-                                Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToInverseVisibilityConverter}, Mode=OneWay}">
-                                <DropDownButton.Flyout>
-                                    <MenuFlyout>
-                                        <MenuFlyoutItem Text="Install bundled OptiScaler" Command="{x:Bind ViewModel.InstallRuntimeCommand}" />
-                                        <MenuFlyoutItem Text="Choose another packageâ€¦" Command="{x:Bind ViewModel.InstallCustomRuntimeCommand}" />
-                                    </MenuFlyout>
-                                </DropDownButton.Flyout>
-                            </DropDownButton>
-                            <Button
-                                Grid.Column="1"
-                                Content="Restore original files"
-                                Command="{x:Bind ViewModel.RestoreRuntimeCommand}"
-                                Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}" />
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="DLSS &amp; Runtime Setup" FontSize="16" FontWeight="SemiBold" />
+                                <TextBlock
+                                    Text="{x:Bind ViewModel.PrimaryActionExplanationText, Mode=OneWay}"
+                                    FontSize="12"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                            <Border Grid.Column="1" VerticalAlignment="Top" Padding="10,4" CornerRadius="8" Background="{ThemeResource XtrSurfaceBrush}" BorderBrush="{ThemeResource XtrStrokeBrush}" BorderThickness="1">
+                                <TextBlock Text="{x:Bind ViewModel.RuntimeStatusText, Mode=OneWay}" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
+                            </Border>
                         </Grid>
+
+                        <!-- High Clarity Status Row -->
+                        <Grid Grid.Row="1" ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Padding="12" CornerRadius="10" Background="{ThemeResource XtrSurfaceBrush}">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="NATIVE DLSS" FontSize="10" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                    <TextBlock Text="{x:Bind ViewModel.Game.CurrentDLSS.DisplayName, FallbackValue='Not detected', Mode=OneWay}" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Column="1" Padding="12" CornerRadius="10" Background="{ThemeResource XtrSurfaceBrush}">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="FRAME GENERATION" FontSize="10" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                    <TextBlock Text="{x:Bind ViewModel.FrameGenerationStatusText, Mode=OneWay}" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- Primary Action Button -->
+                        <Grid Grid.Row="2">
+                            <Button
+                                Content="Enable latest DLSS"
+                                Style="{StaticResource XtrPrimaryButtonStyle}"
+                                Command="{x:Bind ViewModel.EnableLatestDlssCommand}"
+                                Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToInverseVisibilityConverter}, Mode=OneWay}"
+                                HorizontalAlignment="Stretch"
+                                Height="40"
+                                CornerRadius="10"
+                                FontSize="13"
+                                FontWeight="SemiBold" />
+                            <Button
+                                Content="Restore original game files"
+                                Style="{StaticResource XtrSecondaryButtonStyle}"
+                                Command="{x:Bind ViewModel.RestoreRuntimeCommand}"
+                                Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
+                                HorizontalAlignment="Stretch"
+                                Height="40"
+                                CornerRadius="10"
+                                FontSize="13" />
+                        </Grid>
+
+                        <!-- Progressive Disclosure: Advanced Settings -->
+                        <Expander Grid.Row="3" Header="Advanced runtime options" IsExpanded="False" HorizontalAlignment="Stretch">
+                            <StackPanel Spacing="10" Padding="0,8,0,0">
+                                <TextBlock Text="Proxy selection and custom packages are optional. XTR manages these automatically by default." FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                                <Grid ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <ComboBox
+                                        Grid.Column="0"
+                                        ItemsSource="{x:Bind ViewModel.RuntimeProxyNames}"
+                                        SelectedItem="{x:Bind ViewModel.SelectedRuntimeProxy, Mode=TwoWay}"
+                                        HorizontalAlignment="Stretch"
+                                        Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToInverseVisibilityConverter}, Mode=OneWay}" />
+                                    <TextBlock
+                                        Grid.Column="0"
+                                        VerticalAlignment="Center"
+                                        Text="{x:Bind ViewModel.Game.RuntimeManifest.ProxyFileName, Mode=OneWay, TargetNullValue=Default proxy}"
+                                        Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}" />
+                                    <DropDownButton
+                                        Grid.Column="1"
+                                        Content="Custom package…"
+                                        Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToInverseVisibilityConverter}, Mode=OneWay}">
+                                        <DropDownButton.Flyout>
+                                            <MenuFlyout>
+                                                <MenuFlyoutItem Text="Choose custom package folder…" Command="{x:Bind ViewModel.InstallCustomRuntimeCommand}" />
+                                                <MenuFlyoutItem Text="Direct install bundled OptiScaler" Command="{x:Bind ViewModel.InstallRuntimeCommand}" />
+                                            </MenuFlyout>
+                                        </DropDownButton.Flyout>
+                                    </DropDownButton>
+                                </Grid>
+                                <TextBlock
+                                    Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
+                                    Text="{x:Bind ViewModel.RuntimeComponentsText, Mode=OneWay}"
+                                    FontSize="11"
+                                    Foreground="{ThemeResource XtrSecondaryTextBrush}"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Expander>
                     </Grid>
                 </StackPanel>
             </Grid>

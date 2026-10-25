@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -44,6 +44,65 @@ internal static class RuntimeInstallService
         try
         {
             return await InstallCoreAsync(gameId, gameRoot, packageRoot, proxyName, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            gameLock.Release();
+        }
+    }
+
+    internal static async Task<RuntimeInstallManifest> InstallPlanAsync(
+        DeploymentPlan plan,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(plan);
+        if (!plan.CanExecute)
+            throw new InvalidOperationException($"Cannot execute deployment plan: {plan.Summary}");
+
+        var gameLock = GameLocks.GetOrAdd(plan.GameId, static _ => new SemaphoreSlim(1, 1));
+        await gameLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var manifest = await InstallCoreAsync(
+                plan.GameId,
+                plan.GameRoot,
+                plan.Pack.PackageRoot ?? throw new InvalidOperationException("Package root is missing from plan."),
+                plan.SelectedProxy,
+                cancellationToken).ConfigureAwait(false);
+
+            if (plan.PlannedConfigModifications.Count > 0)
+            {
+                var profile = new RuntimeIntegrationProfile
+                {
+                    GameId = plan.GameId,
+                    RuntimeId = manifest.RuntimeId,
+                    RuntimeVersion = manifest.RuntimeVersion,
+                    ProxyFileName = manifest.ProxyFileName ?? plan.SelectedProxy,
+                    SupportState = plan.Pack.IsTrusted ? "supported" : "experimental",
+                    SupportReason = plan.Summary
+                };
+
+                foreach (var mod in plan.PlannedConfigModifications)
+                {
+                    if (mod.Section.Equals("Upscalers", StringComparison.OrdinalIgnoreCase))
+                    {
+                        profile.SelectedUpscaler = mod.Value;
+                    }
+                    else if (mod.Section.Equals("FrameGen", StringComparison.OrdinalIgnoreCase) && mod.Key.Equals("FGInput", StringComparison.OrdinalIgnoreCase))
+                    {
+                        profile.FrameGenerationInput = mod.Value;
+                    }
+                    else if (mod.Section.Equals("FrameGen", StringComparison.OrdinalIgnoreCase) && mod.Key.Equals("FGOutput", StringComparison.OrdinalIgnoreCase))
+                    {
+                        profile.FrameGenerationOutput = mod.Value;
+                    }
+                }
+
+                await RuntimeConfigService.ApplyProfileAsync(manifest.InstallRoot, profile, cancellationToken).ConfigureAwait(false);
+                await RuntimeIntegrationProfileStore.SaveAsync(profile, cancellationToken).ConfigureAwait(false);
+            }
+
+            return manifest;
         }
         finally
         {
