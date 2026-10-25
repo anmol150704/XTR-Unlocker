@@ -261,6 +261,21 @@ public static class DeploymentPlanner
                     Value = "2",
                     Reason = "Detailed HUD displaying FPS, active upscaler, and generated frame delta."
                 });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "Menu",
+                    Key = "DisableSplash",
+                    Value = "true",
+                    Reason = "Suppresses external splash screens on game launch."
+                });
+
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "Menu",
+                    Key = "ShortcutKey",
+                    Value = "-1",
+                    Reason = "Suppresses native backend developer menu to keep game UI clean."
+                });
 
                 // Anti-Ghosting Shield: HUD isolation, immutable buffer cloning & transparency masks
                 plan.PlannedConfigModifications.Add(new PlannedConfigEntry
@@ -406,6 +421,21 @@ public static class DeploymentPlanner
                     Key = "FpsOverlayType",
                     Value = "2",
                     Reason = "Detailed HUD displaying FPS, active upscaler, and generated frame delta."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "Menu",
+                    Key = "DisableSplash",
+                    Value = "true",
+                    Reason = "Suppresses external splash screens on game launch."
+                });
+
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "Menu",
+                    Key = "ShortcutKey",
+                    Value = "-1",
+                    Reason = "Suppresses native backend developer menu to keep game UI clean."
                 });
                 break;
 

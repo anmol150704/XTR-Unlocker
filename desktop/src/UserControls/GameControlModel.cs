@@ -99,6 +99,13 @@ public partial class GameControlModel : ObservableObject
 
     [ObservableProperty]
     public partial bool StreamlineSpoofingEnabled { get; set; } = true;
+    [ObservableProperty]
+    public partial bool InGameDevMenuEnabled { get; set; } = false;
+
+    partial void OnInGameDevMenuEnabledChanged(bool value)
+    {
+        UpdateOptiScalerConfigSetting("ShortcutKey", value ? "0x2D" : "-1");
+    }
 
     partial void OnStreamlineSpoofingEnabledChanged(bool value)
     {

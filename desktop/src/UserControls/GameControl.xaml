@@ -385,6 +385,20 @@
                                     </StackPanel>
                                     <ToggleSwitch Grid.Column="1" IsOn="{x:Bind ViewModel.StreamlineSpoofingEnabled, Mode=TwoWay}" OnContent="" OffContent="" VerticalAlignment="Center" />
                                 </Grid>
+                                <!-- In-Game Developer Menu Toggle [Insert] -->
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Spacing="1">
+                                        <TextBlock Text="ðŸ› ï¸ Native ImGui Developer Menu [Insert]" FontSize="12.5" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
+                                        <TextBlock Text="Displays the underlying C++ backend developer menu for low-level engine debugging (disabled by default for clean presentation)." FontSize="11" Foreground="{ThemeResource XtrSecondaryTextBrush}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                    <ToggleSwitch Grid.Column="1" IsOn="{x:Bind ViewModel.InGameDevMenuEnabled, Mode=TwoWay}" OnContent="" OffContent="" VerticalAlignment="Center" />
+                                </Grid>
+                                <Grid Visibility="Collapsed">
+                                </Grid>
 
                                 <Border Background="{ThemeResource XtrElevatedBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="12,8">
                                     <StackPanel Spacing="4">
