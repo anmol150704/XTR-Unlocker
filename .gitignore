@@ -1,3 +1,5 @@
 # Local runtime downloads and extracted release comparisons.
 runtime/downloads/
 .agents/
+GHelper.exe
+*.exe
