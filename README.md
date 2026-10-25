@@ -5,7 +5,7 @@ XTR Unlocker is a unified Windows app for managing supported DLSS and upscaling 
 ## Product structure
 
 - **Desktop app (`desktop/`)**: game-library discovery, DLL management, per-game profiles, install/update/remove, backups, and restore.
-- **Game runtime (`runtime/OptiScaler/`)**: the pinned OptiScaler source that will provide the per-game integration and redesigned in-game menu.
+- **Game runtime (`desktop/src/Runtime/OptiScaler/`)**: the versioned runtime payload shipped with the app and installed per game.
 
 These are internal parts of one product. Users will manage their library and runtime from XTR Unlocker; the game-side component supplies controls while a selected game is running.
 
@@ -15,7 +15,7 @@ The desktop app detects installed games from Steam, GOG, Epic Games, Ubisoft Con
 
 ## Project status
 
-The current `desktop/` source is based on [DLSS Swapper v1.2.7.0](https://github.com/beeradmoore/dlss-swapper/tree/v1.2.7.0) under GPL-3.0, with XTR identity, storage, update-feed routing, runtime profile storage, and install ownership manifests. The desktop Release build launches and scans games. Its per-game profile installs an extracted OptiScaler package beside the selected game executable and provides a guarded restore action backed by hashed originals. OptiScaler v0.9.4 is pinned as a source submodule; the XTR patch adds branded styling and game identification plus Overview, Upscaling, Frame Generation, and Advanced tabs. Overview reports the live session, Upscaling offers the active backend switch, Frame Generation exposes its session-aware toggle, and Advanced retains all runtime and compatibility controls. Compatibility records and end-to-end validation with a real game remain in progress.
+The current `desktop/` source is based on [DLSS Swapper v1.2.7.0](https://github.com/beeradmoore/dlss-swapper/tree/v1.2.7.0) under GPL-3.0, with XTR identity, storage, update-feed routing, runtime profile storage, and install ownership manifests. The desktop Release build launches and scans games. Its per-game profile installs an extracted OptiScaler package beside the selected game executable and provides a guarded restore action backed by hashed originals. OptiScaler v0.9.4 is shipped as the bundled runtime payload; the desktop build is now self-contained and no longer depends on a nested source repository. Compatibility records and end-to-end validation with a real game remain in progress.
 
 The initial product scope and implementation sequence are in [docs/unified-app-mvp.md](docs/unified-app-mvp.md). Attribution and license notes are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 

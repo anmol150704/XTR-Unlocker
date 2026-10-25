@@ -1,3 +1,0 @@
-[submodule "optiscaler"]
-	path = runtime/OptiScaler
-	url = https://github.com/optiscaler/OptiScaler.git

@@ -17,10 +17,9 @@ The desktop client uses SkiaSharp 3.119.2 for cover-image resizing and WebP deco
 
 ## OptiScaler
 
-`runtime/OptiScaler/` is the OptiScaler v0.9.4 source submodule, pinned at commit `7534ad00bf9e590eedb99e8dd9fd8c89dae3654f` from [optiscaler/OptiScaler](https://github.com/optiscaler/OptiScaler).
+`desktop/src/Runtime/OptiScaler/` is the bundled OptiScaler v0.9.4 runtime payload from [optiscaler/OptiScaler](https://github.com/optiscaler/OptiScaler).
 
-- License: GNU General Public License v3.0; see `runtime/OptiScaler/LICENSE`.
-- Upstream submodules retain their own licenses and notices.
-- `runtime/patches/xtr-overlay-branding.patch` is an XTR modification applied to the pinned source during the native build.
-- The OptiScaler source is present for development. XTR does not yet package or install the runtime, and no upstream runtime release binaries are redistributed by this repository.
+- License: GNU General Public License v3.0; see the upstream project and the notices shipped beside the payload.
+- The payload's optional provider licenses are included under `desktop/src/Runtime/OptiScaler/Licenses/`.
+- The payload is installed per game through XTR's ownership and rollback system.
 - Optional runtime modules remain subject to their own version, compatibility, and redistribution review.
