@@ -34,7 +34,7 @@
 | # | Name | Scope | Dependencies | Status |
 |---|------|-------|-------------|--------|
 | M1 | Runtime Engine & Presets | `OptiScaler.ini`, `xtr-runtime.json`, `DeploymentPlanner.cs`, `FrameGenerationPlannerTests.cs` | none | DONE (32 tests pass, build 0 err/warn) |
-| M2 | Section-Aware INI Writing | `GameControlModel.cs` section-aware INI updates and anti-ghosting toggle integration | M1 | IN_PROGRESS (worker_m2: 4ccbc69e-1e19-4afe-b3f0-d11e5235d23e) |
+| M2 | Section-Aware INI Writing | `GameControlModel.cs` section-aware INI updates and anti-ghosting toggle integration | M1 | DONE (35 tests pass, atomic section updates) |
 | M3 | Apple Liquid UI & Fluent Design | `XtrDesign.xaml`, XAML styling, squircle card borders, Segoe Fluent glyphs, zero mojibake | none | IN_PROGRESS (worker_m3: f42f8784-9223-4d4f-bfff-3f6e8a90e8e0) |
 | M4 | Verification & Forensic Audit | Run 29 unit tests, .NET 10 x64 Release build, Challenger adversarial tests, Forensic Auditor integrity check | M1, M2, M3 | PLANNED |
 

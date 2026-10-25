@@ -92,6 +92,15 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
+    <!-- Universal Iridescent Acrylic Border Highlight -->
+    <LinearGradientBrush x:Key="XtrIridescentBorderBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#40FFFFFF" Offset="0.0" />
+        <GradientStop Color="#25818CF8" Offset="0.25" />
+        <GradientStop Color="#2538BDF8" Offset="0.55" />
+        <GradientStop Color="#25C084FC" Offset="0.80" />
+        <GradientStop Color="#20FFFFFF" Offset="1.0" />
+    </LinearGradientBrush>
+
     <!-- Apple Liquid Primary Button: Smooth continuous pill, luminous gradient feel -->
     <Style x:Key="XtrPrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource AccentButtonStyle}">
         <Setter Property="Background" Value="{ThemeResource XtrAccentBrush}" />
@@ -123,8 +132,8 @@
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="14" />
         <Setter Property="Padding" Value="12,6" />
-        <Setter Property="FontSize" Value="12" />
         <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="FontSize" Value="12" />
     </Style>
 
     <!-- Apple Liquid Glass Card Surface -->
@@ -141,14 +150,5 @@
         <Setter Property="BorderBrush" Value="{ThemeResource XtrGlassBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="22" />
-    </Style>
-
-    <!-- Apple Glass Pill Badge -->
-    <Style x:Key="XtrBadgeBorderStyle" TargetType="Border">
-        <Setter Property="Background" Value="{ThemeResource XtrGlassBadgeBrush}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource XtrGlassBorderBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="12" />
-        <Setter Property="Padding" Value="10,4" />
     </Style>
 </ResourceDictionary>
