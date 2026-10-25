@@ -87,6 +87,10 @@ public partial class GameControlModel : ObservableObject
         gameControlWeakReference = new WeakReference<GameControl>(gameControl);
         Game = game;
         GameTitle = game.Title;
+        if (RuntimeProxyNames.Contains(game.RuntimeManifest?.ProxyFileName ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+        {
+            SelectedRuntimeProxy = game.RuntimeManifest!.ProxyFileName!;
+        }
 
 
         // Make sure NVAPIHelper is supported and the game has DLSS.

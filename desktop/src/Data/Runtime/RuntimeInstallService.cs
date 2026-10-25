@@ -86,6 +86,7 @@ internal static class RuntimeInstallService
             GameId = gameId,
             RuntimeId = RuntimeId,
             RuntimeVersion = FileVersionInfo.GetVersionInfo(runtimeDll).ProductVersion ?? "unknown",
+            ProxyFileName = proxyName,
             InstallRoot = root,
             InstalledUtc = DateTimeOffset.UtcNow,
         };

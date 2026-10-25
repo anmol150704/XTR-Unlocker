@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -132,6 +133,14 @@ internal static class RuntimeInstallManifestStore
         if (manifest.Files is null)
         {
             throw new InvalidDataException("The runtime manifest file list is missing.");
+        }
+
+        if (manifest.ProxyFileName is not null &&
+            (!new[] { "dxgi.dll", "winmm.dll", "d3d12.dll", "version.dll", "dbghelp.dll", "winhttp.dll", "wininet.dll" }
+                 .Contains(manifest.ProxyFileName, StringComparer.OrdinalIgnoreCase) ||
+             !manifest.Files.Any(file => file is not null && string.Equals(file.RelativePath, manifest.ProxyFileName, StringComparison.OrdinalIgnoreCase))))
+        {
+            throw new InvalidDataException("The runtime manifest contains an invalid proxy filename.");
         }
 
         var ownedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

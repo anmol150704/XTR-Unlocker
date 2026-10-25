@@ -132,24 +132,29 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
     [Ignore]
     public partial RuntimeInstallManifest? RuntimeManifest { get; set; }
 
-    private int _runtimeStateLoadStarted;
+    private readonly object _runtimeStateLoadLock = new();
+    private Task? _runtimeStateLoadTask;
 
-    internal async Task LoadRuntimeStateAsync()
+    internal Task LoadRuntimeStateAsync()
     {
-        if (Interlocked.Exchange(ref _runtimeStateLoadStarted, 1) != 0)
+        lock (_runtimeStateLoadLock)
         {
-            return;
+            return _runtimeStateLoadTask ??= LoadRuntimeStateCoreAsync();
         }
+    }
 
+    private async Task LoadRuntimeStateCoreAsync()
+    {
         try
         {
             var profile = await RuntimeIntegrationProfileStore.LoadAsync(ID).ConfigureAwait(false);
             var manifest = await RuntimeInstallManifestStore.LoadAsync(ID).ConfigureAwait(false);
-            App.CurrentApp.RunOnUIThread(() =>
+            await App.CurrentApp.RunOnUIThreadAsync(() =>
             {
                 RuntimeProfile = profile;
                 RuntimeManifest = manifest;
-            });
+                return Task.CompletedTask;
+            }).ConfigureAwait(false);
         }
         catch (Exception error)
         {

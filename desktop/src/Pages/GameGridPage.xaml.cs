@@ -137,7 +137,7 @@ public sealed partial class GameGridPage : Page
     }
 
     // This fires for both the GridView and the ListView
-    void GridAndListView_ItemClick(object sender, ItemClickEventArgs e)
+    async void GridAndListView_ItemClick(object sender, ItemClickEventArgs e)
     {
         if (e.ClickedItem is Game selectedGame)
         {
@@ -152,6 +152,8 @@ public sealed partial class GameGridPage : Page
                 _ = dialog.ShowAsync();
                 return;
             }
+
+            await selectedGame.LoadRuntimeStateAsync();
 
             var gameControl = new GameControl(selectedGame);
             _ = gameControl.ShowAsync();

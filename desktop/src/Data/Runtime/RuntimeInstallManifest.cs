@@ -15,6 +15,7 @@ public sealed class RuntimeInstallManifest
     public string GameId { get; set; } = string.Empty;
     public string RuntimeId { get; set; } = string.Empty;
     public string RuntimeVersion { get; set; } = string.Empty;
+    public string? ProxyFileName { get; set; }
     public string InstallRoot { get; set; } = string.Empty;
     public DateTimeOffset InstalledUtc { get; set; } = DateTimeOffset.UtcNow;
     public List<RuntimeOwnedFile> Files { get; set; } = new();
