@@ -11,6 +11,13 @@
             <SolidColorBrush x:Key="XtrGlassBadgeBrush" Color="#E5E8EE" />
             <SolidColorBrush x:Key="XtrStrokeBrush" Color="#DDE0E8" />
             <SolidColorBrush x:Key="XtrGlassBorderBrush" Color="#D1D6E2" />
+            <LinearGradientBrush x:Key="XtrIridescentBorderBrush" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#40FFFFFF" Offset="0.0" />
+                <GradientStop Color="#30818CF8" Offset="0.25" />
+                <GradientStop Color="#3038BDF8" Offset="0.55" />
+                <GradientStop Color="#30C084FC" Offset="0.80" />
+                <GradientStop Color="#25FFFFFF" Offset="1.0" />
+            </LinearGradientBrush>
             <SolidColorBrush x:Key="XtrTextBrush" Color="#111215" />
             <SolidColorBrush x:Key="XtrSecondaryTextBrush" Color="#64697B" />
             <SolidColorBrush x:Key="XtrAccentBrush" Color="#5851E8" />
@@ -33,6 +40,13 @@
             <SolidColorBrush x:Key="XtrGlassBadgeBrush" Color="#1E2338" />
             <SolidColorBrush x:Key="XtrStrokeBrush" Color="#252A3E" />
             <SolidColorBrush x:Key="XtrGlassBorderBrush" Color="#2E3550" />
+            <LinearGradientBrush x:Key="XtrIridescentBorderBrush" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#40FFFFFF" Offset="0.0" />
+                <GradientStop Color="#30818CF8" Offset="0.25" />
+                <GradientStop Color="#3038BDF8" Offset="0.55" />
+                <GradientStop Color="#30C084FC" Offset="0.80" />
+                <GradientStop Color="#25FFFFFF" Offset="1.0" />
+            </LinearGradientBrush>
             <SolidColorBrush x:Key="XtrTextBrush" Color="#F8FAFC" />
             <SolidColorBrush x:Key="XtrSecondaryTextBrush" Color="#94A3B8" />
             <SolidColorBrush x:Key="XtrAccentBrush" Color="#6366F1" />
@@ -55,6 +69,13 @@
             <SolidColorBrush x:Key="XtrGlassBadgeBrush" Color="#1E2338" />
             <SolidColorBrush x:Key="XtrStrokeBrush" Color="#252A3E" />
             <SolidColorBrush x:Key="XtrGlassBorderBrush" Color="#2E3550" />
+            <LinearGradientBrush x:Key="XtrIridescentBorderBrush" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#40FFFFFF" Offset="0.0" />
+                <GradientStop Color="#30818CF8" Offset="0.25" />
+                <GradientStop Color="#3038BDF8" Offset="0.55" />
+                <GradientStop Color="#30C084FC" Offset="0.80" />
+                <GradientStop Color="#25FFFFFF" Offset="1.0" />
+            </LinearGradientBrush>
             <SolidColorBrush x:Key="XtrTextBrush" Color="#F8FAFC" />
             <SolidColorBrush x:Key="XtrSecondaryTextBrush" Color="#94A3B8" />
             <SolidColorBrush x:Key="XtrAccentBrush" Color="#6366F1" />
@@ -77,6 +98,7 @@
             <SolidColorBrush x:Key="XtrGlassBadgeBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="XtrStrokeBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="XtrGlassBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="XtrIridescentBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="XtrTextBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="XtrSecondaryTextBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="XtrAccentBrush" Color="{ThemeResource SystemColorHighlightColor}" />
@@ -91,15 +113,6 @@
             <SolidColorBrush x:Key="NavigationViewTopPaneBackground" Color="{ThemeResource SystemColorWindowColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
-
-    <!-- Universal Iridescent Acrylic Border Highlight -->
-    <LinearGradientBrush x:Key="XtrIridescentBorderBrush" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#40FFFFFF" Offset="0.0" />
-        <GradientStop Color="#25818CF8" Offset="0.25" />
-        <GradientStop Color="#2538BDF8" Offset="0.55" />
-        <GradientStop Color="#25C084FC" Offset="0.80" />
-        <GradientStop Color="#20FFFFFF" Offset="1.0" />
-    </LinearGradientBrush>
 
     <!-- Apple Liquid Primary Button: Smooth continuous pill, luminous gradient feel -->
     <Style x:Key="XtrPrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource AccentButtonStyle}">
@@ -139,7 +152,7 @@
     <!-- Apple Liquid Glass Card Surface -->
     <Style x:Key="XtrCardBorderStyle" TargetType="Border">
         <Setter Property="Background" Value="{ThemeResource XtrSurfaceBrush}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource XtrGlassBorderBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource XtrIridescentBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="18" />
     </Style>
@@ -147,8 +160,17 @@
     <!-- Apple Liquid Glass Hero Card -->
     <Style x:Key="XtrHeroCardBorderStyle" TargetType="Border">
         <Setter Property="Background" Value="{ThemeResource XtrElevatedBrush}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource XtrGlassBorderBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource XtrIridescentBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="22" />
+    </Style>
+
+    <!-- Apple Glass Pill Badge -->
+    <Style x:Key="XtrBadgeBorderStyle" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource XtrGlassBadgeBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource XtrGlassBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Padding" Value="10,4" />
     </Style>
 </ResourceDictionary>
