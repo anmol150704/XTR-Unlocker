@@ -104,6 +104,10 @@ internal static class RuntimeInstallService
             manifest.Components.Add("Streamline bridge");
         if (packageRelativePaths.Any(path => path.Contains("dlssg_to_fsr3", StringComparison.OrdinalIgnoreCase)))
             manifest.Components.Add("DLSSG to FSR3 bridge");
+        manifest.Components = manifest.Components
+            .Where(component => !string.IsNullOrWhiteSpace(component))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
         var stagingRoot = Path.Combine(Storage.GetTemp(), "runtime-install", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(stagingRoot);
