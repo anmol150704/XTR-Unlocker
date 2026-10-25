@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <AssemblyName>XTR Unlocker</AssemblyName>
@@ -331,7 +331,7 @@
         <None Update="Assets\ea_app_titles.json">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-        <None Update="Asssets\icon_256.png">
+        <None Update="Assets\icon_256.png">
             <Pack>True</Pack>
             <PackagePath>\</PackagePath>
         </None>
