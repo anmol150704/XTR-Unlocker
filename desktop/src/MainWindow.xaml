@@ -28,12 +28,11 @@
 
             <!-- Brand Icon & Studio Title -->
             <StackPanel Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
-                <Border Width="22" Height="22" CornerRadius="7" Background="{ThemeResource XtrAccentBrush}">
-                    <Image Margin="4" VerticalAlignment="Center" Source="Assets/icon_256.png" />
-                </Border>
+                <Image Width="22" Height="22" VerticalAlignment="Center" Source="Assets/icon_256.png" />
                 <TextBlock VerticalAlignment="Center"
-                           Text="XTR Unlocker - Liquid Studio"
-                           FontSize="12"
+                           Text="XTR Unlocker"
+                           FontSize="12.5"
+                           FontFamily="{StaticResource XtrDisplayFontFamily}"
                            FontWeight="SemiBold"
                            Foreground="{ThemeResource XtrTextBrush}" />
             </StackPanel>
@@ -48,9 +47,10 @@
                     BorderThickness="1">
                 <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                     <Ellipse Width="6" Height="6" Fill="{ThemeResource XtrSuccessBrush}" VerticalAlignment="Center" />
-                    <TextBlock Text="LIQUID ENGINE 2.4 - FG READY"
+                    <TextBlock Text="XTR ENGINE - FG READY"
                                FontSize="9.5"
                                FontWeight="Bold"
+                               FontFamily="{StaticResource XtrDisplayFontFamily}"
                                CharacterSpacing="70"
                                Foreground="{ThemeResource XtrTextBrush}" />
                 </StackPanel>

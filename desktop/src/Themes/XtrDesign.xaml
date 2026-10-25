@@ -114,8 +114,15 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
+    <!-- Apple Liquid Typography: Segoe UI Variable with fallbacks -->
+    <FontFamily x:Key="ContentControlThemeFontFamily">Segoe UI Variable Text, Segoe UI, -apple-system, sans-serif</FontFamily>
+    <FontFamily x:Key="XtrDisplayFontFamily">Segoe UI Variable Display, Segoe UI, -apple-system, sans-serif</FontFamily>
+    <FontFamily x:Key="XtrTextFontFamily">Segoe UI Variable Text, Segoe UI, -apple-system, sans-serif</FontFamily>
+    <FontFamily x:Key="XtrMonospaceFontFamily">Cascadia Code, Consolas, Courier New, monospace</FontFamily>
+
     <!-- Apple Liquid Primary Button: Smooth continuous pill, luminous gradient feel -->
     <Style x:Key="XtrPrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource AccentButtonStyle}">
+        <Setter Property="FontFamily" Value="{StaticResource XtrTextFontFamily}" />
         <Setter Property="Background" Value="{ThemeResource XtrAccentBrush}" />
         <Setter Property="Foreground" Value="{ThemeResource XtrPrimaryButtonForegroundBrush}" />
         <Setter Property="BorderThickness" Value="0" />
@@ -127,6 +134,7 @@
 
     <!-- Apple Liquid Secondary Button: Frosted translucent pill with subtle glass border -->
     <Style x:Key="XtrSecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+        <Setter Property="FontFamily" Value="{StaticResource XtrTextFontFamily}" />
         <Setter Property="Background" Value="{ThemeResource XtrElevatedBrush}" />
         <Setter Property="Foreground" Value="{ThemeResource XtrTextBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource XtrGlassBorderBrush}" />
@@ -139,6 +147,7 @@
 
     <!-- Apple Glass Pill Button (Compact) -->
     <Style x:Key="XtrPillButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+        <Setter Property="FontFamily" Value="{StaticResource XtrTextFontFamily}" />
         <Setter Property="Background" Value="{ThemeResource XtrSurfaceBrush}" />
         <Setter Property="Foreground" Value="{ThemeResource XtrTextBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource XtrGlassBorderBrush}" />
