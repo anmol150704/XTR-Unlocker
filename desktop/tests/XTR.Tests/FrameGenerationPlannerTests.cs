@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -159,13 +159,25 @@ public sealed class FrameGenerationPlannerTests
             Assert.IsNotNull(mvCopy);
             Assert.AreEqual("true", mvCopy.Value);
 
-            var transparency = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FSRFGInputs" && m.Key == "UseReactiveMaskForTransparency");
+            var transparency = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FSR" && m.Key == "UseReactiveMaskForTransparency");
             Assert.IsNotNull(transparency);
             Assert.AreEqual("true", transparency.Value);
 
             var borderless = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FrameGen" && m.Key == "ForceBorderless");
             Assert.IsNotNull(borderless);
             Assert.AreEqual("true", borderless.Value);
+
+            var initFlags = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "InitFlags" && m.Key == "DisableReactiveMask");
+            Assert.IsNotNull(initFlags);
+            Assert.AreEqual("false", initFlags.Value);
+
+            var drawUi = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FrameGen" && m.Key == "DrawUIOverFG");
+            Assert.IsNotNull(drawUi);
+            Assert.AreEqual("true", drawUi.Value);
+
+            var reactiveScale = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FSR" && m.Key == "ReactiveScale");
+            Assert.IsNotNull(reactiveScale);
+            Assert.AreEqual("2.0", reactiveScale.Value);
         }
         finally
         {
@@ -198,10 +210,10 @@ public sealed class FrameGenerationPlannerTests
             Assert.IsTrue(plan.CanExecute);
             Assert.AreEqual("Enable Native DLSS 3 Hardware Frame Generation", plan.Headline);
 
-            // Native DLSS-G directly outputs dlssg to optical flow hardware
+            // Native DLSS-G cleanly disables proxy frame interception and enables hardware spoofing
             var fgOutput = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FrameGen" && m.Key == "FGOutput");
             Assert.IsNotNull(fgOutput);
-            Assert.AreEqual("dlssg", fgOutput.Value);
+            Assert.AreEqual("nofg", fgOutput.Value);
 
             var upscaler = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Upscalers" && m.Key == "Dx12Upscaler");
             Assert.IsNotNull(upscaler);
@@ -209,7 +221,19 @@ public sealed class FrameGenerationPlannerTests
 
             var fgInput = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FrameGen" && m.Key == "FGInput");
             Assert.IsNotNull(fgInput);
-            Assert.AreEqual("dlssg", fgInput.Value);
+            Assert.AreEqual("nofg", fgInput.Value);
+
+            var fgEnabled = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FrameGen" && m.Key == "Enabled");
+            Assert.IsNotNull(fgEnabled);
+            Assert.AreEqual("false", fgEnabled.Value);
+
+            var streamlineSpoof = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Spoofing" && m.Key == "StreamlineSpoofing");
+            Assert.IsNotNull(streamlineSpoof);
+            Assert.AreEqual("true", streamlineSpoof.Value);
+
+            var spoofHags = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Spoofing" && m.Key == "SpoofHAGS");
+            Assert.IsNotNull(spoofHags);
+            Assert.AreEqual("true", spoofHags.Value);
         }
         finally
         {

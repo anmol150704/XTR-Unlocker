@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using DLSS_Swapper.Extensions;
 using DLSS_Swapper.Helpers;
 using DLSS_Swapper.Interfaces;
@@ -132,6 +132,14 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
     [Ignore]
     [NotifyPropertyChangedFor(nameof(IntegrationStatus))]
     [NotifyPropertyChangedFor(nameof(FrameGenBadgeText))]
+    [NotifyPropertyChangedFor(nameof(HasFrameGenBadge))]
+    [NotifyPropertyChangedFor(nameof(HasActiveRuntimeFg))]
+    [NotifyPropertyChangedFor(nameof(HasNativeDlssGOnly))]
+    [NotifyPropertyChangedFor(nameof(FrameGenBadgeForeground))]
+    [NotifyPropertyChangedFor(nameof(FrameGenBadgeBackground))]
+    [NotifyPropertyChangedFor(nameof(FrameGenBadgeBorder))]
+    [NotifyPropertyChangedFor(nameof(FrameGenDotColor))]
+    [NotifyPropertyChangedFor(nameof(DlssArchitectureSummary))]
     public partial RuntimeInstallManifest? RuntimeManifest { get; set; }
 
     [Ignore]
@@ -149,6 +157,15 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
     public string DlssBadgeText => DlssVersionHelper.FormatBadge(CurrentDLSS?.DisplayVersion);
 
     [Ignore]
+    public bool HasFrameGenBadge => RuntimeManifest is not null || CurrentDLSS_G is not null;
+
+    [Ignore]
+    public bool HasActiveRuntimeFg => RuntimeManifest is not null;
+
+    [Ignore]
+    public bool HasNativeDlssGOnly => RuntimeManifest is null && CurrentDLSS_G is not null;
+
+    [Ignore]
     public string FrameGenBadgeText
     {
         get
@@ -160,9 +177,38 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
             if (CurrentDLSS_G is not null)
             {
                 var ver = CurrentDLSS_G.DisplayVersion.TrimStart('v', 'V');
-                return $"DLSS-G v{ver}";
+                return $"DLSS 3 FG";
             }
             return string.Empty;
+        }
+    }
+
+    [Ignore]
+    public string FrameGenBadgeForeground => RuntimeManifest is not null ? "#E6FCEE" : "#E0F2FE";
+
+    [Ignore]
+    public string FrameGenBadgeBackground => RuntimeManifest is not null ? "#DD153720" : "#DD0F2942";
+
+    [Ignore]
+    public string FrameGenBadgeBorder => RuntimeManifest is not null ? "#6034C759" : "#6038BDF8";
+
+    [Ignore]
+    public string FrameGenDotColor => RuntimeManifest is not null ? "#34C759" : "#38BDF8";
+
+    [Ignore]
+    public string DlssArchitectureSummary
+    {
+        get
+        {
+            if (CurrentDLSS_G is not null && CurrentDLSS_D is not null)
+                return "DLSS 3.5 (Super Resolution + Frame Generation + Ray Reconstruction)";
+            if (CurrentDLSS_G is not null)
+                return "DLSS 3 (Super Resolution + Frame Generation)";
+            if (CurrentDLSS_D is not null)
+                return "DLSS 3.5 (Super Resolution + Ray Reconstruction)";
+            if (CurrentDLSS is not null)
+                return $"{DlssGenerationText} (Super Resolution)";
+            return "No DLSS Detected";
         }
     }
 

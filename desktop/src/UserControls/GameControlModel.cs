@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -12,6 +12,8 @@ using DLSS_Swapper.Helpers;
 using DLSS_Swapper.Data.Runtime;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading;
 using DLSS_Swapper.Data.DLSS;
 using System.ComponentModel;
 
@@ -79,13 +81,19 @@ public partial class GameControlModel : ObservableObject
         "dxgi.dll", "winmm.dll", "d3d12.dll", "version.dll", "dbghelp.dll", "winhttp.dll", "wininet.dll"
     };
 
+    private bool _isLoadingSettings;
+
     [ObservableProperty]
     public partial string SelectedRuntimeProxy { get; set; } = "dxgi.dll";
+
+    [ObservableProperty]
+    public partial string ActiveFrameGenMode { get; set; } = "Universal FG Bridge (FSR 3.1)";
     [ObservableProperty]
     public partial bool AntiGhostingShieldEnabled { get; set; } = true;
 
     partial void OnAntiGhostingShieldEnabledChanged(bool value)
     {
+        if (_isLoadingSettings) return;
         ApplyAntiGhostingSetting(value);
     }
 
@@ -94,6 +102,7 @@ public partial class GameControlModel : ObservableObject
 
     partial void OnInGameHudOverlayEnabledChanged(bool value)
     {
+        if (_isLoadingSettings) return;
         ApplyHudOverlaySetting(value);
     }
 
@@ -104,11 +113,13 @@ public partial class GameControlModel : ObservableObject
 
     partial void OnInGameDevMenuEnabledChanged(bool value)
     {
-        UpdateOptiScalerConfigSetting("ShortcutKey", value ? "0x2D" : "-1");
+        if (_isLoadingSettings) return;
+        ApplyDevMenuSetting(value);
     }
 
     partial void OnStreamlineSpoofingEnabledChanged(bool value)
     {
+        if (_isLoadingSettings) return;
         ApplyStreamlineSpoofingSetting(value);
     }
 
@@ -158,6 +169,8 @@ public partial class GameControlModel : ObservableObject
         {
             SelectedRuntimeProxy = game.RuntimeManifest!.ProxyFileName!;
         }
+
+        InitializeDeployedSettings();
 
 
         // Make sure NVAPIHelper is supported and the game has DLSS.
@@ -409,35 +422,226 @@ public partial class GameControlModel : ObservableObject
         }
     }
 
+    private void InitializeDeployedSettings()
+    {
+        try
+        {
+            var iniPath = GetDeployedIniPath();
+            if (iniPath is null || !File.Exists(iniPath))
+                return;
+
+            var content = File.ReadAllText(iniPath);
+            _isLoadingSettings = true;
+
+            var hudFix = RuntimeConfigService.ReadIniValue(content, "OptiFG", "HUDFix");
+            if (!string.IsNullOrEmpty(hudFix))
+            {
+                AntiGhostingShieldEnabled = !string.Equals(hudFix, "false", StringComparison.OrdinalIgnoreCase);
+            }
+
+            var showFps = RuntimeConfigService.ReadIniValue(content, "Menu", "ShowFps");
+            if (!string.IsNullOrEmpty(showFps))
+            {
+                InGameHudOverlayEnabled = string.Equals(showFps, "true", StringComparison.OrdinalIgnoreCase);
+            }
+
+            var shortcutKey = RuntimeConfigService.ReadIniValue(content, "Menu", "ShortcutKey");
+            if (!string.IsNullOrEmpty(shortcutKey))
+            {
+                InGameDevMenuEnabled = !string.Equals(shortcutKey, "-1", StringComparison.OrdinalIgnoreCase);
+            }
+
+            var spoofing = RuntimeConfigService.ReadIniValue(content, "Spoofing", "StreamlineSpoofing");
+            if (!string.IsNullOrEmpty(spoofing))
+            {
+                StreamlineSpoofingEnabled = !string.Equals(spoofing, "false", StringComparison.OrdinalIgnoreCase);
+            }
+
+            var fgOutput = RuntimeConfigService.ReadIniValue(content, "FrameGen", "FGOutput");
+            var fgEnabled = RuntimeConfigService.ReadIniValue(content, "FrameGen", "Enabled");
+            if (string.Equals(fgEnabled, "false", StringComparison.OrdinalIgnoreCase))
+            {
+                ActiveFrameGenMode = "Upscaling Only (No FG)";
+            }
+            else if (string.Equals(fgOutput, "nofg", StringComparison.OrdinalIgnoreCase) || string.Equals(fgOutput, "dlssg", StringComparison.OrdinalIgnoreCase))
+            {
+                ActiveFrameGenMode = "Native DLSS 3 Hardware FG";
+            }
+            else
+            {
+                ActiveFrameGenMode = "Universal FG Bridge (FSR 3.1)";
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex, "Failed to initialize deployed runtime settings");
+        }
+        finally
+        {
+            _isLoadingSettings = false;
+        }
+    }
+
+    [RelayCommand]
+    async Task SwitchFrameGenModeAsync(string mode)
+    {
+        try
+        {
+            var root = Game.RuntimeManifest?.InstallRoot ?? Game.InstallPath;
+            if (string.IsNullOrEmpty(root) || !Directory.Exists(root))
+                return;
+
+            var settings = new List<(string Section, string Key, string Value)>();
+            if (mode.Contains("Native", StringComparison.OrdinalIgnoreCase))
+            {
+                settings.Add(("FrameGen", "Enabled", "false"));
+                settings.Add(("FrameGen", "FGInput", "nofg"));
+                settings.Add(("FrameGen", "FGOutput", "nofg"));
+                settings.Add(("Upscalers", "Dx12Upscaler", "dlss"));
+                settings.Add(("Spoofing", "StreamlineSpoofing", "true"));
+                settings.Add(("Spoofing", "SpoofHAGS", "true"));
+                ActiveFrameGenMode = "Native DLSS 3 Hardware FG";
+            }
+            else if (mode.Contains("Universal", StringComparison.OrdinalIgnoreCase) || mode.Contains("FSR", StringComparison.OrdinalIgnoreCase))
+            {
+                settings.Add(("FrameGen", "Enabled", "true"));
+                settings.Add(("FrameGen", "FGInput", "dlssg"));
+                settings.Add(("FrameGen", "FGOutput", "fsrfg"));
+                settings.Add(("Upscalers", "Dx12Upscaler", "dlss"));
+                settings.Add(("Spoofing", "StreamlineSpoofing", "true"));
+                settings.Add(("Spoofing", "SpoofHAGS", "true"));
+                ActiveFrameGenMode = "Universal FG Bridge (FSR 3.1)";
+            }
+            else
+            {
+                settings.Add(("FrameGen", "Enabled", "false"));
+                settings.Add(("FrameGen", "FGOutput", "nofg"));
+                ActiveFrameGenMode = "Upscaling Only (No FG)";
+            }
+
+            await RuntimeConfigService.UpdateSettingsAsync(root, settings);
+            RefreshDiagnostics();
+            await ShowRuntimeDialogAsync("Frame Generation Mode Updated", $"Active mode is now: {ActiveFrameGenMode}. Restart the game to apply changes.");
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex, "Failed to switch frame gen mode to {Mode}", mode);
+        }
+    }
+
+    private static readonly SemaphoreSlim ConfigLock = new(1, 1);
+
     private void ApplyAntiGhostingSetting(bool enabled)
     {
-        string val = enabled ? "true" : "false";
-        UpdateOptiScalerConfigSetting("HUDFix", val);
-        UpdateOptiScalerConfigSetting("HUDFixExtended", val);
-        UpdateOptiScalerConfigSetting("MakeDepthCopy", val);
-        UpdateOptiScalerConfigSetting("MakeMVCopy", val);
-        UpdateOptiScalerConfigSetting("UseReactiveMaskForTransparency", val);
+        var settings = new List<(string Section, string Key, string Value)>();
         if (enabled)
         {
-            UpdateOptiScalerConfigSetting("DisableHUDFix", "false");
-            UpdateOptiScalerConfigSetting("DlssReactiveMaskBias", "0.45");
-            UpdateOptiScalerConfigSetting("ReactiveScale", "1.1");
+            // [InitFlags]
+            settings.Add(("InitFlags", "DisableReactiveMask", "false"));
+
+            // [FrameGen]
+            settings.Add(("FrameGen", "DrawUIOverFG", "true"));
+            settings.Add(("FrameGen", "DisableUI", "false"));
+            settings.Add(("FrameGen", "DisableHudless", "false"));
+
+            // [FSR]
+            settings.Add(("FSR", "UseReactiveMaskForTransparency", "true"));
+            settings.Add(("FSR", "DlssReactiveMaskBias", "0.45"));
+            settings.Add(("FSR", "ReactiveScale", "2.0"));
+            settings.Add(("FSR", "AccAddPerFrame", "0.05"));
+            settings.Add(("FSR", "MinDisOccAcc", "-0.5"));
+
+            // [OptiFG]
+            settings.Add(("OptiFG", "HUDFix", "true"));
+            settings.Add(("OptiFG", "HUDFixExtended", "true"));
+            settings.Add(("OptiFG", "DisableHUDFix", "false"));
+            settings.Add(("OptiFG", "MakeDepthCopy", "true"));
+            settings.Add(("OptiFG", "MakeMVCopy", "true"));
+            settings.Add(("OptiFG", "HUDFixImmediate", "true"));
+            settings.Add(("OptiFG", "AlwaysTrackHeaps", "true"));
+            settings.Add(("OptiFG", "HUDFixRelaxedResolutionCheck", "true"));
         }
+        else
+        {
+            // [InitFlags]
+            settings.Add(("InitFlags", "DisableReactiveMask", "true"));
+
+            // [FrameGen]
+            settings.Add(("FrameGen", "DrawUIOverFG", "false"));
+            settings.Add(("FrameGen", "DisableUI", "true"));
+            settings.Add(("FrameGen", "DisableHudless", "false"));
+
+            // [FSR]
+            settings.Add(("FSR", "UseReactiveMaskForTransparency", "false"));
+            settings.Add(("FSR", "DlssReactiveMaskBias", "0.45"));
+            settings.Add(("FSR", "ReactiveScale", "1.0"));
+            settings.Add(("FSR", "AccAddPerFrame", "0.333"));
+            settings.Add(("FSR", "MinDisOccAcc", "-0.333"));
+
+            // [OptiFG]
+            settings.Add(("OptiFG", "HUDFix", "false"));
+            settings.Add(("OptiFG", "HUDFixExtended", "false"));
+            settings.Add(("OptiFG", "DisableHUDFix", "true"));
+            settings.Add(("OptiFG", "MakeDepthCopy", "false"));
+            settings.Add(("OptiFG", "MakeMVCopy", "false"));
+            settings.Add(("OptiFG", "HUDFixImmediate", "false"));
+            settings.Add(("OptiFG", "AlwaysTrackHeaps", "false"));
+            settings.Add(("OptiFG", "HUDFixRelaxedResolutionCheck", "false"));
+        }
+
+        UpdateOptiScalerConfigSettings(settings);
     }
 
     private void ApplyHudOverlaySetting(bool enabled)
     {
-        UpdateOptiScalerConfigSetting("ShowFps", enabled ? "true" : "false");
+        UpdateOptiScalerConfigSetting("Menu", "ShowFps", enabled ? "true" : "false");
         if (enabled)
         {
-            UpdateOptiScalerConfigSetting("FpsOverlayType", "2");
-            UpdateOptiScalerConfigSetting("OverlayMenu", "true");
+            UpdateOptiScalerConfigSetting("Menu", "FpsOverlayType", "2");
+            UpdateOptiScalerConfigSetting("Menu", "OverlayMenu", "true");
         }
+    }
+
+    private void ApplyDevMenuSetting(bool enabled)
+    {
+        UpdateOptiScalerConfigSetting("Menu", "ShortcutKey", enabled ? "0x2D" : "-1");
+        UpdateOptiScalerConfigSetting("Menu", "DisableSplash", enabled ? "false" : "true");
     }
 
     private void ApplyStreamlineSpoofingSetting(bool enabled)
     {
-        UpdateOptiScalerConfigSetting("StreamlineSpoofing", enabled ? "true" : "false");
+        UpdateOptiScalerConfigSetting("Spoofing", "StreamlineSpoofing", enabled ? "true" : "false");
+    }
+
+    private void UpdateOptiScalerConfigSetting(string section, string key, string value)
+    {
+        UpdateOptiScalerConfigSettings(new[] { (section, key, value) });
+    }
+
+    private void UpdateOptiScalerConfigSettings(IEnumerable<(string Section, string Key, string Value)> settings)
+    {
+        _ = Task.Run(async () =>
+        {
+            await ConfigLock.WaitAsync();
+            try
+            {
+                var iniPath = GetDeployedIniPath();
+                if (iniPath is null || !File.Exists(iniPath)) return;
+
+                var installRoot = Path.GetDirectoryName(iniPath);
+                if (string.IsNullOrEmpty(installRoot) || !Directory.Exists(installRoot)) return;
+
+                await RuntimeConfigService.UpdateSettingsAsync(installRoot, settings);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Failed to write OptiScaler config settings");
+            }
+            finally
+            {
+                ConfigLock.Release();
+            }
+        });
     }
 
     private string? GetDeployedIniPath()
@@ -453,38 +657,6 @@ public partial class GameControlModel : ObservableObject
             if (File.Exists(p)) return p;
         }
         return null;
-    }
-
-    private void UpdateOptiScalerConfigSetting(string key, string value)
-    {
-        try
-        {
-            var iniPath = GetDeployedIniPath();
-            if (iniPath is null || !File.Exists(iniPath)) return;
-
-            var lines = File.ReadAllLines(iniPath).ToList();
-            bool updated = false;
-            for (int i = 0; i < lines.Count; i++)
-            {
-                var trimmed = lines[i].TrimStart();
-                if (trimmed.StartsWith(key + "=", StringComparison.OrdinalIgnoreCase) ||
-                    trimmed.StartsWith(key + " =", StringComparison.OrdinalIgnoreCase))
-                {
-                    lines[i] = $"{key}={value}";
-                    updated = true;
-                    break;
-                }
-            }
-            if (!updated)
-            {
-                lines.Add($"{key}={value}");
-            }
-            File.WriteAllLines(iniPath, lines);
-        }
-        catch (Exception ex)
-        {
-            Logger.Error(ex, "Failed to write OptiScaler setting {Key}", key);
-        }
     }
 
     [RelayCommand]

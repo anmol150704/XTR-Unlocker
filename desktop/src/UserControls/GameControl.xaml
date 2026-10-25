@@ -186,7 +186,7 @@
                     </Grid>
 
                     <!-- Apple Liquid Glass Hero Card: Native DLSS & Frame Generation Engine -->
-                    <Grid Padding="18" Margin="0,12,0,0" Background="{ThemeResource XtrElevatedBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1" CornerRadius="20" RowSpacing="12">
+                    <Grid Padding="18" Margin="0,12,0,0" Background="{ThemeResource XtrElevatedBrush}" BorderBrush="{ThemeResource XtrIridescentBorderBrush}" BorderThickness="1" CornerRadius="20" RowSpacing="12">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -231,9 +231,8 @@
                                     <TextBlock FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource XtrAccentBrush}">
                                         <Run Text="{x:Bind ViewModel.Game.DlssVersionLabel, FallbackValue='DLSS not detected', Mode=OneWay}" />
                                     </TextBlock>
-                                    <TextBlock FontSize="11" Foreground="{ThemeResource XtrSecondaryTextBrush}">
-                                        <Run Text="Game engine using " />
-                                        <Run Text="{x:Bind ViewModel.Game.DlssGenerationText, Mode=OneWay}" />
+                                    <TextBlock FontSize="11" Foreground="{ThemeResource XtrSecondaryTextBrush}" TextWrapping="Wrap">
+                                        <Run Text="{x:Bind ViewModel.Game.DlssArchitectureSummary, Mode=OneWay}" />
                                     </TextBlock>
                                 </StackPanel>
                             </Border>
@@ -245,8 +244,8 @@
                                         <Ellipse Width="6" Height="6" Fill="{ThemeResource XtrSuccessBrush}" VerticalAlignment="Center" />
                                         <TextBlock Text="FRAME GENERATION ENGINE" FontSize="10" FontWeight="Bold" CharacterSpacing="60" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
                                     </StackPanel>
-                                    <TextBlock Text="{x:Bind ViewModel.FrameGenerationStatusText, Mode=OneWay}" FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource XtrSuccessBrush}" TextTrimming="CharacterEllipsis" />
-                                    <TextBlock Text="Native Streamline DLSS-G / FSR 3.1" FontSize="11" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
+                                    <TextBlock Text="{x:Bind ViewModel.ActiveFrameGenMode, Mode=OneWay}" FontSize="14.5" FontWeight="SemiBold" Foreground="{ThemeResource XtrSuccessBrush}" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{x:Bind ViewModel.FrameGenerationStatusText, Mode=OneWay}" FontSize="11" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
                                 </StackPanel>
                             </Border>
                         </Grid>
@@ -307,20 +306,36 @@
                                 </StackPanel>
                             </Button>
 
-                            <Button
-                                Grid.Column="0"
-                                Grid.ColumnSpan="2"
-                                Style="{StaticResource XtrSecondaryButtonStyle}"
-                                Command="{x:Bind ViewModel.RestoreRuntimeCommand}"
-                                Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
-                                HorizontalAlignment="Stretch"
-                                Height="44"
-                                CornerRadius="16">
-                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                    <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="&#xE72C;" FontSize="13" />
-                                    <TextBlock Text="Restore Original Game Files" FontSize="13" FontWeight="SemiBold" />
-                                </StackPanel>
-                            </Button>
+                            <!-- Live Runtime Active FG Switcher & Restore Stack -->
+                            <StackPanel Grid.Column="0" Grid.ColumnSpan="2" Spacing="10" Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}">
+                                <Border Padding="12,10" CornerRadius="14" Background="{ThemeResource XtrElevatedBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="LIVE FRAME GENERATION MODE SWITCHER" FontSize="10" FontWeight="Bold" CharacterSpacing="60" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
+                                        <Grid ColumnSpacing="8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Button Grid.Column="0" Content="Native DLSS 3 FG" Style="{StaticResource XtrPillButtonStyle}" HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.SwitchFrameGenModeCommand}" CommandParameter="Native DLSS 3 Hardware FG" ToolTipService.ToolTip="Route frame generation directly to NVIDIA DLSS-G hardware optical flow accelerator (no FSR)" />
+                                            <Button Grid.Column="1" Content="Universal Bridge (FSR 3.1)" Style="{StaticResource XtrPillButtonStyle}" HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.SwitchFrameGenModeCommand}" CommandParameter="Universal FG Bridge (FSR 3.1)" ToolTipService.ToolTip="Route frame generation through verified FSR 3.1 swapchain with Anti-Ghosting shield" />
+                                            <Button Grid.Column="2" Content="Upscaling Only (No FG)" Style="{StaticResource XtrPillButtonStyle}" HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.SwitchFrameGenModeCommand}" CommandParameter="Upscaling Only (No FG)" ToolTipService.ToolTip="Disable frame generation, running pure DLSS upscaling" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <Button
+                                    Style="{StaticResource XtrSecondaryButtonStyle}"
+                                    Command="{x:Bind ViewModel.RestoreRuntimeCommand}"
+                                    HorizontalAlignment="Stretch"
+                                    Height="40"
+                                    CornerRadius="14">
+                                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                        <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="&#xE72C;" FontSize="13" />
+                                        <TextBlock Text="Restore Original Game Files" FontSize="13" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
                         </Grid>
 
                         <!-- ANTI-GHOSTING SHIELD & LIVE ENGINE CONTROLS -->

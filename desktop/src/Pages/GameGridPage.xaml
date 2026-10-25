@@ -97,7 +97,7 @@
                                     </StackPanel>
                                 </StackPanel>
 
-                                <!-- Right side Frame Gen indicator pill -->
+                                <!-- Right side Frame Gen indicator pill: Active Runtime FG -->
                                 <Border Grid.Column="2"
                                         VerticalAlignment="Center"
                                         Padding="10,4"
@@ -105,10 +105,27 @@
                                         Background="#183D24"
                                         BorderBrush="#2ECC71"
                                         BorderThickness="1"
-                                        Visibility="{x:Bind RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}">
+                                        ToolTipService.ToolTip="Frame Generation runtime active"
+                                        Visibility="{x:Bind HasActiveRuntimeFg, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                     <StackPanel Orientation="Horizontal" Spacing="5">
                                         <Ellipse Width="6" Height="6" Fill="#34C759" VerticalAlignment="Center" />
                                         <TextBlock Text="FG ACTIVE" FontSize="10.5" FontWeight="Bold" Foreground="#E6FCEE" />
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Right side Frame Gen indicator pill: Native DLSS 3 FG -->
+                                <Border Grid.Column="2"
+                                        VerticalAlignment="Center"
+                                        Padding="10,4"
+                                        CornerRadius="12"
+                                        Background="#0E2A3A"
+                                        BorderBrush="#38BDF8"
+                                        BorderThickness="1"
+                                        ToolTipService.ToolTip="Native DLSS 3 Hardware Frame Generation detected in game"
+                                        Visibility="{x:Bind HasNativeDlssGOnly, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <Ellipse Width="6" Height="6" Fill="#38BDF8" VerticalAlignment="Center" />
+                                        <TextBlock Text="DLSS 3 FG" FontSize="10.5" FontWeight="Bold" Foreground="#E0F2FE" />
                                     </StackPanel>
                                 </Border>
 
@@ -205,7 +222,7 @@
                                     </StackPanel>
                                 </Border>
 
-                                <!-- Top-Right Floating Liquid Badge: FRAME GENERATION ACTIVE / READY -->
+                                <!-- Top-Right Floating Liquid Badge: Active Runtime FG -->
                                 <Border HorizontalAlignment="Right"
                                         VerticalAlignment="Top"
                                         Margin="11"
@@ -215,10 +232,27 @@
                                         BorderBrush="#6034C759"
                                         BorderThickness="1"
                                         ToolTipService.ToolTip="Frame Generation runtime active"
-                                        Visibility="{x:Bind RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}">
+                                        Visibility="{x:Bind HasActiveRuntimeFg, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                     <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
                                         <Ellipse Width="6" Height="6" Fill="#34C759" VerticalAlignment="Center" />
                                         <TextBlock Text="FG ACTIVE" FontSize="10" FontWeight="Bold" Foreground="#E6FCEE" />
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Top-Right Floating Liquid Badge: Native DLSS 3 FG Detected in Game -->
+                                <Border HorizontalAlignment="Right"
+                                        VerticalAlignment="Top"
+                                        Margin="11"
+                                        Padding="9,5"
+                                        CornerRadius="12"
+                                        Background="#DD0E2A3A"
+                                        BorderBrush="#6038BDF8"
+                                        BorderThickness="1"
+                                        ToolTipService.ToolTip="Native DLSS 3 Hardware Frame Generation detected in game"
+                                        Visibility="{x:Bind HasNativeDlssGOnly, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                        <Ellipse Width="6" Height="6" Fill="#38BDF8" VerticalAlignment="Center" />
+                                        <TextBlock Text="DLSS 3 FG" FontSize="10" FontWeight="Bold" Foreground="#E0F2FE" />
                                     </StackPanel>
                                 </Border>
 

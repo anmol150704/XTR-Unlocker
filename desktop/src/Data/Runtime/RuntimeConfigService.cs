@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -96,7 +96,86 @@ internal static class RuntimeConfigService
         }
     }
 
-    private static string ReplaceIniValue(string content, string section, string key, string value)
+    internal static async Task UpdateSettingAsync(
+        string installRoot,
+        string section,
+        string key,
+        string value,
+        CancellationToken cancellationToken = default)
+    {
+        await UpdateSettingsAsync(installRoot, new[] { (section, key, value) }, cancellationToken).ConfigureAwait(false);
+    }
+
+    internal static async Task UpdateSettingsAsync(
+        string installRoot,
+        IEnumerable<(string Section, string Key, string Value)> settings,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(installRoot);
+        ArgumentNullException.ThrowIfNull(settings);
+
+        var path = Path.Combine(Path.GetFullPath(installRoot), "OptiScaler.ini");
+        if (!File.Exists(path))
+            return;
+
+        var content = await File.ReadAllTextAsync(path, Encoding.UTF8, cancellationToken).ConfigureAwait(false);
+        foreach (var (section, key, value) in settings)
+        {
+            if (!string.IsNullOrWhiteSpace(section) && !string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(value))
+            {
+                content = ReplaceIniValue(content, section, key, value);
+            }
+        }
+
+        var temporaryPath = path + $".{Guid.NewGuid():N}.xtrtmp";
+        try
+        {
+            await File.WriteAllTextAsync(temporaryPath, content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), cancellationToken).ConfigureAwait(false);
+            File.Move(temporaryPath, path, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+                File.Delete(temporaryPath);
+        }
+    }
+
+    internal static string? ReadIniValue(string content, string section, string key)
+    {
+        if (string.IsNullOrWhiteSpace(content) || string.IsNullOrWhiteSpace(section) || string.IsNullOrWhiteSpace(key))
+            return null;
+
+        var lines = content.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
+        var inSection = false;
+        foreach (var line in lines)
+        {
+            var trimmed = line.Trim();
+            if (trimmed.StartsWith("[", StringComparison.Ordinal) && trimmed.EndsWith("]", StringComparison.Ordinal))
+            {
+                if (inSection)
+                    return null;
+
+                if (string.Equals(trimmed[1..^1].Trim(), section, StringComparison.OrdinalIgnoreCase))
+                {
+                    inSection = true;
+                }
+                continue;
+            }
+
+            if (!inSection || trimmed.StartsWith(';') || trimmed.StartsWith('#'))
+                continue;
+
+            var separator = trimmed.IndexOf('=');
+            if (separator <= 0 || !string.Equals(trimmed[..separator].Trim(), key, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            return trimmed[(separator + 1)..].Trim();
+        }
+
+        return null;
+    }
+
+    internal static string ReplaceIniValue(string content, string section, string key, string value)
     {
         var lines = new List<string>(content.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n'));
         var inSection = false;
