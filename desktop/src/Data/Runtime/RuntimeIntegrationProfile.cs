@@ -22,6 +22,13 @@ public sealed class RuntimeIntegrationProfile
     public string GameId { get; set; } = string.Empty;
     public string RuntimeId { get; set; } = string.Empty;
     public string RuntimeVersion { get; set; } = string.Empty;
+    public string ProxyFileName { get; set; } = string.Empty;
+    public string Api { get; set; } = string.Empty;
+    public string SelectedUpscaler { get; set; } = "auto";
+    public string FrameGenerationInput { get; set; } = "auto";
+    public string FrameGenerationOutput { get; set; } = "auto";
+    public string SupportState { get; set; } = "experimental";
+    public string SupportReason { get; set; } = string.Empty;
     public JsonObject Options { get; set; } = new();
     public DateTimeOffset UpdatedUtc { get; set; } = DateTimeOffset.UtcNow;
 }
@@ -157,6 +164,11 @@ internal static class RuntimeIntegrationProfileStore
         if (profile.Options is null)
         {
             throw new InvalidDataException("The runtime profile options object is missing.");
+        }
+
+        if (profile.SupportState is not ("supported" or "experimental" or "unavailable"))
+        {
+            throw new InvalidDataException("The runtime profile support state is invalid.");
         }
     }
 

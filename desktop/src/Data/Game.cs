@@ -130,7 +130,13 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
 
     [ObservableProperty]
     [Ignore]
+    [NotifyPropertyChangedFor(nameof(IntegrationStatus))]
     public partial RuntimeInstallManifest? RuntimeManifest { get; set; }
+
+    [Ignore]
+    public string IntegrationStatus => RuntimeManifest is not null
+        ? CurrentDLSS is not null ? "Runtime ready · DLSS detected" : "Runtime installed · DLSS not detected"
+        : CurrentDLSS is not null ? "DLSS detected · runtime not installed" : "No runtime configured";
 
     private readonly object _runtimeStateLoadLock = new();
     private Task? _runtimeStateLoadTask;
@@ -200,6 +206,7 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
     // NOTE: DLL type
     [ObservableProperty]
     [Ignore]
+    [NotifyPropertyChangedFor(nameof(IntegrationStatus))]
     public partial GameAsset? CurrentDLSS { get; set; } = null;
 
     [ObservableProperty]

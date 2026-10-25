@@ -78,18 +78,32 @@ internal static class RuntimeInstallService
             throw new InvalidOperationException("XTR already manages a runtime for this game. Restore it before installing another runtime package.");
 
         var sourceFiles = EnumeratePackageFiles(package, proxyName);
+        var bundleMetadata = await RuntimeBundleMetadata.LoadAsync(package, cancellationToken).ConfigureAwait(false);
         var backupRoot = Storage.GetRuntimeBackupsPath(gameId);
         Directory.CreateDirectory(backupRoot);
         var backupSessionId = Guid.NewGuid().ToString("N");
         var manifest = new RuntimeInstallManifest
         {
             GameId = gameId,
-            RuntimeId = RuntimeId,
-            RuntimeVersion = FileVersionInfo.GetVersionInfo(runtimeDll).ProductVersion ?? "unknown",
+            RuntimeId = bundleMetadata?.Id ?? RuntimeId,
+            RuntimeVersion = bundleMetadata?.Version ?? FileVersionInfo.GetVersionInfo(runtimeDll).ProductVersion ?? "unknown",
             ProxyFileName = proxyName,
             InstallRoot = root,
             InstalledUtc = DateTimeOffset.UtcNow,
         };
+        if (bundleMetadata is not null)
+            manifest.Components.AddRange(bundleMetadata.Components.Where(component => !string.IsNullOrWhiteSpace(component)));
+        if (manifest.Components.Count == 0)
+            manifest.Components.Add("OptiScaler engine");
+        var packageRelativePaths = sourceFiles.Select(file => file.Item2).ToArray();
+        if (packageRelativePaths.Any(path => path.Contains("dlssg_sm86", StringComparison.OrdinalIgnoreCase)))
+            manifest.Components.Add("RTX 20/30 frame-generation unlocker");
+        if (packageRelativePaths.Any(path => path.Contains("dlss-enabler-headless", StringComparison.OrdinalIgnoreCase)))
+            manifest.Components.Add("DLSS Enabler companion");
+        if (packageRelativePaths.Any(path => path.StartsWith("OptiScaler/streamline/", StringComparison.OrdinalIgnoreCase)))
+            manifest.Components.Add("Streamline bridge");
+        if (packageRelativePaths.Any(path => path.Contains("dlssg_to_fsr3", StringComparison.OrdinalIgnoreCase)))
+            manifest.Components.Add("DLSSG to FSR3 bridge");
 
         var stagingRoot = Path.Combine(Storage.GetTemp(), "runtime-install", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(stagingRoot);

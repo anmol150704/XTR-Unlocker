@@ -18,6 +18,7 @@ public sealed class RuntimeInstallManifest
     public string? ProxyFileName { get; set; }
     public string InstallRoot { get; set; } = string.Empty;
     public DateTimeOffset InstalledUtc { get; set; } = DateTimeOffset.UtcNow;
+    public List<string> Components { get; set; } = new();
     public List<RuntimeOwnedFile> Files { get; set; } = new();
 }
 

@@ -39,6 +39,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- The runtime payload is shipped as data beside the portable executable. -->
+    <Content Include="Runtime\OptiScaler\**\*"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
       <Content Remove="Assets\dlss_presets.json" />
       <Content Remove="Assets\dlss_d_presets.json" />
       <Content Remove="Assets\dlss_g_presets.json" />

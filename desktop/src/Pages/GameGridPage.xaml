@@ -85,6 +85,10 @@
                                         <Run Text=" · " />
                                         <Run Text="{x:Bind CurrentDLSS.DisplayName, FallbackValue='Not detected', Mode=OneWay}" />
                                     </TextBlock>
+                                    <TextBlock Text="{x:Bind IntegrationStatus, Mode=OneWay}"
+                                               FontSize="11"
+                                               Foreground="{ThemeResource XtrSecondaryTextBrush}"
+                                               TextTrimming="CharacterEllipsis" />
                                 </StackPanel>
                                 <muxc:ProgressRing Grid.Column="2" Width="18" Height="18" IsActive="True" Visibility="{x:Bind Processing, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
                                 <FontIcon Grid.Column="2" Glyph="&#xE76C;" FontSize="14" Foreground="{ThemeResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" Visibility="{x:Bind Processing, Converter={StaticResource InverseBoolToVisibilityConverter}, Mode=OneWay}" />
@@ -191,6 +195,10 @@
                                     <TextBlock FontSize="12" Foreground="#E6FFFFFF" Visibility="{x:Bind Processing, Converter={StaticResource InverseBoolToVisibilityConverter}, Mode=OneWay}">
                                         <Run Text="{x:Bind CurrentDLSS.DisplayName, FallbackValue='No DLSS detected', Mode=OneWay}" />
                                     </TextBlock>
+                                    <TextBlock Text="{x:Bind IntegrationStatus, Mode=OneWay}"
+                                               FontSize="11"
+                                               Foreground="#C9BFFF"
+                                               TextTrimming="CharacterEllipsis" />
                                 </StackPanel>
                             </Grid>
                         </Border>

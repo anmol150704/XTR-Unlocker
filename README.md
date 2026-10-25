@@ -35,6 +35,14 @@ Build the unified Release app with the .NET 10 SDK and Visual Studio 2022 with t
 
 The executable and bundled OptiScaler package are produced under `desktop\src\bin\x64\Release\net10.0-windows10.0.26100.0\win-x64`. The runtime menu installs the bundled build by default; choose another extracted OptiScaler package from the install menu to use a custom build. Then choose the folder containing the game's executable and the proxy DLL name. XTR records ownership and backups under its app data folder. Restore checks file hashes and stops if a tracked runtime file was changed unexpectedly.
 
+Each installed game gets an independent runtime manifest and profile in XTR's app-data directory. The manifest records the exact runtime files, proxy DLL, install root, runtime bundle identity, declared components, and original-file backups. The profile records the selected runtime identity separately from the game folder, so a game update cannot silently discard it. Runtime packages may include an `xtr-runtime.json` descriptor so XTR can explain their engine, provider, and frame-generation layers without guessing from filenames. OptiScaler's in-game menu remains the source of truth for live upscaler and frame-generation settings; XTR only reports a runtime as ready after its manifest has been recorded.
+
 ## Compatibility
 
 Changing an upscaler DLL or reporting a different GPU capability does not by itself add missing game integration or physical GPU features. Options will be shown according to verified game/runtime combinations, and the first end-to-end validation target will be one offline DirectX 12 game.
+
+The DLSS-Unlocked runtime path has the same boundary: upstream requires a native
+DLSS2/DLSS3 DirectX 12 integration before its upscaler, neural-rendering, or MFG layers
+can be used. XTR therefore treats “DLSS detected” as a prerequisite, not a guarantee,
+and keeps frame generation marked experimental until the selected runtime reports a
+usable input/output path.

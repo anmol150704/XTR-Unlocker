@@ -533,6 +533,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <StackPanel Spacing="4">
                             <TextBlock Text="Runtime integration" FontSize="16" FontWeight="SemiBold" />
@@ -548,7 +549,9 @@
                             Text="No runtime installed for this game" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <TextBlock Grid.Row="2" Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
                             Text="{x:Bind ViewModel.Game.RuntimeManifest.InstallRoot, Mode=OneWay}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
-                        <Grid Grid.Row="3" ColumnSpacing="8">
+                        <TextBlock Grid.Row="3" Margin="0,8,0,0" Visibility="{x:Bind ViewModel.Game.RuntimeManifest, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
+                            Text="{x:Bind ViewModel.RuntimeComponentsText, Mode=OneWay}" FontSize="12" Foreground="{ThemeResource XtrSecondaryTextBrush}" TextWrapping="Wrap" />
+                        <Grid Grid.Row="4" ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />

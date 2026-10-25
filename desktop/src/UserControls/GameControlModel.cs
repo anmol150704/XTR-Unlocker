@@ -82,10 +82,15 @@ public partial class GameControlModel : ObservableObject
     [ObservableProperty]
     public partial string SelectedRuntimeProxy { get; set; } = "dxgi.dll";
 
+    public string RuntimeComponentsText => Game.RuntimeManifest?.Components is { Count: > 0 } components
+        ? string.Join(" · ", components)
+        : "Engine components not recorded";
+
     public GameControlModel(GameControl gameControl, Game game) : base()
     {
         gameControlWeakReference = new WeakReference<GameControl>(gameControl);
         Game = game;
+        Game.PropertyChanged += Game_PropertyChanged;
         GameTitle = game.Title;
         if (RuntimeProxyNames.Contains(game.RuntimeManifest?.ProxyFileName ?? string.Empty, StringComparer.OrdinalIgnoreCase))
         {
@@ -341,13 +346,18 @@ public partial class GameControlModel : ObservableObject
 
             try
             {
-                await Game.SaveRuntimeManifestAsync(manifest);
-                await Game.SaveRuntimeProfileAsync(new RuntimeIntegrationProfile
+                var profile = new RuntimeIntegrationProfile
                 {
                     GameId = Game.ID,
                     RuntimeId = manifest.RuntimeId,
                     RuntimeVersion = manifest.RuntimeVersion,
-                });
+                    ProxyFileName = manifest.ProxyFileName ?? SelectedRuntimeProxy,
+                    SupportState = "experimental",
+                    SupportReason = "Runtime installed; validate this game and adapter combination before relying on frame generation.",
+                };
+                await RuntimeConfigService.ApplyProfileAsync(manifest.InstallRoot, profile);
+                await Game.SaveRuntimeManifestAsync(manifest);
+                await Game.SaveRuntimeProfileAsync(profile);
             }
             catch
             {
@@ -684,6 +694,11 @@ public partial class GameControlModel : ObservableObject
 
     private void Game_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (e.PropertyName == nameof(Game.RuntimeManifest))
+        {
+            OnPropertyChanged(nameof(RuntimeComponentsText));
+        }
+
         if (e.PropertyName == nameof(Game.Processing))
         {
             if (Game.Processing == true)

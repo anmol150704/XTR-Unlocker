@@ -10,6 +10,16 @@ $runtimeSolution = Join-Path $runtimeRoot "OptiScaler.sln"
 $runtimePatch = Join-Path $repoRoot "runtime/patches/xtr-overlay-branding.patch"
 $desktopSolution = Join-Path $repoRoot "desktop/DLSS Swapper.sln"
 
+$msbuildCommand = Get-Command msbuild -ErrorAction SilentlyContinue
+if ($null -eq $msbuildCommand) {
+    throw "Visual Studio MSBuild was not found. Install Visual Studio 2022 with the Desktop development with C++ workload, then run this script from a Developer PowerShell."
+}
+
+$dotnetCommand = Get-Command dotnet -ErrorAction SilentlyContinue
+if ($null -eq $dotnetCommand) {
+    throw ".NET SDK was not found. Install the .NET 10 SDK before building XTR Unlocker."
+}
+
 Push-Location $runtimeRoot
 try {
     & git apply --reverse --check $runtimePatch *> $null

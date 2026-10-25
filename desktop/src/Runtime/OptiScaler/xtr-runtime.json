@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "optiscaler-0.9.4-xtr",
+  "displayName": "OptiScaler 0.9.4",
+  "version": "0.9.4",
+  "source": "https://github.com/optiscaler/OptiScaler/releases/tag/v0.9.4",
+  "components": [
+    "OptiScaler engine",
+    "FSR and XeSS providers",
+    "DLSSG-to-FSR3 bridge"
+  ],
+  "supportedApis": [ "DX11", "DX12", "Vulkan" ],
+  "frameGenerationModes": [ "FSR3 bridge" ],
+  "notes": "Baseline engine bundle. A DLSS Unlocked package can be selected as an external runtime when DLSS-NR, native RTX 20/30 MFG, or newer Streamline components are required."
+}
