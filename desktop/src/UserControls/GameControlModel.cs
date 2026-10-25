@@ -81,6 +81,34 @@ public partial class GameControlModel : ObservableObject
         "dxgi.dll", "winmm.dll", "d3d12.dll", "version.dll", "dbghelp.dll", "winhttp.dll", "wininet.dll"
     };
 
+    public IReadOnlyList<string> AvailableDlssPresets { get; } = new[]
+    {
+        "Default (Game Engine Default)",
+        "Preset E (Anti-Ghosting Champion)",
+        "Preset F (Fast Motion & Reduced Shimmer)",
+        "Preset C (Low Ghosting / High Stability)",
+        "Preset D (Classic DLSS 2.5 Profile)",
+        "Preset J (Transformer Model)"
+    };
+
+    public IReadOnlyList<string> AvailableOverlayPositions { get; } = new[]
+    {
+        "Top Left",
+        "Top Right",
+        "Bottom Left",
+        "Bottom Right"
+    };
+
+    public IReadOnlyList<string> AvailableFramerateLimits { get; } = new[]
+    {
+        "Off (Unlimited)",
+        "60 FPS",
+        "120 FPS",
+        "144 FPS",
+        "165 FPS",
+        "240 FPS"
+    };
+
     private bool _isLoadingSettings;
 
     [ObservableProperty]
@@ -121,6 +149,45 @@ public partial class GameControlModel : ObservableObject
     {
         if (_isLoadingSettings) return;
         ApplyStreamlineSpoofingSetting(value);
+    }
+
+    [ObservableProperty]
+    public partial string SelectedEngineNeuralPreset { get; set; } = "Default (Game Engine Default)";
+
+    partial void OnSelectedEngineNeuralPresetChanged(string value)
+    {
+        if (_isLoadingSettings) return;
+        ApplyEngineNeuralPresetSetting(value);
+    }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SharpnessPercentLabel))]
+    public partial double SharpnessPercentage { get; set; } = 30.0;
+
+    public string SharpnessPercentLabel => $"{Math.Round(SharpnessPercentage)}%";
+
+    partial void OnSharpnessPercentageChanged(double value)
+    {
+        if (_isLoadingSettings) return;
+        ApplySharpnessSetting(value);
+    }
+
+    [ObservableProperty]
+    public partial string SelectedOverlayPosition { get; set; } = "Top Left";
+
+    partial void OnSelectedOverlayPositionChanged(string value)
+    {
+        if (_isLoadingSettings) return;
+        ApplyOverlayPositionSetting(value);
+    }
+
+    [ObservableProperty]
+    public partial string SelectedFramerateLimit { get; set; } = "Off (Unlimited)";
+
+    partial void OnSelectedFramerateLimitChanged(string value)
+    {
+        if (_isLoadingSettings) return;
+        ApplyFramerateLimitSetting(value);
     }
 
     public string RuntimeComponentsText => Game.RuntimeManifest?.Components is { Count: > 0 } components
@@ -471,6 +538,54 @@ public partial class GameControlModel : ObservableObject
             {
                 ActiveFrameGenMode = "Universal FG Bridge (FSR 3.1)";
             }
+
+            // Read DLSS Preset Override
+            var presetOverride = RuntimeConfigService.ReadIniValue(content, "DLSS", "RenderPresetOverride");
+            var presetCode = RuntimeConfigService.ReadIniValue(content, "DLSS", "RenderPresetForAll");
+            if (string.Equals(presetOverride, "true", StringComparison.OrdinalIgnoreCase))
+            {
+                SelectedEngineNeuralPreset = presetCode switch
+                {
+                    "5" => "Preset E (Anti-Ghosting Champion)",
+                    "6" => "Preset F (Fast Motion & Reduced Shimmer)",
+                    "3" => "Preset C (Low Ghosting / High Stability)",
+                    "4" => "Preset D (Classic DLSS 2.5 Profile)",
+                    "10" => "Preset J (Transformer Model)",
+                    _ => "Default (Game Engine Default)"
+                };
+            }
+            else
+            {
+                SelectedEngineNeuralPreset = "Default (Game Engine Default)";
+            }
+
+            // Read Sharpness
+            var sharpnessStr = RuntimeConfigService.ReadIniValue(content, "Sharpness", "Sharpness");
+            if (double.TryParse(sharpnessStr, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var sharpnessVal))
+            {
+                SharpnessPercentage = Math.Round(Math.Clamp(sharpnessVal * 100.0, 0.0, 100.0));
+            }
+
+            // Read Overlay Position
+            var posStr = RuntimeConfigService.ReadIniValue(content, "Menu", "FpsOverlayPos");
+            SelectedOverlayPosition = posStr switch
+            {
+                "1" => "Top Right",
+                "2" => "Bottom Left",
+                "3" => "Bottom Right",
+                _ => "Top Left"
+            };
+
+            // Read Framerate Limit
+            var limitStr = RuntimeConfigService.ReadIniValue(content, "Framerate", "FramerateLimit");
+            if (double.TryParse(limitStr, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var limitVal) && limitVal > 0)
+            {
+                SelectedFramerateLimit = $"{(int)limitVal} FPS";
+            }
+            else
+            {
+                SelectedFramerateLimit = "Off (Unlimited)";
+            }
         }
         catch (Exception ex)
         {
@@ -611,6 +726,61 @@ public partial class GameControlModel : ObservableObject
     private void ApplyStreamlineSpoofingSetting(bool enabled)
     {
         UpdateOptiScalerConfigSetting("Spoofing", "StreamlineSpoofing", enabled ? "true" : "false");
+    }
+
+    private void ApplyEngineNeuralPresetSetting(string preset)
+    {
+        var (overrideEnabled, presetVal) = preset switch
+        {
+            var p when p.Contains("Preset E", StringComparison.OrdinalIgnoreCase) => ("true", "5"),
+            var p when p.Contains("Preset F", StringComparison.OrdinalIgnoreCase) => ("true", "6"),
+            var p when p.Contains("Preset C", StringComparison.OrdinalIgnoreCase) => ("true", "3"),
+            var p when p.Contains("Preset D", StringComparison.OrdinalIgnoreCase) => ("true", "4"),
+            var p when p.Contains("Preset J", StringComparison.OrdinalIgnoreCase) => ("true", "10"),
+            _ => ("false", "0")
+        };
+
+        UpdateOptiScalerConfigSettings(new[]
+        {
+            ("DLSS", "RenderPresetOverride", overrideEnabled),
+            ("DLSS", "RenderPresetForAll", presetVal)
+        });
+    }
+
+    private void ApplySharpnessSetting(double percentage)
+    {
+        var sharpnessVal = Math.Clamp(percentage / 100.0, 0.0, 1.0).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+        UpdateOptiScalerConfigSettings(new[]
+        {
+            ("Sharpness", "OverrideSharpness", "true"),
+            ("Sharpness", "Sharpness", sharpnessVal)
+        });
+    }
+
+    private void ApplyOverlayPositionSetting(string position)
+    {
+        var posVal = position switch
+        {
+            "Top Right" => "1",
+            "Bottom Left" => "2",
+            "Bottom Right" => "3",
+            _ => "0"
+        };
+        UpdateOptiScalerConfigSetting("Menu", "FpsOverlayPos", posVal);
+    }
+
+    private void ApplyFramerateLimitSetting(string limit)
+    {
+        var limitVal = limit switch
+        {
+            "60 FPS" => "60.0",
+            "120 FPS" => "120.0",
+            "144 FPS" => "144.0",
+            "165 FPS" => "165.0",
+            "240 FPS" => "240.0",
+            _ => "0.0"
+        };
+        UpdateOptiScalerConfigSetting("Framerate", "FramerateLimit", limitVal);
     }
 
     private void UpdateOptiScalerConfigSetting(string section, string key, string value)

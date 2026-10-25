@@ -441,6 +441,64 @@
                                     </Grid>
                                 </Border>
 
+                                <!-- XTR STUDIO ENGINE TUNING & PRESETS -->
+                                <Border Background="{ThemeResource XtrElevatedBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="14,12">
+                                    <StackPanel Spacing="10">
+                                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                            <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="&#xE713;" FontSize="13" Foreground="{ThemeResource XtrAccentBrush}" />
+                                            <TextBlock Text="XTR STUDIO ENGINE TUNING" FontSize="10.5" FontWeight="Bold" CharacterSpacing="60" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
+                                        </StackPanel>
+
+                                        <!-- DLSS Neural Model Preset Override -->
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="DLSS Neural Model Preset (Anti-Ghosting Tuning)" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
+                                            <ComboBox
+                                                ItemsSource="{x:Bind ViewModel.AvailableDlssPresets}"
+                                                SelectedItem="{x:Bind ViewModel.SelectedEngineNeuralPreset, Mode=TwoWay}"
+                                                HorizontalAlignment="Stretch"
+                                                CornerRadius="10" />
+                                            <TextBlock Text="Preset E eliminates motion ghosting trails in DLSS 3.7+; Preset F stabilizes shimmering." FontSize="10.5" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
+                                        </StackPanel>
+
+                                        <!-- AI Super Resolution Sharpness Slider -->
+                                        <StackPanel Spacing="4">
+                                            <Grid>
+                                                <TextBlock Text="AI Image Sharpness (RCAS)" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
+                                                <TextBlock HorizontalAlignment="Right" Text="{x:Bind ViewModel.SharpnessPercentLabel, Mode=OneWay}" FontSize="12" FontWeight="Bold" Foreground="{ThemeResource XtrAccentBrush}" />
+                                            </Grid>
+                                            <Slider Minimum="0" Maximum="100" StepFrequency="5" Value="{x:Bind ViewModel.SharpnessPercentage, Mode=TwoWay}" />
+                                        </StackPanel>
+
+                                        <!-- Overlay Position & Framerate Limiter Grid -->
+                                        <Grid ColumnSpacing="10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Overlay Position -->
+                                            <StackPanel Grid.Column="0" Spacing="4">
+                                                <TextBlock Text="HUD Overlay Position" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
+                                                <ComboBox
+                                                    ItemsSource="{x:Bind ViewModel.AvailableOverlayPositions}"
+                                                    SelectedItem="{x:Bind ViewModel.SelectedOverlayPosition, Mode=TwoWay}"
+                                                    HorizontalAlignment="Stretch"
+                                                    CornerRadius="10" />
+                                            </StackPanel>
+
+                                            <!-- Framerate Limiter -->
+                                            <StackPanel Grid.Column="1" Spacing="4">
+                                                <TextBlock Text="Reflex Framerate Cap" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
+                                                <ComboBox
+                                                    ItemsSource="{x:Bind ViewModel.AvailableFramerateLimits}"
+                                                    SelectedItem="{x:Bind ViewModel.SelectedFramerateLimit, Mode=TwoWay}"
+                                                    HorizontalAlignment="Stretch"
+                                                    CornerRadius="10" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
                                 <Border Background="{ThemeResource XtrElevatedBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="14,10">
                                     <StackPanel Spacing="6">
                                         <TextBlock Text="IN-GAME OVERLAY HOTKEYS" FontSize="10" FontWeight="Bold" CharacterSpacing="60" Foreground="{ThemeResource XtrSecondaryTextBrush}" />

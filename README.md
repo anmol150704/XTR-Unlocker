@@ -4,7 +4,6 @@
 ### Native Neural Upscaling & Hardware Frame Generation Studio
 **Engineered with precision by [Anmol](https://github.com/anmol150704) • Powered by the XTR Studio Engine**
 
-[![Website](https://img.shields.io/badge/Live_Showcase-anmol150704.github.io%2FXTR--Unlocker-6366F1?style=for-the-badge&logo=googlechrome&logoColor=white)](https://anmol150704.github.io/XTR-Unlocker/)
 [![Release](https://img.shields.io/badge/Release-v2.4.0_Stable-0A84FF?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/anmol150704/XTR-Unlocker/releases)
 [![Platform](https://img.shields.io/badge/Platform-Windows_11_%2F_10_x64-30D158?style=for-the-badge&logo=windows11&logoColor=white)](https://github.com/anmol150704/XTR-Unlocker)
 [![Runtime](https://img.shields.io/badge/.NET-10.0_%7C_WinUI_3-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
@@ -15,10 +14,10 @@
 <br/>
 
 <p align="center">
-  <b>XTR Unlocker</b> is an elite, all-in-one GPU performance utility for PC gamers and creators. It delivers <b>Native DLSS 3 Hardware Frame Generation</b>, an intelligent <b>Anti-Ghosting Shield</b>, instant <b>DLSS 3.7+ library hot-swapping</b>, and real-time engine telemetry wrapped in an <b>Apple Liquid / VisionOS</b> glass interface.
+  <b>XTR Unlocker</b> is an elite, all-in-one GPU performance utility for PC gamers and creators. It delivers <b>Native DLSS 3 Hardware Frame Generation</b>, an intelligent <b>Anti-Ghosting Shield</b>, instant <b>DLSS 3.7+ library hot-swapping</b>, in-engine <b>Neural Preset Overrides</b>, and real-time engine telemetry wrapped in an <b>Apple Liquid / VisionOS</b> glass interface.
 </p>
 
-[ 🌐 Interactive Web Showcase ](https://anmol150704.github.io/XTR-Unlocker/) • [ ⚡ Key Features ](#-key-features) • [ 🛡️ Anti-Ghosting Shield ](#️-anti-ghosting-shield-deep-dive) • [ 📊 Compatibility ](#-hardware--api-compatibility) • [ 🏗️ Architecture ](#️-engine-architecture) • [ 🚀 Quick Start ](#-quick-start)
+[ ⚡ Key Features ](#-key-features) • [ 🎛️ Studio Engine Tuning ](#️-studio-engine-tuning) • [ 🛡️ Anti-Ghosting Shield ](#️-anti-ghosting-shield-deep-dive) • [ 📊 Compatibility ](#-hardware--api-compatibility) • [ 🏗️ Architecture ](#️-engine-architecture) • [ 🚀 Quick Start ](#-quick-start)
 
 ---
 
@@ -26,10 +25,12 @@
 
 ## 🌟 Overview
 
-Modern PC gaming deserves tools that feel fluid, responsive, and visually stunning. **XTR Unlocker** bridges the gap between low-level DirectX 12 driver hooks and a human-centered desktop experience:
+Modern PC gaming deserves tools that feel fluid, responsive, and visually stunning. **XTR Unlocker** unifies low-level DirectX 12 driver hooks, AI neural upscaling hot-swapping, and OptiScaler frame generation into a single cohesive desktop application:
 
-* **⚡ Pure Native Hardware OFA**: Direct execution on NVIDIA Ada Lovelace (RTX 40 Series) Optical Flow Accelerators (`sl.dlss_g.dll` & `nvngx_dlssg.dll`) with zero proxy interpolation overhead.
-* **🛡️ Dynamic Anti-Ghosting Shield™**: Eliminates trailing silhouettes, HUD smearing, and particle flicker through engine-level responsive pixel mask preservation (`DisableReactiveMask=false`) and immutable depth/motion-vector cloning.
+* **⚡ Pure Native Hardware OFA**: Direct execution on NVIDIA Ada Lovelace and Blackwell (RTX 40 & 50 Series) Optical Flow Accelerators (`sl.dlss_g.dll` & `nvngx_dlssg.dll`) with zero proxy interpolation overhead.
+* **🎛️ In-Engine Neural Preset Overrides**: Enforce NVIDIA DLSS **Preset E** (Anti-Ghosting Champion) or **Preset J** (Transformer Model) directly into game engines to eliminate trailing artifacts.
+* **🛡️ Dynamic Anti-Ghosting Shield™**: Preserves engine-level responsive pixel masks (`DisableReactiveMask=false`), enforces HUD layer isolation (`DrawUIOverFG=true`), and clones depth/motion-vector buffers.
+* **🔍 AI Image Sharpness Control**: Direct in-app slider for AMD Robust Contrast Adaptive Sharpening (RCAS) without entering complicated INI files.
 * **💎 Universal Frame Generation Bridge**: Translates Streamline DLSS-G calls into ultra-optimized FSR 3.1 / XeFG swapchains, bringing hardware frame multiplication to RTX 20/30 Series, AMD RDNA, and Intel Arc GPUs.
 * **🔄 Zero-Restart DLSS Hot-Swapping**: Switch seamlessly between DLSS 3.7+ (latest neural model), DLSS 3.5 (Ray Reconstruction), and DLSS 2.5 (classic sharpness) across your entire Steam, Epic, GOG, Xbox, and Ubisoft library.
 * **🖥️ Apple Liquid Glass Design**: Crafted with translucent acrylic glass panels, squircle cards with glowing `FG ACTIVE` indicators, iridescent gradient borders, and Segoe Fluent iconography with zero mojibake.
@@ -41,25 +42,44 @@ Modern PC gaming deserves tools that feel fluid, responsive, and visually stunni
 ### ⚡ 1. Native DLSS 3 Hardware Frame Generation
 For RTX 40 and 50 series systems, XTR Unlocker instructs the game engine to execute native NVIDIA Ada Lovelace Optical Flow hardware directly. By cleanly bypassing proxy frame interception and establishing full Streamline and HAGS spoofing, games unlock the native DLSS Frame Generation toggle in their menus without FSR 3.1 fallback penalties.
 
-### 🛡️ 2. Dynamic Anti-Ghosting Shield™
+### 🎛️ 2. XTR Studio Engine Tuning
+Take direct command of the rendering pipeline from the desktop inspector:
+* **DLSS Neural Model Presets**: Override game defaults with **Preset E** (Anti-Ghosting Champion), **Preset F** (Fast Motion & Reduced Shimmer), **Preset C** (High Stability), or **Preset J** (Next-Gen Transformer Model).
+* **AI Image Sharpness (RCAS)**: Real-time 0% to 100% fine-grained sharpness slider with immediate INI persistence.
+* **HUD Overlay Position**: Anchor in-game telemetry anywhere across your display (Top-Left, Top-Right, Bottom-Left, Bottom-Right).
+* **Reflex Framerate Limiter**: Cap your framerate to match display refresh rates (60, 120, 144, 165, 240 FPS) to minimize latency and eliminate frame pacing jitter.
+
+### 🛡️ 3. Dynamic Anti-Ghosting Shield™
 Generic frame generation mods corrupt game visuals because they discard reactive masks and interpolate user interfaces. XTR Unlocker deploys an active multi-stage defense:
 * **Responsive Pixel Mask Retention** (`DisableReactiveMask=false`): Prevents the graphics pipeline from discarding game-engine transparency and edge reactiveness masks.
 * **Reactive Transparency Biasing** (`DlssReactiveMaskBias=0.45`, `ReactiveScale=2.0`): Aggressively cleans character contours and moving transparent textures.
 * **HUD Separation & Isolation** (`DrawUIOverFG=true`, `DisableUI=false`): Separates HUD and subtitle layers from the optical flow pass, drawing sharp user interfaces directly over generated frames.
 * **Immutable Buffer Cloning** (`MakeDepthCopy=true`, `MakeMVCopy=true`): Eliminates DX12 presentation race conditions and edge trailing by duplicating depth and motion vector buffers before presentation.
 
-### 🔄 3. Instant DLSS Library Manager
+### 🔄 4. Instant DLSS Library Manager
 Auto-discovers your installed games across all major launchers. Switch between DLSS models in seconds:
 * **DLSS 3.7+ (Latest)**: Cutting-edge neural upscaling model with enhanced edge stability and reduced shimmering.
 * **DLSS 3.5 (Ray Reconstruction)**: Advanced AI neural denoiser replacing manual hand-tuned denoisers in ray-traced and path-traced titles.
 * **DLSS 2.5 (Pure Sharpness)**: Classic ultra-crisp presentation preferred by competitive gamers.
 
-### 🖥️ 4. Apple Liquid & macOS Sequoia Visual Design
+### 🖥️ 5. Apple Liquid & VisionOS Visual Interface
 Crafted with human-interface precision:
 * **VisionOS Floating Sidebar**: Iridescent squircle badge with real-time XTR Studio Engine health telemetry.
 * **Liquid Game Poster Grid**: Squircle artwork cards featuring emerald `FG ACTIVE` indicators and prominent DLSS version badges (e.g. `DLSS 3 - v3.7.10`).
 * **Studio Inspector Dashboard**: Large telemetry hero tiles, instant generation switchers, and seamless toggle switches.
 * **Zero Mojibake**: Clean, native Segoe Fluent Icon glyphs (`&#xE945;`, `&#xE735;`, `&#xE72C;`, `&#xE730;`, `&#xE9D9;`, `&#xE72E;`, `&#xE90F;`) with no broken symbols or raw developer menus.
+
+---
+
+## ⌨️ In-Game Overlay Hotkeys
+
+When XTR Unlocker is active in any DirectX 11, DirectX 12, or Vulkan title, use these hotkeys on the fly:
+
+| Hotkey | Action | Description |
+| :---: | :--- | :--- |
+| `[Insert]` | **XTR Engine Dev Panel** | Opens the live in-engine tuning overlay for runtime adjustments. |
+| `[Page Up]` | **FPS & Multiplier HUD** | Toggles the real-time frame generation telemetry and framerate counter. |
+| `[End]` | **Dynamic Frame Generation** | Instantly toggles frame generation on or off without restarting. |
 
 ---
 
@@ -77,7 +97,7 @@ flowchart TD
         Planner["XTR Deployment Planner & Section-Aware Engine"]
         Streamline --> Planner
         
-        Shield["🛡️ Anti-Ghosting Shield™\n• Responsive Pixel Mask Preservation\n• HUD Isolation (DrawUIOverFG)\n• Immutable Depth & MV Cloning"]
+        Shield["🛡️ Anti-Ghosting Shield™\n• Responsive Pixel Mask Preservation\n• Preset E / J Neural Overrides\n• HUD Isolation (DrawUIOverFG)\n• Immutable Depth & MV Cloning"]
         Planner -.-> Shield
     end
 
@@ -100,6 +120,14 @@ XTR Unlocker's section-aware engine writes configuration entries directly into `
 ```ini
 ; [InitFlags] - Responsive Mask Preservation
 DisableReactiveMask=false        ; Prevents stripping responsive pixel masks from engine
+
+; [DLSS] - In-Engine Neural Model Preset
+RenderPresetOverride=true        ; Forces custom neural model override
+RenderPresetForAll=5             ; 5 = Preset E (Anti-Ghosting Champion), 10 = Preset J
+
+; [Sharpness] - High-Fidelity RCAS
+OverrideSharpness=true           ; Activates sharpening override
+Sharpness=0.30                   ; Precision adaptive sharpness level
 
 ; [FrameGen] - Zero-Distortion Presentation
 DrawUIOverFG=true                ; Draws HUD textures directly over generated frames
@@ -176,9 +204,10 @@ XTR Frame Gen + Shield:  ■■■■■■■■■■■■■■■■■ 134
 - XTR Unlocker automatically discovers all installed games across your PC.
 - Use the **Apple Liquid Spotlight Search** or click any game card to open the Pro Studio Inspector.
 
-### 3. Choose Your Preset
+### 3. Choose Your Preset & Engine Tuning
 - **For RTX 40/50 Series**: Click **Native DLSS 3 Hardware FG**. XTR Unlocker bypasses proxy interpolation and configures Streamline / HAGS spoofing for native NVIDIA optical flow execution.
 - **For RTX 20/30 & Other GPUs**: Click **Universal FG Bridge (FSR 3.1)** to activate frame generation with the complete Anti-Ghosting Shield enabled.
+- **Tuning**: Set your DLSS Neural Model Preset to **Preset E (Anti-Ghosting Champion)** and adjust RCAS Sharpness to your preference.
 - **Hot-Swap DLSS**: Use the quick pill buttons (`DLSS 3.7+`, `DLSS 3.5`, `DLSS 2.5`) to switch upscaler DLLs instantly.
 
 ### 4. Launch & Enjoy
@@ -194,8 +223,8 @@ Launch your game directly from your launcher or desktop. Real-time telemetry wil
 * **Visual Studio 2022** with *.NET Desktop Development* & *Desktop development with C++*
 
 ```powershell
-# 1. Clone repository with submodules
-git clone --recurse-submodules https://github.com/anmol150704/XTR-Unlocker.git
+# 1. Clone repository
+git clone https://github.com/anmol150704/XTR-Unlocker.git
 cd XTR-Unlocker
 
 # 2. Run test harness (46 unit tests)
