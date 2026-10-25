@@ -126,6 +126,17 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
 
     [ObservableProperty]
     [Ignore]
+    [NotifyPropertyChangedFor(nameof(IntegrationStatus))]
+    [NotifyPropertyChangedFor(nameof(FrameGenBadgeText))]
+    [NotifyPropertyChangedFor(nameof(HasFrameGenBadge))]
+    [NotifyPropertyChangedFor(nameof(HasActiveRuntimeFg))]
+    [NotifyPropertyChangedFor(nameof(HasNativeDlssGOnly))]
+    [NotifyPropertyChangedFor(nameof(IsTurboBoostActive))]
+    [NotifyPropertyChangedFor(nameof(HasRuntimeBoostOrFg))]
+    [NotifyPropertyChangedFor(nameof(FrameGenBadgeForeground))]
+    [NotifyPropertyChangedFor(nameof(FrameGenBadgeBackground))]
+    [NotifyPropertyChangedFor(nameof(FrameGenBadgeBorder))]
+    [NotifyPropertyChangedFor(nameof(FrameGenDotColor))]
     public partial RuntimeIntegrationProfile? RuntimeProfile { get; set; }
 
     [ObservableProperty]
@@ -135,6 +146,8 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
     [NotifyPropertyChangedFor(nameof(HasFrameGenBadge))]
     [NotifyPropertyChangedFor(nameof(HasActiveRuntimeFg))]
     [NotifyPropertyChangedFor(nameof(HasNativeDlssGOnly))]
+    [NotifyPropertyChangedFor(nameof(IsTurboBoostActive))]
+    [NotifyPropertyChangedFor(nameof(HasRuntimeBoostOrFg))]
     [NotifyPropertyChangedFor(nameof(FrameGenBadgeForeground))]
     [NotifyPropertyChangedFor(nameof(FrameGenBadgeBackground))]
     [NotifyPropertyChangedFor(nameof(FrameGenBadgeBorder))]
@@ -157,31 +170,43 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
     public string DlssBadgeText => DlssVersionHelper.FormatBadge(CurrentDLSS?.DisplayVersion);
 
     [Ignore]
-    public bool HasFrameGenBadge => RuntimeManifest is not null || CurrentDLSS_G is not null;
-
-    [Ignore]
-    public bool HasActiveRuntimeFg => RuntimeManifest is not null;
-
-    [Ignore]
-    public bool HasNativeDlssGOnly => RuntimeManifest is null && CurrentDLSS_G is not null;
-
-    [Ignore]
-    public string FrameGenBadgeText
+    public bool IsTurboBoostActive
     {
         get
         {
-            if (RuntimeManifest is not null)
+            if (RuntimeManifest is null)
+                return false;
+
+            if (RuntimeProfile?.Options?.TryGetPropertyValue("Preset", out var node) == true &&
+                string.Equals(node?.ToString(), "TurboBoost", StringComparison.OrdinalIgnoreCase))
             {
-                return "FG ACTIVE";
+                return true;
             }
-            if (CurrentDLSS_G is not null)
-            {
-                var ver = CurrentDLSS_G.DisplayVersion.TrimStart('v', 'V');
-                return $"DLSS 3 FG";
-            }
-            return string.Empty;
+
+            return false;
         }
     }
+
+    [Ignore]
+    public bool HasActiveRuntimeFg =>
+        RuntimeManifest is not null &&
+        (RuntimeProfile is null || !string.Equals(RuntimeProfile.FrameGenerationEnabled, "false", StringComparison.OrdinalIgnoreCase));
+
+    [Ignore]
+    public bool HasRuntimeBoostOrFg => DlssVersionHelper.ComputeHasRuntimeBoostOrFg(RuntimeManifest is not null, IsTurboBoostActive, HasActiveRuntimeFg);
+
+    [Ignore]
+    public bool HasFrameGenBadge => HasRuntimeBoostOrFg || CurrentDLSS_G is not null;
+
+    [Ignore]
+    public bool HasNativeDlssGOnly => DlssVersionHelper.ComputeHasNativeDlssGOnly(HasRuntimeBoostOrFg, CurrentDLSS_G is not null);
+
+    [Ignore]
+    public string FrameGenBadgeText => DlssVersionHelper.FormatFrameGenBadge(
+        RuntimeManifest is not null,
+        IsTurboBoostActive,
+        HasActiveRuntimeFg,
+        CurrentDLSS_G is not null);
 
     [Ignore]
     public string FrameGenBadgeForeground => RuntimeManifest is not null ? "#E6FCEE" : "#E0F2FE";
@@ -293,6 +318,8 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
     [ObservableProperty]
     [Ignore]
     [NotifyPropertyChangedFor(nameof(FrameGenBadgeText))]
+    [NotifyPropertyChangedFor(nameof(HasFrameGenBadge))]
+    [NotifyPropertyChangedFor(nameof(HasNativeDlssGOnly))]
     public partial GameAsset? CurrentDLSS_G { get; set; } = null;
 
     [ObservableProperty]

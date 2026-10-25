@@ -581,11 +581,11 @@ public partial class SettingsPageModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(BuildInfo.GitTag))
         {
-            await Launcher.LaunchUriAsync(new Uri("https://github.com/beeradmoore/dlss-swapper/releases"));
+            await Launcher.LaunchUriAsync(new Uri("https://github.com/anmol150704/XTR-Unlocker/releases"));
         }
         else
         {
-            await Launcher.LaunchUriAsync(new Uri($"https://github.com/beeradmoore/dlss-swapper/releases/tag/{BuildInfo.GitTag}"));
+            await Launcher.LaunchUriAsync(new Uri($"https://github.com/anmol150704/XTR-Unlocker/releases/tag/{BuildInfo.GitTag}"));
         }
     }
 

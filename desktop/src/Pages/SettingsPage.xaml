@@ -175,8 +175,6 @@
                             </StackPanel>
                             <RichTextBlock>
                                 <Paragraph>GitHub: <Hyperlink NavigateUri="https://github.com/anmol150704/XTR-Unlocker">anmol150704/XTR-Unlocker</Hyperlink></Paragraph>
-                                <Paragraph>Twitter: <Hyperlink NavigateUri="https://twitter.com/dlss_swapper">@dlss_swapper</Hyperlink></Paragraph>
-                                <Paragraph>Reddit: <Hyperlink NavigateUri="https://www.reddit.com/r/DLSS_Swapper/">r/DLSS_Swapper</Hyperlink></Paragraph>
                                 <Paragraph><Hyperlink ct_winui:HyperlinkExtensions.Command="{x:Bind ViewModel.OpenAcknowledgementsCommand}"><Run Text="{x:Bind ViewModel.TranslationProperties.AcknowledgementsText, Mode=OneWay}" /></Hyperlink></Paragraph>
                             </RichTextBlock>
                         </StackPanel>
@@ -188,7 +186,7 @@
                             <RichTextBlock><Paragraph><Run Text="{x:Bind ViewModel.TranslationProperties.GiveFeedbackInfo, Mode=OneWay}" /> <Hyperlink NavigateUri="https://github.com/anmol150704/XTR-Unlocker/issues">GitHub repository</Hyperlink></Paragraph></RichTextBlock>
                             <TextBlock Style="{StaticResource SettingsCardTitleStyle}" Margin="0,18,0,0" Text="{x:Bind ViewModel.TranslationProperties.TroubleshootingText, Mode=OneWay}" />
                             <RichTextBlock>
-                                <Paragraph><Hyperlink NavigateUri="https://github.com/beeradmoore/dlss-swapper/wiki/Troubleshooting"><Run Text="{x:Bind ViewModel.TranslationProperties.GeneralTroubleshootingGuideText, Mode=OneWay}" /></Hyperlink></Paragraph>
+                                <Paragraph><Hyperlink NavigateUri="https://github.com/anmol150704/XTR-Unlocker#troubleshooting"><Run Text="{x:Bind ViewModel.TranslationProperties.GeneralTroubleshootingGuideText, Mode=OneWay}" /></Hyperlink></Paragraph>
                                 <Paragraph><Hyperlink ct_winui:HyperlinkExtensions.Command="{x:Bind ViewModel.OpenNetworkTesterCommand}"><Run Text="{x:Bind ViewModel.TranslationProperties.NetworkTesterText, Mode=OneWay}" /></Hyperlink></Paragraph>
                                 <Paragraph><Hyperlink ct_winui:HyperlinkExtensions.Command="{x:Bind ViewModel.OpenDiagnosticsCommand}"><Run Text="{x:Bind ViewModel.TranslationProperties.DiagnosticsText, Mode=OneWay}" /></Hyperlink></Paragraph>
                             </RichTextBlock>

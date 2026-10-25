@@ -97,7 +97,7 @@
                                     </StackPanel>
                                 </StackPanel>
 
-                                <!-- Right side Frame Gen indicator pill: Active Runtime FG -->
+                                <!-- Right side Frame Gen indicator pill: Active Runtime FG / Turbo Boost -->
                                 <Border Grid.Column="2"
                                         VerticalAlignment="Center"
                                         Padding="10,4"
@@ -105,11 +105,11 @@
                                         Background="#183D24"
                                         BorderBrush="#2ECC71"
                                         BorderThickness="1"
-                                        ToolTipService.ToolTip="Frame Generation runtime active"
-                                        Visibility="{x:Bind HasActiveRuntimeFg, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        ToolTipService.ToolTip="Frame Generation / Turbo Boost runtime active"
+                                        Visibility="{x:Bind HasRuntimeBoostOrFg, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                     <StackPanel Orientation="Horizontal" Spacing="5">
                                         <Ellipse Width="6" Height="6" Fill="#34C759" VerticalAlignment="Center" />
-                                        <TextBlock Text="FG ACTIVE" FontSize="10.5" FontWeight="Bold" Foreground="#E6FCEE" />
+                                        <TextBlock Text="{x:Bind FrameGenBadgeText, Mode=OneWay}" FontSize="10.5" FontWeight="Bold" Foreground="#E6FCEE" />
                                     </StackPanel>
                                 </Border>
 
@@ -222,7 +222,7 @@
                                     </StackPanel>
                                 </Border>
 
-                                <!-- Top-Right Floating Liquid Badge: Active Runtime FG -->
+                                <!-- Top-Right Floating Liquid Badge: Active Runtime FG / Turbo Boost -->
                                 <Border HorizontalAlignment="Right"
                                         VerticalAlignment="Top"
                                         Margin="11"
@@ -231,11 +231,11 @@
                                         Background="#DD153720"
                                         BorderBrush="#6034C759"
                                         BorderThickness="1"
-                                        ToolTipService.ToolTip="Frame Generation runtime active"
-                                        Visibility="{x:Bind HasActiveRuntimeFg, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        ToolTipService.ToolTip="Frame Generation / Turbo Boost runtime active"
+                                        Visibility="{x:Bind HasRuntimeBoostOrFg, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                     <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
                                         <Ellipse Width="6" Height="6" Fill="#34C759" VerticalAlignment="Center" />
-                                        <TextBlock Text="FG ACTIVE" FontSize="10" FontWeight="Bold" Foreground="#E6FCEE" />
+                                        <TextBlock Text="{x:Bind FrameGenBadgeText, Mode=OneWay}" FontSize="10" FontWeight="Bold" Foreground="#E6FCEE" />
                                     </StackPanel>
                                 </Border>
 

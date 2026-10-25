@@ -241,4 +241,190 @@ public sealed class FrameGenerationPlannerTests
                 Directory.Delete(tempDir, recursive: true);
         }
     }
+
+    [TestMethod]
+    public async Task TurboBoost_WithNativeDlssG_ConfiguresHardwareBypassAndPresetEAndAnisotropy()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"xtr_boost_native_test_{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(tempDir);
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "Game.exe"), "EXE_CONTENT");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "d3d12.dll"), "DX12_DLL");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "nvngx_dlssg.dll"), "NVNGX_DLSSG");
+
+            var pack = await RuntimePack.LoadFromDirectoryAsync(GetBundledPackagePath());
+            Assert.IsNotNull(pack);
+
+            var plan = await DeploymentPlanner.CreatePlanAsync(
+                "boost-native-test",
+                "Game Native Boost",
+                tempDir,
+                pack,
+                RuntimeIntegrationPreset.TurboBoost);
+
+            Assert.IsTrue(plan.CanExecute);
+            Assert.AreEqual("⚡ Activate XTR Turbo Boost", plan.Headline);
+
+            // Hardware optical flow bypass
+            Assert.AreEqual("nofg", plan.PlannedConfigModifications.First(m => m.Section == "FrameGen" && m.Key == "FGOutput").Value);
+            Assert.AreEqual("nofg", plan.PlannedConfigModifications.First(m => m.Section == "FrameGen" && m.Key == "FGInput").Value);
+            Assert.AreEqual("false", plan.PlannedConfigModifications.First(m => m.Section == "FrameGen" && m.Key == "Enabled").Value);
+
+            // DLSS Preset E
+            Assert.AreEqual("true", plan.PlannedConfigModifications.First(m => m.Section == "DLSS" && m.Key == "RenderPresetOverride").Value);
+            Assert.AreEqual("5", plan.PlannedConfigModifications.First(m => m.Section == "DLSS" && m.Key == "RenderPresetForAll").Value);
+
+            // 16x Anisotropic filtering
+            Assert.AreEqual("16", plan.PlannedConfigModifications.First(m => m.Section == "Anisotropy" && m.Key == "AnisotropyOverride").Value);
+
+            // Mipmap LOD bias
+            Assert.AreEqual("-0.5", plan.PlannedConfigModifications.First(m => m.Section == "Mipmap" && m.Key == "MipmapBiasOverride").Value);
+
+            // RCAS Sharpness
+            Assert.AreEqual("0.35", plan.PlannedConfigModifications.First(m => m.Section == "Sharpness" && m.Key == "Sharpness").Value);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task TurboBoost_WithUniversalHardware_ConfiguresFsrBridgeAndPresetEAndFramePacing()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"xtr_boost_univ_test_{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(tempDir);
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "Game.exe"), "EXE_CONTENT");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "d3d12.dll"), "DX12_DLL");
+
+            var pack = await RuntimePack.LoadFromDirectoryAsync(GetBundledPackagePath());
+            Assert.IsNotNull(pack);
+
+            var plan = await DeploymentPlanner.CreatePlanAsync(
+                "boost-univ-test",
+                "Game Universal Boost",
+                tempDir,
+                pack,
+                RuntimeIntegrationPreset.TurboBoost);
+
+            Assert.IsTrue(plan.CanExecute);
+            Assert.AreEqual("⚡ Activate XTR Turbo Boost", plan.Headline);
+
+            // FrameGen enabled via FSR 3.1 bridge
+            Assert.AreEqual("fsrfg", plan.PlannedConfigModifications.First(m => m.Section == "FrameGen" && m.Key == "FGOutput").Value);
+            Assert.AreEqual("true", plan.PlannedConfigModifications.First(m => m.Section == "FrameGen" && m.Key == "Enabled").Value);
+
+            // Frame Pacing tuning
+            Assert.AreEqual("true", plan.PlannedConfigModifications.First(m => m.Section == "FSRFG" && m.Key == "FramePacingTuning").Value);
+            Assert.AreEqual("0.01", plan.PlannedConfigModifications.First(m => m.Section == "FSRFG" && m.Key == "FPTSafetyMarginInMs").Value);
+            Assert.AreEqual("0.3", plan.PlannedConfigModifications.First(m => m.Section == "FSRFG" && m.Key == "FPTVarianceFactor").Value);
+
+            // Anti-Ghosting shield
+            Assert.AreEqual("true", plan.PlannedConfigModifications.First(m => m.Section == "OptiFG" && m.Key == "HUDFix").Value);
+            Assert.AreEqual("true", plan.PlannedConfigModifications.First(m => m.Section == "OptiFG" && m.Key == "MakeDepthCopy").Value);
+            Assert.AreEqual("true", plan.PlannedConfigModifications.First(m => m.Section == "OptiFG" && m.Key == "MakeMVCopy").Value);
+
+            // DLSS Preset E
+            Assert.AreEqual("5", plan.PlannedConfigModifications.First(m => m.Section == "DLSS" && m.Key == "RenderPresetForAll").Value);
+
+            // 16x Anisotropic filtering & Mipmap LOD bias
+            Assert.AreEqual("16", plan.PlannedConfigModifications.First(m => m.Section == "Anisotropy" && m.Key == "AnisotropyOverride").Value);
+            Assert.AreEqual("-0.5", plan.PlannedConfigModifications.First(m => m.Section == "Mipmap" && m.Key == "MipmapBiasOverride").Value);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void Game_BadgeLogic_EvaluatesTurboBoostAndNativeCorrectly()
+    {
+        // 1. Initial empty state: no runtime, no DLSS-G
+        Assert.IsFalse(DlssVersionHelper.ComputeHasRuntimeBoostOrFg(hasRuntimeManifest: false, isTurboBoost: false, hasActiveRuntimeFg: false));
+        Assert.IsFalse(DlssVersionHelper.ComputeHasNativeDlssGOnly(hasRuntimeBoostOrFg: false, hasNativeDlssG: false));
+        Assert.AreEqual(string.Empty, DlssVersionHelper.FormatFrameGenBadge(hasRuntimeManifest: false, isTurboBoost: false, hasActiveRuntimeFg: false, hasNativeDlssG: false));
+
+        // 2. Native DLSS 3 FG present in game, no runtime installed
+        var hasBoostOrFg2 = DlssVersionHelper.ComputeHasRuntimeBoostOrFg(hasRuntimeManifest: false, isTurboBoost: false, hasActiveRuntimeFg: false);
+        Assert.IsFalse(hasBoostOrFg2);
+        Assert.IsTrue(DlssVersionHelper.ComputeHasNativeDlssGOnly(hasBoostOrFg2, hasNativeDlssG: true));
+        Assert.AreEqual("DLSS 3 FG", DlssVersionHelper.FormatFrameGenBadge(hasRuntimeManifest: false, isTurboBoost: false, hasActiveRuntimeFg: false, hasNativeDlssG: true));
+
+        // 3. Runtime installed with standard FG
+        var hasBoostOrFg3 = DlssVersionHelper.ComputeHasRuntimeBoostOrFg(hasRuntimeManifest: true, isTurboBoost: false, hasActiveRuntimeFg: true);
+        Assert.IsTrue(hasBoostOrFg3);
+        Assert.IsFalse(DlssVersionHelper.ComputeHasNativeDlssGOnly(hasBoostOrFg3, hasNativeDlssG: false));
+        Assert.AreEqual("⚡ FG ACTIVE", DlssVersionHelper.FormatFrameGenBadge(hasRuntimeManifest: true, isTurboBoost: false, hasActiveRuntimeFg: true, hasNativeDlssG: false));
+
+        // 4. Runtime installed with Turbo Boost
+        var hasBoostOrFg4 = DlssVersionHelper.ComputeHasRuntimeBoostOrFg(hasRuntimeManifest: true, isTurboBoost: true, hasActiveRuntimeFg: true);
+        Assert.IsTrue(hasBoostOrFg4);
+        Assert.IsFalse(DlssVersionHelper.ComputeHasNativeDlssGOnly(hasBoostOrFg4, hasNativeDlssG: false));
+        Assert.AreEqual("⚡ BOOST ACTIVE", DlssVersionHelper.FormatFrameGenBadge(hasRuntimeManifest: true, isTurboBoost: true, hasActiveRuntimeFg: true, hasNativeDlssG: false));
+
+        // 5. Runtime installed with LatestDlssOnly (FG disabled) and native DLSS 3 in game
+        var hasBoostOrFg5 = DlssVersionHelper.ComputeHasRuntimeBoostOrFg(hasRuntimeManifest: true, isTurboBoost: false, hasActiveRuntimeFg: false);
+        Assert.IsFalse(hasBoostOrFg5);
+        Assert.IsTrue(DlssVersionHelper.ComputeHasNativeDlssGOnly(hasBoostOrFg5, hasNativeDlssG: true));
+        Assert.AreEqual("DLSS 3 FG", DlssVersionHelper.FormatFrameGenBadge(hasRuntimeManifest: true, isTurboBoost: false, hasActiveRuntimeFg: false, hasNativeDlssG: true));
+
+        // 6. Runtime installed with LatestDlssOnly and NO native DLSS 3 in game
+        var hasBoostOrFg6 = DlssVersionHelper.ComputeHasRuntimeBoostOrFg(hasRuntimeManifest: true, isTurboBoost: false, hasActiveRuntimeFg: false);
+        Assert.IsFalse(hasBoostOrFg6);
+        Assert.IsFalse(DlssVersionHelper.ComputeHasNativeDlssGOnly(hasBoostOrFg6, hasNativeDlssG: false));
+        Assert.AreEqual(string.Empty, DlssVersionHelper.FormatFrameGenBadge(hasRuntimeManifest: true, isTurboBoost: false, hasActiveRuntimeFg: false, hasNativeDlssG: false));
+    }
+
+    [TestMethod]
+    public async Task TurboBoost_InstallPlan_SetsProfilePresetAndIniCorrectly()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"xtr_boost_install_test_{Guid.NewGuid():N}");
+        var gameId = $"boost-install-test-{Guid.NewGuid():N}";
+        try
+        {
+            Directory.CreateDirectory(tempDir);
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "Game.exe"), "EXE_CONTENT");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "d3d12.dll"), "DX12_DLL");
+
+            var pack = await RuntimePack.LoadFromDirectoryAsync(GetBundledPackagePath());
+            Assert.IsNotNull(pack);
+
+            var plan = await DeploymentPlanner.CreatePlanAsync(
+                gameId,
+                "Game Install Boost Test",
+                tempDir,
+                pack,
+                RuntimeIntegrationPreset.TurboBoost);
+
+            Assert.IsTrue(plan.CanExecute);
+            var manifest = await RuntimeInstallService.InstallPlanAsync(plan);
+            Assert.IsNotNull(manifest);
+
+            var profile = await RuntimeIntegrationProfileStore.LoadAsync(gameId);
+            Assert.IsNotNull(profile);
+            Assert.AreEqual("TurboBoost", profile.Options["Preset"]?.ToString());
+
+            var iniPath = Path.Combine(tempDir, "OptiScaler.ini");
+            Assert.IsTrue(File.Exists(iniPath));
+            var iniContent = await File.ReadAllTextAsync(iniPath);
+            Assert.AreEqual("5", RuntimeConfigService.ReadIniValue(iniContent, "DLSS", "RenderPresetForAll"));
+            Assert.AreEqual("16", RuntimeConfigService.ReadIniValue(iniContent, "Anisotropy", "AnisotropyOverride"));
+            Assert.AreEqual("-0.5", RuntimeConfigService.ReadIniValue(iniContent, "Mipmap", "MipmapBiasOverride"));
+            Assert.AreEqual("0.35", RuntimeConfigService.ReadIniValue(iniContent, "Sharpness", "Sharpness"));
+
+            await RuntimeInstallService.RestoreAsync(gameId, tempDir);
+            Assert.IsFalse(File.Exists(iniPath));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, recursive: true);
+        }
+    }
 }

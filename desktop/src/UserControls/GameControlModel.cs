@@ -184,6 +184,9 @@ public partial class GameControlModel : ObservableObject
     [ObservableProperty]
     public partial string SelectedFramerateLimit { get; set; } = "Off (Unlimited)";
 
+    [ObservableProperty]
+    public partial bool IsTurboBoostActive { get; set; } = false;
+
     partial void OnSelectedFramerateLimitChanged(string value)
     {
         if (_isLoadingSettings) return;
@@ -449,6 +452,112 @@ public partial class GameControlModel : ObservableObject
     Task EnableNativeDlssGAsync() => DeployPresetAsync(RuntimeIntegrationPreset.NativeDlssG, "Enable Native DLSS 3 Hardware Frame Generation");
 
     [RelayCommand]
+    async Task ActivateTurboBoostAsync()
+    {
+        try
+        {
+            var iniPath = GetDeployedIniPath();
+            if (iniPath is null || !File.Exists(iniPath))
+            {
+                var success = await DeployPresetAsync(RuntimeIntegrationPreset.TurboBoost, "⚡ Activate XTR Turbo Boost");
+                if (!success)
+                    return;
+
+                return;
+            }
+
+            var root = Path.GetDirectoryName(iniPath);
+            if (string.IsNullOrEmpty(root) || !Directory.Exists(root))
+                return;
+
+            var settings = new List<(string Section, string Key, string Value)>();
+            settings.Add(("Upscalers", "Dx12Upscaler", "dlss"));
+            settings.Add(("Upscalers", "Dx11Upscaler", "dlss"));
+            settings.Add(("Upscalers", "VulkanUpscaler", "dlss"));
+
+            settings.Add(("DLSS", "RenderPresetOverride", "true"));
+            settings.Add(("DLSS", "RenderPresetForAll", "5"));
+
+            settings.Add(("Anisotropy", "AnisotropyOverride", "16"));
+            settings.Add(("Anisotropy", "ModifyComparison", "true"));
+            settings.Add(("Anisotropy", "ModifyMinMax", "true"));
+            settings.Add(("Anisotropy", "SkipPointFilter", "true"));
+
+            settings.Add(("Mipmap", "MipmapBiasOverride", "-0.5"));
+            settings.Add(("Mipmap", "MipmapBiasFixedOverride", "true"));
+
+            settings.Add(("Sharpness", "OverrideSharpness", "true"));
+            settings.Add(("Sharpness", "Sharpness", "0.35"));
+
+            settings.Add(("Spoofing", "StreamlineSpoofing", "true"));
+            settings.Add(("Spoofing", "SpoofHAGS", "true"));
+
+            settings.Add(("Menu", "OverlayMenu", "true"));
+            settings.Add(("Menu", "ShowFps", "true"));
+            settings.Add(("Menu", "FpsOverlayType", "2"));
+            settings.Add(("Menu", "DisableSplash", "true"));
+            settings.Add(("Menu", "ShortcutKey", "-1"));
+
+            if (string.Equals(ActiveFrameGenMode, "Native DLSS 3 Hardware FG", StringComparison.OrdinalIgnoreCase) ||
+                (Game.CurrentDLSS_G is not null && !string.Equals(ActiveFrameGenMode, "Universal FG Bridge (FSR 3.1)", StringComparison.OrdinalIgnoreCase)))
+            {
+                settings.Add(("FrameGen", "Enabled", "false"));
+                settings.Add(("FrameGen", "FGInput", "nofg"));
+                settings.Add(("FrameGen", "FGOutput", "nofg"));
+                ActiveFrameGenMode = "Native DLSS 3 Hardware FG";
+            }
+            else
+            {
+                settings.Add(("FrameGen", "Enabled", "true"));
+                settings.Add(("FrameGen", "FGInput", "dlssg"));
+                settings.Add(("FrameGen", "FGOutput", "fsrfg"));
+                settings.Add(("FrameGen", "DrawUIOverFG", "true"));
+                settings.Add(("FrameGen", "DisableUI", "false"));
+                settings.Add(("FrameGen", "DisableHudless", "false"));
+                settings.Add(("FrameGen", "ForceBorderless", "true"));
+
+                settings.Add(("OptiFG", "HUDFix", "true"));
+                settings.Add(("OptiFG", "HUDFixExtended", "true"));
+                settings.Add(("OptiFG", "DisableHUDFix", "false"));
+                settings.Add(("OptiFG", "MakeDepthCopy", "true"));
+                settings.Add(("OptiFG", "MakeMVCopy", "true"));
+                settings.Add(("OptiFG", "HUDFixImmediate", "true"));
+                settings.Add(("OptiFG", "AlwaysTrackHeaps", "true"));
+                settings.Add(("OptiFG", "HUDFixRelaxedResolutionCheck", "true"));
+                settings.Add(("InitFlags", "DisableReactiveMask", "false"));
+                settings.Add(("FSR", "UseReactiveMaskForTransparency", "true"));
+                settings.Add(("FSR", "DlssReactiveMaskBias", "0.45"));
+                settings.Add(("FSR", "ReactiveScale", "2.0"));
+                settings.Add(("FSR", "AccAddPerFrame", "0.05"));
+                settings.Add(("FSR", "MinDisOccAcc", "-0.5"));
+
+                settings.Add(("FSRFG", "FramePacingTuning", "true"));
+                settings.Add(("FSRFG", "FPTSafetyMarginInMs", "0.01"));
+                settings.Add(("FSRFG", "FPTVarianceFactor", "0.3"));
+                settings.Add(("FSRFG", "UseMutexForSwapchain", "true"));
+                ActiveFrameGenMode = "Universal FG Bridge (FSR 3.1)";
+            }
+
+            await RuntimeConfigService.UpdateSettingsAsync(root, settings);
+
+            if (Game.RuntimeProfile is not null)
+            {
+                Game.RuntimeProfile.Options["Preset"] = "TurboBoost";
+                Game.RuntimeProfile.FrameGenerationEnabled = (ActiveFrameGenMode == "Native DLSS 3 Hardware FG") ? "false" : "true";
+                await Game.SaveRuntimeProfileAsync(Game.RuntimeProfile);
+            }
+
+            InitializeDeployedSettings();
+            RefreshDiagnostics();
+            await ShowRuntimeDialogAsync("⚡ XTR Turbo Boost Activated", "Engine optimizations successfully applied:\n\n• DLSS Neural Model: Preset E (Ghosting Shield)\n• Texture Filtering: 16x Anisotropic + Mipmap LOD Bias (-0.5)\n• Low-Latency Mutex Frame Pacing\n• AI Edge Sharpening: RCAS 35%\n• In-Game Real-Time Telemetry: Active");
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex, "Failed to activate Turbo Boost");
+        }
+    }
+
+    [RelayCommand]
     Task QuickSwapDlss37Async() => QuickSwapDlssCoreAsync("3.7");
 
     [RelayCommand]
@@ -585,6 +694,25 @@ public partial class GameControlModel : ObservableObject
             else
             {
                 SelectedFramerateLimit = "Off (Unlimited)";
+            }
+
+            // Read Turbo Boost state
+            var aniso = RuntimeConfigService.ReadIniValue(content, "Anisotropy", "AnisotropyOverride");
+            var renderPreset = RuntimeConfigService.ReadIniValue(content, "DLSS", "RenderPresetForAll");
+            IsTurboBoostActive = string.Equals(aniso, "16", StringComparison.OrdinalIgnoreCase) &&
+                                 string.Equals(renderPreset, "5", StringComparison.OrdinalIgnoreCase);
+
+            if (Game.RuntimeProfile?.Options is { } options)
+            {
+                if (IsTurboBoostActive)
+                {
+                    options["Preset"] = "TurboBoost";
+                }
+                else if (options.TryGetPropertyValue("Preset", out var presetNode) &&
+                         string.Equals(presetNode?.ToString(), "TurboBoost", StringComparison.OrdinalIgnoreCase))
+                {
+                    options.Remove("Preset");
+                }
             }
         }
         catch (Exception ex)
@@ -838,23 +966,23 @@ public partial class GameControlModel : ObservableObject
         OnPropertyChanged(nameof(RuntimeStatusText));
     }
 
-    private async Task DeployPresetAsync(RuntimeIntegrationPreset preset, string dialogTitle)
+    private async Task<bool> DeployPresetAsync(RuntimeIntegrationPreset preset, string dialogTitle)
     {
         if (!gameControlWeakReference.TryGetTarget(out var gameControl))
-            return;
+            return false;
 
         var packagePath = RuntimeInstallService.GetBundledPackagePath();
         if (packagePath is null)
         {
             await ShowRuntimeDialogAsync("Bundled runtime unavailable", "This XTR build does not include the baseline OptiScaler runtime. Choose a custom package under Advanced.");
-            return;
+            return false;
         }
 
         var pack = await RuntimePack.LoadFromDirectoryAsync(packagePath);
         if (pack is null)
         {
             await ShowRuntimeDialogAsync("Runtime load error", "Could not load the bundled runtime package.");
-            return;
+            return false;
         }
 
         var plan = await DeploymentPlanner.CreatePlanAsync(
@@ -868,7 +996,7 @@ public partial class GameControlModel : ObservableObject
         if (!plan.CanExecute)
         {
             await ShowRuntimeDialogAsync(plan.Headline, plan.Summary);
-            return;
+            return false;
         }
 
         var planPanel = new StackPanel { Spacing = 12 };
@@ -923,19 +1051,28 @@ public partial class GameControlModel : ObservableObject
         var dialogResult = await dialog.ShowAsync();
         if (dialogResult != ContentDialogResult.Primary)
         {
-            return;
+            return false;
         }
 
         try
         {
             var manifest = await RuntimeInstallService.InstallPlanAsync(plan);
             await Game.SaveRuntimeManifestAsync(manifest);
+            var profile = await RuntimeIntegrationProfileStore.LoadAsync(Game.ID);
+            if (profile is not null)
+            {
+                await Game.SaveRuntimeProfileAsync(profile);
+            }
+            InitializeDeployedSettings();
+            RefreshDiagnostics();
             await ShowRuntimeDialogAsync("Runtime installed", $"{pack.DisplayName} is active for {Game.Title}. Reversible backups recorded.");
+            return true;
         }
         catch (Exception ex)
         {
             Logger.Error(ex);
             await ShowRuntimeDialogAsync("Install failed", ex.Message);
+            return false;
         }
     }
     [RelayCommand]
@@ -1025,6 +1162,17 @@ public partial class GameControlModel : ObservableObject
             await RuntimeInstallService.RestoreAsync(Game.ID, installRoot);
             App.CurrentApp.RunOnUIThread(() => Game.RuntimeManifest = null);
             await Game.RemoveRuntimeProfileAsync();
+
+            _isLoadingSettings = true;
+            IsTurboBoostActive = false;
+            AntiGhostingShieldEnabled = false;
+            InGameHudOverlayEnabled = false;
+            StreamlineSpoofingEnabled = false;
+            SelectedEngineNeuralPreset = "Default (Game Engine Default)";
+            ActiveFrameGenMode = "Upscaling Only (No FG)";
+            _isLoadingSettings = false;
+
+            RefreshDiagnostics();
             await ShowRuntimeDialogAsync("Runtime restored", "XTR removed its runtime files and restored the originals it had backed up.");
         }
         catch (Exception error)
@@ -1240,7 +1388,7 @@ public partial class GameControlModel : ObservableObject
     [RelayCommand]
     async Task ReadyToPlayStateMoreInformationAsync()
     {
-        await Launcher.LaunchUriAsync(new Uri("https://github.com/beeradmoore/dlss-swapper/wiki/Troubleshooting#game-is-not-in-a-ready-to-play-state"));
+        await Launcher.LaunchUriAsync(new Uri("https://github.com/anmol150704/XTR-Unlocker#troubleshooting"));
     }
 
     [RelayCommand]

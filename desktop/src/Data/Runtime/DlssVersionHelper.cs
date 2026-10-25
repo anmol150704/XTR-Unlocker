@@ -66,4 +66,34 @@ public static class DlssVersionHelper
 
         return ver;
     }
+
+    public static string FormatFrameGenBadge(bool hasRuntimeManifest, bool isTurboBoost, bool hasActiveRuntimeFg, bool hasNativeDlssG)
+    {
+        if (hasRuntimeManifest)
+        {
+            if (isTurboBoost)
+            {
+                return "⚡ BOOST ACTIVE";
+            }
+            if (hasActiveRuntimeFg)
+            {
+                return "⚡ FG ACTIVE";
+            }
+        }
+        if (hasNativeDlssG)
+        {
+            return "DLSS 3 FG";
+        }
+        return string.Empty;
+    }
+
+    public static bool ComputeHasRuntimeBoostOrFg(bool hasRuntimeManifest, bool isTurboBoost, bool hasActiveRuntimeFg)
+    {
+        return hasRuntimeManifest && (isTurboBoost || hasActiveRuntimeFg);
+    }
+
+    public static bool ComputeHasNativeDlssGOnly(bool hasRuntimeBoostOrFg, bool hasNativeDlssG)
+    {
+        return !hasRuntimeBoostOrFg && hasNativeDlssG;
+    }
 }

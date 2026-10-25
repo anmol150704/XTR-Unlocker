@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -101,6 +101,23 @@ internal static class RuntimeInstallService
                     {
                         profile.FrameGenerationOutput = mod.Value;
                     }
+                }
+
+                if (plan.Preset == RuntimeIntegrationPreset.TurboBoost)
+                {
+                    profile.Options["Preset"] = "TurboBoost";
+                }
+                else if (plan.Preset == RuntimeIntegrationPreset.NativeDlssG)
+                {
+                    profile.Options["Preset"] = "NativeDlssG";
+                }
+                else if (plan.Preset == RuntimeIntegrationPreset.DlssWithFrameGeneration)
+                {
+                    profile.Options["Preset"] = "DlssWithFrameGeneration";
+                }
+                else if (plan.Preset == RuntimeIntegrationPreset.LatestDlssOnly)
+                {
+                    profile.Options["Preset"] = "LatestDlssOnly";
                 }
 
                 await RuntimeConfigService.ApplyModificationsAsync(manifest.InstallRoot, plan.PlannedConfigModifications, cancellationToken).ConfigureAwait(false);
