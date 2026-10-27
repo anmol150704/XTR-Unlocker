@@ -3,7 +3,8 @@ param(
     [string]$Configuration = "Release",
     [switch]$SkipTests,
     [switch]$SelfContained,
-    [switch]$PackageZip
+    [switch]$PackageZip,
+    [switch]$BuildInstaller
 )
 
 $ErrorActionPreference = "Stop"
@@ -55,8 +56,8 @@ if (-not (Test-Path (Join-Path $bundledRuntime "OptiScaler.dll")) -or
 
 Write-Host "XTR Unlocker and its bundled OptiScaler runtime were verified in $desktopOutput"
 
+$distRoot = Join-Path $repoRoot "dist"
 if ($PackageZip) {
-    $distRoot = Join-Path $repoRoot "dist"
     if (-not (Test-Path $distRoot)) {
         New-Item -ItemType Directory -Path $distRoot -Force | Out-Null
     }
@@ -64,4 +65,41 @@ if ($PackageZip) {
     Write-Host "Compressing release package to $zipPath..."
     Compress-Archive -Path "$desktopOutput/*" -DestinationPath $zipPath -Force
     Write-Host "Release package archive created at $zipPath"
+}
+
+if ($BuildInstaller -or ($PackageZip -and $Configuration -eq "Release")) {
+    $sevenZipExe = "C:\Program Files\7-Zip\7z.exe"
+    $sevenZipSfx = "C:\Program Files\7-Zip\7z.sfx"
+    if ((Test-Path $sevenZipExe) -and (Test-Path $sevenZipSfx)) {
+        if (-not (Test-Path $distRoot)) {
+            New-Item -ItemType Directory -Path $distRoot -Force | Out-Null
+        }
+        Write-Host "Building single-file setup installer XTR-Unlocker-Setup.exe..."
+        $payload7z = Join-Path $distRoot "app_payload.7z"
+        if (Test-Path $payload7z) { Remove-Item -Path $payload7z -Force }
+        & $sevenZipExe a -t7z $payload7z "$desktopOutput\*" -mx=9 | Out-Null
+
+        $sfxConfig = Join-Path $distRoot "sfx_config.txt"
+        $sfxConfigContent = @'
+;!@Install@!UTF-8!
+Title="XTR Unlocker Setup"
+BeginPrompt="Install XTR Unlocker (DLSS & Frame Generation Unlocker with In-Game Apple Glass HUD)?"
+RunProgram="XTR Unlocker.exe"
+;!@InstallEnd@!
+'@
+        [System.IO.File]::WriteAllText($sfxConfig, $sfxConfigContent, [System.Text.Encoding]::UTF8)
+
+        $installerExe = Join-Path $distRoot "XTR-Unlocker-Setup.exe"
+        cmd /c "copy /b `"$sevenZipSfx`" + `"$sfxConfig`" + `"$payload7z`" `"$installerExe`"" | Out-Null
+
+        if (Test-Path $payload7z) { Remove-Item -Path $payload7z -Force }
+        if (Test-Path $sfxConfig) { Remove-Item -Path $sfxConfig -Force }
+
+        if (Test-Path $installerExe) {
+            $sizeMb = [math]::Round((Get-Item $installerExe).Length / 1MB, 2)
+            Write-Host "Clean setup installer created successfully: $installerExe ($sizeMb MB)"
+        }
+    } else {
+        Write-Warning "7-Zip was not found at $sevenZipExe; skipping setup installer generation."
+    }
 }
