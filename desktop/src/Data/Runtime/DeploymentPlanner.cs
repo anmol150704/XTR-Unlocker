@@ -135,7 +135,7 @@ public static class DeploymentPlanner
                     });
                 }
 
-                var sourceHash = pack.FileHashes.FirstOrDefault(h => string.Equals(h.RelativePath, relative.Replace('\\', '/'), StringComparison.OrdinalIgnoreCase))?.Sha256
+                var sourceHash = pack.GetExpectedHash(relative)
                     ?? await ComputeSha256Async(file, cancellationToken).ConfigureAwait(false);
 
                 plan.PlannedCopies.Add(new PlannedFileAction

@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -201,8 +202,7 @@ public partial class XtrStudioPageModel : ObservableObject
     {
         IsProcessing = true;
         StatusBanner = "Scanning GPU Architecture & Display Adapters...";
-        await Task.Delay(250);
-        HardwareInfo = GpuHardwareDetector.GetHardwareInfo(refresh: true);
+        HardwareInfo = await GpuHardwareDetector.GetHardwareInfoAsync(refresh: true);
         IsProcessing = false;
         StatusBanner = $"Hardware Verified • {HardwareInfo.Name} ({HardwareInfo.Architecture})";
     }
@@ -223,20 +223,25 @@ public partial class XtrStudioPageModel : ObservableObject
                 if (pack != null && App.CurrentApp.MainWindow is MainWindow mainWindow && mainWindow.GameGridPage is GameGridPage gridPage)
                 {
                     var games = gridPage.GetDistinctVisibleGames().ToList();
-                    foreach (var game in games)
+                    var parallelOptions = new ParallelOptions
+                    {
+                        MaxDegreeOfParallelism = Math.Clamp(Environment.ProcessorCount, 2, 8)
+                    };
+
+                    await Parallel.ForEachAsync(games, parallelOptions, async (game, ct) =>
                     {
                         try
                         {
-                            var plan = await DeploymentPlanner.CreatePlanAsync(game.ID, game.Title, game.InstallPath, pack, RuntimeIntegrationPreset.TurboBoost);
-                            var manifest = await RuntimeInstallService.InstallPlanAsync(plan);
+                            var plan = await DeploymentPlanner.CreatePlanAsync(game.ID, game.Title, game.InstallPath, pack, RuntimeIntegrationPreset.TurboBoost, cancellationToken: ct);
+                            var manifest = await RuntimeInstallService.InstallPlanAsync(plan, ct);
                             await game.SaveRuntimeManifestAsync(manifest);
-                            count++;
+                            Interlocked.Increment(ref count);
                         }
                         catch
                         {
                             // Continue with next game
                         }
-                    }
+                    });
                 }
             }
         }
@@ -264,20 +269,25 @@ public partial class XtrStudioPageModel : ObservableObject
             if (App.CurrentApp.MainWindow is MainWindow mainWindow && mainWindow.GameGridPage is GameGridPage gridPage)
             {
                 var games = gridPage.GetDistinctVisibleGames().ToList();
-                foreach (var game in games)
+                var parallelOptions = new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = Math.Clamp(Environment.ProcessorCount, 2, 8)
+                };
+
+                await Parallel.ForEachAsync(games, parallelOptions, async (game, ct) =>
                 {
                     try
                     {
-                        await RuntimeInstallService.RestoreAsync(game.ID, game.InstallPath);
+                        await RuntimeInstallService.RestoreAsync(game.ID, game.InstallPath, ct);
                         App.CurrentApp.RunOnUIThread(() => game.RuntimeManifest = null);
                         await game.RemoveRuntimeProfileAsync();
-                        count++;
+                        Interlocked.Increment(ref count);
                     }
                     catch
                     {
                         // Continue with next game
                     }
-                }
+                });
             }
         }
         catch (Exception ex)

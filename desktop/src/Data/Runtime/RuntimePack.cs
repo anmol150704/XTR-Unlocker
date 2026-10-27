@@ -127,6 +127,28 @@ public sealed class RuntimePack
     [JsonIgnore]
     public string? PackageRoot { get; set; }
 
+    [JsonIgnore]
+    private Dictionary<string, string>? _cachedHashMap;
+
+    public string? GetExpectedHash(string relativePath)
+    {
+        if (string.IsNullOrWhiteSpace(relativePath)) return null;
+
+        if (_cachedHashMap is null)
+        {
+            var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var fh in FileHashes)
+            {
+                var norm = fh.RelativePath.Replace('\\', '/');
+                map[norm] = fh.Sha256;
+            }
+            _cachedHashMap = map;
+        }
+
+        var normalized = relativePath.Replace('\\', '/');
+        return _cachedHashMap.TryGetValue(normalized, out var hash) ? hash : null;
+    }
+
     public static async Task<RuntimePack?> LoadFromDirectoryAsync(
         string packageRoot,
         CancellationToken cancellationToken = default)
@@ -191,36 +213,40 @@ public sealed class RuntimePack
 
     public async Task<(bool IsValid, List<string> Errors)> VerifyIntegrityAsync(CancellationToken cancellationToken = default)
     {
-        var errors = new List<string>();
+        var errorBag = new System.Collections.Concurrent.ConcurrentBag<string>();
         if (string.IsNullOrWhiteSpace(PackageRoot) || !Directory.Exists(PackageRoot))
         {
-            errors.Add("Package directory does not exist.");
-            return (false, errors);
+            return (false, new List<string> { "Package directory does not exist." });
         }
 
         if (FileHashes.Count == 0)
         {
-            errors.Add("No file hashes specified in runtime pack manifest.");
-            return (false, errors);
+            return (false, new List<string> { "No file hashes specified in runtime pack manifest." });
         }
 
-        foreach (var expectedFile in FileHashes)
+        var options = new ParallelOptions
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            MaxDegreeOfParallelism = Math.Clamp(Environment.ProcessorCount, 2, 8),
+            CancellationToken = cancellationToken
+        };
+
+        await Parallel.ForEachAsync(FileHashes, options, async (expectedFile, ct) =>
+        {
             var filePath = Path.Combine(PackageRoot, expectedFile.RelativePath.Replace('/', Path.DirectorySeparatorChar));
             if (!File.Exists(filePath))
             {
-                errors.Add($"Missing required package file: {expectedFile.RelativePath}");
-                continue;
+                errorBag.Add($"Missing required package file: {expectedFile.RelativePath}");
+                return;
             }
 
-            var actualHash = await ComputeSha256Async(filePath, cancellationToken).ConfigureAwait(false);
+            var actualHash = await ComputeSha256Async(filePath, ct).ConfigureAwait(false);
             if (!string.Equals(actualHash, expectedFile.Sha256, StringComparison.OrdinalIgnoreCase))
             {
-                errors.Add($"Hash mismatch for {expectedFile.RelativePath}. Expected: {expectedFile.Sha256}, actual: {actualHash}");
+                errorBag.Add($"Hash mismatch for {expectedFile.RelativePath}. Expected: {expectedFile.Sha256}, actual: {actualHash}");
             }
-        }
+        }).ConfigureAwait(false);
 
+        var errors = errorBag.ToList();
         return (errors.Count == 0, errors);
     }
 

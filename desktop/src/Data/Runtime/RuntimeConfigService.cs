@@ -34,13 +34,7 @@ internal static class RuntimeConfigService
             throw new FileNotFoundException("The installed runtime configuration was not found.", path);
 
         var content = await File.ReadAllTextAsync(path, Encoding.UTF8, cancellationToken).ConfigureAwait(false);
-        foreach (var mod in modifications)
-        {
-            if (!string.IsNullOrWhiteSpace(mod.Section) && !string.IsNullOrWhiteSpace(mod.Key) && !string.IsNullOrWhiteSpace(mod.Value))
-            {
-                content = ReplaceIniValue(content, mod.Section, mod.Key, mod.Value);
-            }
-        }
+        content = ReplaceIniValues(content, modifications);
 
         var temporaryPath = path + $".{Guid.NewGuid():N}.xtrtmp";
         try
@@ -68,20 +62,23 @@ internal static class RuntimeConfigService
             throw new FileNotFoundException("The installed runtime configuration was not found.", path);
 
         var content = await File.ReadAllTextAsync(path, Encoding.UTF8, cancellationToken).ConfigureAwait(false);
+        var profileMods = new List<PlannedConfigEntry>();
         if (!string.IsNullOrWhiteSpace(profile.Api) &&
             UpscalerKeys.TryGetValue(profile.Api, out var upscalerKey) &&
             !string.IsNullOrWhiteSpace(profile.SelectedUpscaler))
         {
-            content = ReplaceIniValue(content, "Upscalers", upscalerKey, profile.SelectedUpscaler);
+            profileMods.Add(new PlannedConfigEntry { Section = "Upscalers", Key = upscalerKey, Value = profile.SelectedUpscaler });
         }
 
         if (!string.IsNullOrWhiteSpace(profile.FrameGenerationEnabled))
-            content = ReplaceIniValue(content, "FrameGen", "Enabled", profile.FrameGenerationEnabled);
+            profileMods.Add(new PlannedConfigEntry { Section = "FrameGen", Key = "Enabled", Value = profile.FrameGenerationEnabled });
 
         if (!string.IsNullOrWhiteSpace(profile.FrameGenerationInput))
-            content = ReplaceIniValue(content, "FrameGen", "FGInput", profile.FrameGenerationInput);
+            profileMods.Add(new PlannedConfigEntry { Section = "FrameGen", Key = "FGInput", Value = profile.FrameGenerationInput });
         if (!string.IsNullOrWhiteSpace(profile.FrameGenerationOutput))
-            content = ReplaceIniValue(content, "FrameGen", "FGOutput", profile.FrameGenerationOutput);
+            profileMods.Add(new PlannedConfigEntry { Section = "FrameGen", Key = "FGOutput", Value = profile.FrameGenerationOutput });
+
+        content = ReplaceIniValues(content, profileMods);
 
         var temporaryPath = path + $".{Guid.NewGuid():N}.xtrtmp";
         try
@@ -119,13 +116,15 @@ internal static class RuntimeConfigService
             return;
 
         var content = await File.ReadAllTextAsync(path, Encoding.UTF8, cancellationToken).ConfigureAwait(false);
+        var plannedSettings = new List<PlannedConfigEntry>();
         foreach (var (section, key, value) in settings)
         {
             if (!string.IsNullOrWhiteSpace(section) && !string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(value))
             {
-                content = ReplaceIniValue(content, section, key, value);
+                plannedSettings.Add(new PlannedConfigEntry { Section = section, Key = key, Value = value });
             }
         }
+        content = ReplaceIniValues(content, plannedSettings);
 
         var temporaryPath = path + $".{Guid.NewGuid():N}.xtrtmp";
         try
@@ -177,55 +176,90 @@ internal static class RuntimeConfigService
 
     internal static string ReplaceIniValue(string content, string section, string key, string value)
     {
+        return ReplaceIniValues(content, new[] { new PlannedConfigEntry { Section = section, Key = key, Value = value } });
+    }
+
+    internal static string ReplaceIniValues(string content, IEnumerable<PlannedConfigEntry> modifications)
+    {
+        var pendingBySection = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var mod in modifications)
+        {
+            if (string.IsNullOrWhiteSpace(mod.Section) || string.IsNullOrWhiteSpace(mod.Key) || mod.Value is null)
+                continue;
+
+            if (!pendingBySection.TryGetValue(mod.Section, out var keyDict))
+            {
+                keyDict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                pendingBySection[mod.Section] = keyDict;
+            }
+            keyDict[mod.Key] = mod.Value;
+        }
+
+        if (pendingBySection.Count == 0)
+            return content;
+
         var lines = new List<string>(content.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n'));
-        var inSection = false;
-        var replaced = false;
+        string? currentSection = null;
 
         for (var index = 0; index < lines.Count; index++)
         {
             var trimmed = lines[index].Trim();
             if (trimmed.StartsWith("[", StringComparison.Ordinal) && trimmed.EndsWith("]", StringComparison.Ordinal))
             {
-                if (inSection)
+                var newSectionName = trimmed[1..^1].Trim();
+
+                // If leaving an existing section, insert any keys that were not found in that section
+                if (currentSection != null && pendingBySection.TryGetValue(currentSection, out var remainingKeys) && remainingKeys.Count > 0)
                 {
-                    // Leaving the target section without having found the key; insert it before the next section
-                    lines.Insert(index, $"{key}={value}");
-                    replaced = true;
-                    break;
+                    foreach (var kvp in remainingKeys)
+                    {
+                        lines.Insert(index, $"{kvp.Key}={kvp.Value}");
+                        index++;
+                    }
+                    remainingKeys.Clear();
                 }
 
-                if (string.Equals(trimmed[1..^1].Trim(), section, StringComparison.OrdinalIgnoreCase))
-                {
-                    inSection = true;
-                }
+                currentSection = newSectionName;
                 continue;
             }
 
-            if (!inSection || trimmed.StartsWith(';') || trimmed.StartsWith('#'))
+            if (currentSection == null || trimmed.StartsWith(';') || trimmed.StartsWith('#'))
                 continue;
 
             var separator = trimmed.IndexOf('=');
-            if (separator <= 0 || !string.Equals(trimmed[..separator].Trim(), key, StringComparison.OrdinalIgnoreCase))
+            if (separator <= 0)
                 continue;
 
-            var prefixLength = lines[index].IndexOf(trimmed, StringComparison.Ordinal);
-            var prefix = prefixLength >= 0 ? lines[index][..prefixLength] : string.Empty;
-            lines[index] = $"{prefix}{key}={value}";
-            replaced = true;
-            break;
+            var key = trimmed[..separator].Trim();
+            if (pendingBySection.TryGetValue(currentSection, out var sectionDict) && sectionDict.TryGetValue(key, out var newValue))
+            {
+                var prefixLength = lines[index].IndexOf(trimmed, StringComparison.Ordinal);
+                var prefix = prefixLength >= 0 ? lines[index][..prefixLength] : string.Empty;
+                lines[index] = $"{prefix}{key}={newValue}";
+                sectionDict.Remove(key);
+            }
         }
 
-        if (!replaced)
+        // Handle remaining keys for the last section
+        if (currentSection != null && pendingBySection.TryGetValue(currentSection, out var lastSectionKeys) && lastSectionKeys.Count > 0)
         {
-            if (inSection)
+            foreach (var kvp in lastSectionKeys)
             {
-                lines.Add($"{key}={value}");
+                lines.Add($"{kvp.Key}={kvp.Value}");
             }
-            else
+            lastSectionKeys.Clear();
+        }
+
+        // Append new sections that did not exist in the file
+        foreach (var (sec, keys) in pendingBySection)
+        {
+            if (keys.Count == 0) continue;
+
+            lines.Add(string.Empty);
+            lines.Add($"[{sec}]");
+            foreach (var kvp in keys)
             {
-                lines.Add(string.Empty);
-                lines.Add($"[{section}]");
-                lines.Add($"{key}={value}");
+                lines.Add($"{kvp.Key}={kvp.Value}");
             }
         }
 

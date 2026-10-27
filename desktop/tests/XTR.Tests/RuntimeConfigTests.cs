@@ -401,5 +401,41 @@ DisableReactiveMask=auto
                 Directory.Delete(tempDir, recursive: true);
         }
     }
-}
 
+    [TestMethod]
+    public void ReplaceIniValues_SinglePass_UpdatesMultipleSectionsAndKeysEfficiently()
+    {
+        var ini = @"# Base INI
+[Upscalers]
+Dx12Upscaler=xess
+Dx11Upscaler=fsr22
+
+[FrameGen]
+Enabled=false
+FGInput=nofg
+FGOutput=nofg
+
+[CustomSection]
+Key1=Val1
+";
+
+        var mods = new[]
+        {
+            new PlannedConfigEntry { Section = "Upscalers", Key = "Dx12Upscaler", Value = "dlss" },
+            new PlannedConfigEntry { Section = "FrameGen", Key = "Enabled", Value = "true" },
+            new PlannedConfigEntry { Section = "FrameGen", Key = "FGOutput", Value = "fsrfg" },
+            new PlannedConfigEntry { Section = "FrameGen", Key = "DrawUIOverFG", Value = "true" },
+            new PlannedConfigEntry { Section = "BrandNewSection", Key = "NewKey", Value = "NewVal" }
+        };
+
+        var result = RuntimeConfigService.ReplaceIniValues(ini, mods);
+
+        Assert.AreEqual("dlss", RuntimeConfigService.ReadIniValue(result, "Upscalers", "Dx12Upscaler"));
+        Assert.AreEqual("fsr22", RuntimeConfigService.ReadIniValue(result, "Upscalers", "Dx11Upscaler"));
+        Assert.AreEqual("true", RuntimeConfigService.ReadIniValue(result, "FrameGen", "Enabled"));
+        Assert.AreEqual("fsrfg", RuntimeConfigService.ReadIniValue(result, "FrameGen", "FGOutput"));
+        Assert.AreEqual("true", RuntimeConfigService.ReadIniValue(result, "FrameGen", "DrawUIOverFG"));
+        Assert.AreEqual("Val1", RuntimeConfigService.ReadIniValue(result, "CustomSection", "Key1"));
+        Assert.AreEqual("NewVal", RuntimeConfigService.ReadIniValue(result, "BrandNewSection", "NewKey"));
+    }
+}

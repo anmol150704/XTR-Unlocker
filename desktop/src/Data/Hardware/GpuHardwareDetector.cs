@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using System;
 using System.IO;
 using System.Management;
@@ -36,6 +37,16 @@ public class GpuHardwareInfo
 public static class GpuHardwareDetector
 {
     private static GpuHardwareInfo? _cachedInfo;
+
+    public static Task<GpuHardwareInfo> GetHardwareInfoAsync(bool refresh = false)
+    {
+        if (_cachedInfo != null && !refresh)
+        {
+            return Task.FromResult(_cachedInfo);
+        }
+
+        return Task.Run(() => GetHardwareInfo(refresh));
+    }
 
     public static GpuHardwareInfo GetHardwareInfo(bool refresh = false)
     {
