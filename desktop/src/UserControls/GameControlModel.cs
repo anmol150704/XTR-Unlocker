@@ -239,6 +239,14 @@ public partial class GameControlModel : ObservableObject
         {
             SelectedRuntimeProxy = game.RuntimeManifest!.ProxyFileName!;
         }
+        else
+        {
+            var compat = CompatibilityDatabase.LookupGame(game.Title) ?? CompatibilityDatabase.LookupGame(game.ID);
+            if (compat != null && RuntimeProxyNames.Contains(compat.RecommendedProxy, StringComparer.OrdinalIgnoreCase))
+            {
+                SelectedRuntimeProxy = compat.RecommendedProxy;
+            }
+        }
 
         InitializeDeployedSettings();
 

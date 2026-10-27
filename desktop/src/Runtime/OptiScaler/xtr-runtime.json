@@ -1,4 +1,4 @@
-﻿{
+{
     "schemaVersion":  2,
     "id":  "optiscaler-0.9.4-xtr",
     "displayName":  "OptiScaler 0.9.4 Baseline",
@@ -102,8 +102,8 @@
                        },
                        {
                            "path":  "OptiScaler.ini",
-                           "sha256":  "801d200a929d0fae44905d97b807baf6bd6da1fb74f5c33088aa36e0db8dbebf",
-                           "sizeBytes":  47471
+                           "sha256":  "7c770d853a52748e3c3ef4ecd0a4b87ea02843539ac9d27713c76da29239be78",
+                           "sizeBytes":  47410
                        },
                        {
                            "path":  "D3D12_Optiscaler/D3D12Core.dll",

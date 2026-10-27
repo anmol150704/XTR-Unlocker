@@ -39,10 +39,19 @@ public static class CompatibilityDatabase
         {
             Title = "Forza Horizon 5",
             Level = CompatibilityLevel.VerifiedCompatible,
-            RecommendedProxy = "dxgi.dll",
+            RecommendedProxy = "version.dll",
             RecommendedApi = "DX12",
             SupportsNativeFrameGen = true,
-            Notes = "Verified offline compatibility. Native DLSS 3 supported."
+            Notes = "ForzaTech virtual texture streaming. Requires version.dll proxy and native Streamline passthrough."
+        },
+        ["Forza Horizon 6"] = new()
+        {
+            Title = "Forza Horizon 6",
+            Level = CompatibilityLevel.VerifiedCompatible,
+            RecommendedProxy = "version.dll",
+            RecommendedApi = "DX12",
+            SupportsNativeFrameGen = true,
+            Notes = "Next-gen ForzaTech virtual texture streaming. Requires version.dll proxy and zero-overhead native Streamline passthrough."
         },
         ["The Witcher 3: Wild Hunt"] = new()
         {

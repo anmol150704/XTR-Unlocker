@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using DLSS_Swapper.Data.Runtime;
@@ -89,5 +89,27 @@ public sealed class CompatibilityDatabaseTests
             if (Directory.Exists(tempDir))
                 Directory.Delete(tempDir, recursive: true);
         }
+    }
+
+    [TestMethod]
+    public void LookupGame_ForzaHorizon6_ReturnsVerifiedCompatibleWithVersionDll()
+    {
+        var record = CompatibilityDatabase.LookupGame("Forza Horizon 6");
+        Assert.IsNotNull(record);
+        Assert.AreEqual(CompatibilityLevel.VerifiedCompatible, record.Level);
+        Assert.IsTrue(record.SupportsNativeFrameGen);
+        Assert.AreEqual("version.dll", record.RecommendedProxy, "Forza Horizon 6 requires version.dll proxy to prevent crashes.");
+        Assert.AreEqual("DX12", record.RecommendedApi);
+    }
+
+    [TestMethod]
+    public void LookupGame_ForzaHorizon5_ReturnsVerifiedCompatibleWithVersionDll()
+    {
+        var record = CompatibilityDatabase.LookupGame("Forza Horizon 5");
+        Assert.IsNotNull(record);
+        Assert.AreEqual(CompatibilityLevel.VerifiedCompatible, record.Level);
+        Assert.IsTrue(record.SupportsNativeFrameGen);
+        Assert.AreEqual("version.dll", record.RecommendedProxy, "Forza Horizon 5 requires version.dll proxy.");
+        Assert.AreEqual("DX12", record.RecommendedApi);
     }
 }

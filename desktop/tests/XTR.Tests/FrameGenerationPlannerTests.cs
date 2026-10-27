@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -198,7 +198,7 @@ public sealed class FrameGenerationPlannerTests
 
             var reactiveScale = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FSR" && m.Key == "ReactiveScale");
             Assert.IsNotNull(reactiveScale);
-            Assert.AreEqual("2.0", reactiveScale.Value);
+            Assert.AreEqual("1.0", reactiveScale.Value);
         }
         finally
         {
@@ -459,6 +459,97 @@ public sealed class FrameGenerationPlannerTests
 
             await RuntimeInstallService.RestoreAsync(gameId, tempDir);
             Assert.IsFalse(File.Exists(iniPath));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ForzaHorizon6_DeploymentPlan_UsesVersionDllAndDisablesHudFixAndHeapTracking()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"xtr_fh6_test_{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(tempDir);
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "ForzaHorizon6.exe"), "EXE_CONTENT");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "d3d12.dll"), "DX12_DLL");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "sl.interposer.dll"), "SL_INTERPOSER");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "sl.dlss_g.dll"), "SL_DLSSG");
+
+            var pack = await RuntimePack.LoadFromDirectoryAsync(GetBundledPackagePath());
+            Assert.IsNotNull(pack);
+
+            var plan = await DeploymentPlanner.CreatePlanAsync(
+                "fh6-test-id",
+                "Forza Horizon 6",
+                tempDir,
+                pack,
+                RuntimeIntegrationPreset.DlssWithFrameGeneration);
+
+            Assert.IsTrue(plan.CanExecute);
+            Assert.AreEqual("version.dll", plan.SelectedProxy, "Forza Horizon 6 must default to version.dll proxy.");
+
+            // Native Streamline passthrough settings
+            Assert.AreEqual("dlssg", plan.PlannedConfigModifications.First(m => m.Section == "FrameGen" && m.Key == "FGInput").Value);
+            Assert.AreEqual("fsrfg", plan.PlannedConfigModifications.First(m => m.Section == "FrameGen" && m.Key == "FGOutput").Value);
+            Assert.AreEqual("false", plan.PlannedConfigModifications.First(m => m.Section == "OptiFG" && m.Key == "HUDFix").Value);
+            Assert.AreEqual("true", plan.PlannedConfigModifications.First(m => m.Section == "OptiFG" && m.Key == "DisableHUDFix").Value);
+            Assert.AreEqual("false", plan.PlannedConfigModifications.First(m => m.Section == "OptiFG" && m.Key == "AlwaysTrackHeaps").Value);
+            Assert.AreEqual("false", plan.PlannedConfigModifications.First(m => m.Section == "OptiFG" && m.Key == "MakeDepthCopy").Value);
+            Assert.AreEqual("false", plan.PlannedConfigModifications.First(m => m.Section == "OptiFG" && m.Key == "MakeMVCopy").Value);
+            Assert.AreEqual("false", plan.PlannedConfigModifications.First(m => m.Section == "FrameGen" && m.Key == "DepthValidNow").Value);
+            Assert.AreEqual("false", plan.PlannedConfigModifications.First(m => m.Section == "FrameGen" && m.Key == "VelocityValidNow").Value);
+
+            // Virtual texture streaming protection
+            Assert.IsFalse(plan.PlannedConfigModifications.Any(m => m.Section == "Mipmap" && m.Key == "MipmapBiasOverride"));
+            Assert.IsFalse(plan.PlannedConfigModifications.Any(m => m.Section == "Anisotropy" && m.Key == "AnisotropyOverride"));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ForzaHorizon6_TurboBoost_DisablesMipmapBiasAndEnablesFsrFgBridge()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"xtr_fh6_boost_{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(tempDir);
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "ForzaHorizon6.exe"), "EXE_CONTENT");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "d3d12.dll"), "DX12_DLL");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "nvngx_dlssg.dll"), "DLSSG_DLL");
+
+            var pack = await RuntimePack.LoadFromDirectoryAsync(GetBundledPackagePath());
+            Assert.IsNotNull(pack);
+
+            var plan = await DeploymentPlanner.CreatePlanAsync(
+                "fh6-boost-id",
+                "Forza Horizon 6",
+                tempDir,
+                pack,
+                RuntimeIntegrationPreset.TurboBoost);
+
+            Assert.IsTrue(plan.CanExecute);
+            Assert.AreEqual("version.dll", plan.SelectedProxy, "Forza Horizon 6 must default to version.dll proxy under TurboBoost.");
+
+            // FrameGen should be enabled via bridge (not nofg) even if nvngx_dlssg is present
+            Assert.AreEqual("true", plan.PlannedConfigModifications.First(m => m.Section == "FrameGen" && m.Key == "Enabled").Value);
+            Assert.AreEqual("dlssg", plan.PlannedConfigModifications.First(m => m.Section == "FrameGen" && m.Key == "FGInput").Value);
+            Assert.AreEqual("fsrfg", plan.PlannedConfigModifications.First(m => m.Section == "FrameGen" && m.Key == "FGOutput").Value);
+
+            // Heap tracking and HUDFix must be disabled for virtual texture stability
+            Assert.AreEqual("false", plan.PlannedConfigModifications.First(m => m.Section == "OptiFG" && m.Key == "HUDFix").Value);
+            Assert.AreEqual("false", plan.PlannedConfigModifications.First(m => m.Section == "OptiFG" && m.Key == "AlwaysTrackHeaps").Value);
+
+            // MipmapBiasOverride must NOT be injected
+            Assert.IsFalse(plan.PlannedConfigModifications.Any(m => m.Section == "Mipmap" && m.Key == "MipmapBiasOverride"));
+            Assert.IsFalse(plan.PlannedConfigModifications.Any(m => m.Section == "Anisotropy" && m.Key == "AnisotropyOverride"));
         }
         finally
         {

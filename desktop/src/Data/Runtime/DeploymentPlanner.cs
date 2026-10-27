@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -75,7 +75,10 @@ public static class DeploymentPlanner
         ArgumentException.ThrowIfNullOrWhiteSpace(gameRoot);
         ArgumentNullException.ThrowIfNull(pack);
 
-        var proxy = proxyOverride ?? pack.RecommendedProxy ?? "dxgi.dll";
+        var compatRecord = CompatibilityDatabase.LookupGame(gameTitle) ?? CompatibilityDatabase.LookupGame(gameId);
+        var proxy = proxyOverride ?? compatRecord?.RecommendedProxy ?? pack.RecommendedProxy ?? "dxgi.dll";
+
+
         var preflight = await RuntimePreflightService.RunPreflightAsync(gameId, gameRoot, pack, proxy, gameTitle, cancellationToken).ConfigureAwait(false);
 
         var plan = new DeploymentPlan
@@ -202,10 +205,8 @@ public static class DeploymentPlanner
                     Reason = "Activates the frame-generation pipeline."
                 });
 
-                // Under REA audit: OptiScaler requires explicit non-NoFG input to hook Streamline or upscaler
-                var fgInput = (preflight.NativeDlssGDetected || preflight.StreamlineDetected)
-                    ? "dlssg"
-                    : "upscaler";
+                bool isStreamlineDlssG = IsStreamlineOrOpenWorldTitle(gameTitle, preflight);
+                var fgInput = isStreamlineDlssG ? "dlssg" : "upscaler";
 
                 plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                 {
@@ -217,8 +218,6 @@ public static class DeploymentPlanner
                         : "Derives frame-generation motion vectors from the active DLSS upscaler."
                 });
 
-                // Under REA audit of OptiScaler 0.9.4 FG_Hooks.cpp:88, CheckForFGStatus() strictly requires
-                // activeFgOutput to be FSRFG or XeFG for swapchain frame interpolation.
                 var fgOutput = "fsrfg";
 
                 plan.PlannedConfigModifications.Add(new PlannedConfigEntry
@@ -245,73 +244,7 @@ public static class DeploymentPlanner
                     Reason = "Ensures Hardware Accelerated GPU Scheduling requirements are satisfied."
                 });
 
-                // Anti-Ghosting Shield: HUD isolation, immutable buffer cloning & transparency masks
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "OptiFG",
-                    Key = "HUDFix",
-                    Value = "true",
-                    Reason = "Prevents HUD smearing, crosshair ghosting, and subtitle flicker."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "OptiFG",
-                    Key = "HUDFixExtended",
-                    Value = "true",
-                    Reason = "Extended HUD separation for complex post-processing game UIs."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "OptiFG",
-                    Key = "MakeDepthCopy",
-                    Value = "true",
-                    Reason = "Creates depth buffer clone to avoid race conditions with DX12 presentation."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "OptiFG",
-                    Key = "MakeMVCopy",
-                    Value = "true",
-                    Reason = "Clones motion vectors before overwriting, eliminating edge ghost trails."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "OptiFG",
-                    Key = "DisableHUDFix",
-                    Value = "false",
-                    Reason = "Ensures HUD element tracking is fully active."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "OptiFG",
-                    Key = "HUDFixImmediate",
-                    Value = "true",
-                    Reason = "Captures HUD before execution to prevent race conditions and flickering."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "OptiFG",
-                    Key = "AlwaysTrackHeaps",
-                    Value = "true",
-                    Reason = "Continuously tracks render heaps to prevent presentation stutter."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "OptiFG",
-                    Key = "HUDFixRelaxedResolutionCheck",
-                    Value = "true",
-                    Reason = "Allows flexible resolution matching for scaled UI overlays."
-                });
-                // Anti-Ghosting Shield: [InitFlags]
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "InitFlags",
-                    Key = "DisableReactiveMask",
-                    Value = "false",
-                    Reason = "Prevents stripping responsive pixel masks."
-                });
-
-                // Anti-Ghosting Shield: [FrameGen]
+                // FrameGen Presentation flags
                 plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                 {
                     Section = "FrameGen",
@@ -336,68 +269,124 @@ public static class DeploymentPlanner
                 plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                 {
                     Section = "FrameGen",
-                    Key = "DepthValidNow",
-                    Value = "true",
-                    Reason = "Forces depth buffer retention across frames to eliminate disocclusion ghosting."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "FrameGen",
-                    Key = "VelocityValidNow",
-                    Value = "true",
-                    Reason = "Forces motion vector retention across frames to eliminate moving object ghost trails."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "FrameGen",
-                    Key = "HudlessValidNow",
-                    Value = "true",
-                    Reason = "Forces hudless buffer retention."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "FrameGen",
                     Key = "ForceBorderless",
                     Value = "true",
                     Reason = "Eliminates presentation stutter and tearing under frame interpolation."
                 });
 
-                // Anti-Ghosting Shield: [FSR] (Fixed section mismatch)
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                if (isStreamlineDlssG)
                 {
-                    Section = "FSR",
-                    Key = "UseReactiveMaskForTransparency",
-                    Value = "true",
-                    Reason = "Enables reactive transparency masks to eliminate character disocclusion trails."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    // Clean Streamline Passthrough: Zero invasive hooks, pristine texture streaming & zero crashes
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "OptiFG",
+                        Key = "HUDFix",
+                        Value = "false",
+                        Reason = "Disabled: native Streamline engine provides pristine hudless buffers directly."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "OptiFG",
+                        Key = "DisableHUDFix",
+                        Value = "true",
+                        Reason = "Eliminates render-target hooking overhead on native Streamline titles."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "OptiFG",
+                        Key = "AlwaysTrackHeaps",
+                        Value = "false",
+                        Reason = "Disabled to eliminate virtual texture streaming stalls in open world titles (ForzaTech/REDengine)."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "OptiFG",
+                        Key = "MakeDepthCopy",
+                        Value = "false",
+                        Reason = "Disabled to avoid duplicate depth buffer allocation and swapchain conflicts."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "OptiFG",
+                        Key = "MakeMVCopy",
+                        Value = "false",
+                        Reason = "Disabled: native motion vectors are passed directly without duplication."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "FrameGen",
+                        Key = "DepthValidNow",
+                        Value = "false",
+                        Reason = "Native Streamline buffers manage depth validation automatically."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "FrameGen",
+                        Key = "VelocityValidNow",
+                        Value = "false",
+                        Reason = "Native Streamline buffers manage velocity validation automatically."
+                    });
+                }
+                else
                 {
-                    Section = "FSR",
-                    Key = "DlssReactiveMaskBias",
-                    Value = "0.45",
-                    Reason = "Optimal reactive bias balancing edge sharpness and ghost prevention."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "FSR",
-                    Key = "ReactiveScale",
-                    Value = "2.0",
-                    Reason = "Scales reactive mask reactiveness to eliminate disocclusion ghosting."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "FSR",
-                    Key = "AccAddPerFrame",
-                    Value = "0.05",
-                    Reason = "Reduces per-frame accumulation added at disocclusions to suppress temporal trails."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "FSR",
-                    Key = "MinDisOccAcc",
-                    Value = "-0.5",
-                    Reason = "Negative threshold delaying accumulation on fast swaying objects."
-                });
+                    // Universal FG Bridge: Calibrated HUD separation and clean FSR 3.1
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "OptiFG",
+                        Key = "HUDFix",
+                        Value = "true",
+                        Reason = "Prevents HUD smearing, crosshair ghosting, and subtitle flicker."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "OptiFG",
+                        Key = "MakeDepthCopy",
+                        Value = "true",
+                        Reason = "Creates depth buffer clone to avoid race conditions with DX12 presentation."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "OptiFG",
+                        Key = "MakeMVCopy",
+                        Value = "true",
+                        Reason = "Clones motion vectors before overwriting, eliminating edge ghost trails."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "OptiFG",
+                        Key = "DisableHUDFix",
+                        Value = "false",
+                        Reason = "Ensures HUD element tracking is fully active."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "InitFlags",
+                        Key = "DisableReactiveMask",
+                        Value = "false",
+                        Reason = "Prevents stripping responsive pixel masks."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "FSR",
+                        Key = "UseReactiveMaskForTransparency",
+                        Value = "true",
+                        Reason = "Enables reactive transparency masks to eliminate character disocclusion trails."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "FSR",
+                        Key = "DlssReactiveMaskBias",
+                        Value = "0.45",
+                        Reason = "Optimal reactive bias balancing edge sharpness and ghost prevention."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "FSR",
+                        Key = "ReactiveScale",
+                        Value = "1.0",
+                        Reason = "Standard calibrated reactive mask scale for rock-solid stability."
+                    });
+                }
 
                 // DLSS Neural Model Preset E (Anti-Ghosting Champion)
                 plan.PlannedConfigModifications.Add(new PlannedConfigEntry
@@ -506,7 +495,7 @@ public static class DeploymentPlanner
 
             case RuntimeIntegrationPreset.TurboBoost:
                 plan.Headline = "⚡ Activate XTR Turbo Boost";
-                plan.Summary = "Maximum performance and responsiveness: DLSS upscaling, optimized frame generation, Preset E anti-ghosting, 16x Anisotropic filtering, and low-latency frame pacing.";
+                plan.Summary = "Maximum performance and responsiveness: DLSS upscaling, optimized frame generation, Preset E anti-ghosting, and calibrated frame pacing.";
 
                 plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                 {
@@ -530,9 +519,11 @@ public static class DeploymentPlanner
                     Reason = "Directs OptiScaler to route Vulkan upscaling through DLSS."
                 });
 
-                if (preflight.NativeDlssGDetected)
+                bool isForzaOrVirtualStreaming = IsForzaOrVirtualTextureTitle(gameTitle);
+
+                if (!isForzaOrVirtualStreaming && preflight.NativeDlssGDetected)
                 {
-                    // Native Ada Lovelace Optical Flow bypass
+                    // Native Ada Lovelace Optical Flow bypass for non-virtual-streaming titles
                     plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                     {
                         Section = "FrameGen",
@@ -557,7 +548,7 @@ public static class DeploymentPlanner
                 }
                 else
                 {
-                    // Universal FSR 3.1 Frame Gen Bridge with Anti-Ghosting Shield
+                    // Frame Generation Bridge
                     plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                     {
                         Section = "FrameGen",
@@ -565,13 +556,18 @@ public static class DeploymentPlanner
                         Value = "true",
                         Reason = "Activates high-performance frame generation bridge."
                     });
-                    var fgIn = (preflight.NativeDlssGDetected || preflight.StreamlineDetected) ? "dlssg" : "upscaler";
+
+                    bool isStreamlineOrOpenWorld = isForzaOrVirtualStreaming || IsStreamlineOrOpenWorldTitle(gameTitle, preflight);
+                    var fgIn = isStreamlineOrOpenWorld ? "dlssg" : "upscaler";
+
                     plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                     {
                         Section = "FrameGen",
                         Key = "FGInput",
                         Value = fgIn,
-                        Reason = "Derives motion vectors for generated frames."
+                        Reason = fgIn == "dlssg"
+                            ? "Derives motion vectors directly from native game Streamline engine."
+                            : "Derives motion vectors from the active upscaler pipeline."
                     });
                     plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                     {
@@ -604,163 +600,147 @@ public static class DeploymentPlanner
                     plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                     {
                         Section = "FrameGen",
-                        Key = "DepthValidNow",
-                        Value = "true",
-                        Reason = "Forces depth buffer retention across frames to eliminate disocclusion ghosting."
-                    });
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                    {
-                        Section = "FrameGen",
-                        Key = "VelocityValidNow",
-                        Value = "true",
-                        Reason = "Forces motion vector retention across frames to eliminate moving object ghost trails."
-                    });
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                    {
-                        Section = "FrameGen",
-                        Key = "HudlessValidNow",
-                        Value = "true",
-                        Reason = "Forces hudless buffer retention."
-                    });
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                    {
-                        Section = "FrameGen",
                         Key = "ForceBorderless",
                         Value = "true",
                         Reason = "Eliminates presentation stutter under frame interpolation."
                     });
 
-                    // Anti-Ghosting Shield OptiFG
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    if (isStreamlineOrOpenWorld)
                     {
-                        Section = "OptiFG",
-                        Key = "HUDFix",
-                        Value = "true",
-                        Reason = "Anti-Ghosting Shield: eliminates HUD smearing and text trails."
-                    });
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                        // Clean Streamline Passthrough: Zero intrusive hooking
+                        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                        {
+                            Section = "OptiFG",
+                            Key = "HUDFix",
+                            Value = "false",
+                            Reason = "Streamline provides its own hudless buffer; disables intrusive render-target hooking."
+                        });
+                        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                        {
+                            Section = "OptiFG",
+                            Key = "DisableHUDFix",
+                            Value = "true",
+                            Reason = "Eliminates UI hooking overhead."
+                        });
+                        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                        {
+                            Section = "OptiFG",
+                            Key = "AlwaysTrackHeaps",
+                            Value = "false",
+                            Reason = "Prevents virtual texture streaming pool starvation in open world titles."
+                        });
+                        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                        {
+                            Section = "OptiFG",
+                            Key = "MakeDepthCopy",
+                            Value = "false",
+                            Reason = "Eliminates redundant depth copying in Streamline."
+                        });
+                        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                        {
+                            Section = "OptiFG",
+                            Key = "MakeMVCopy",
+                            Value = "false",
+                            Reason = "Eliminates redundant motion vector copying."
+                        });
+                        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                        {
+                            Section = "FrameGen",
+                            Key = "DepthValidNow",
+                            Value = "false",
+                            Reason = "Preserves native buffer validation."
+                        });
+                        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                        {
+                            Section = "FrameGen",
+                            Key = "VelocityValidNow",
+                            Value = "false",
+                            Reason = "Preserves native velocity validation."
+                        });
+                    }
+                    else
                     {
-                        Section = "OptiFG",
-                        Key = "HUDFixExtended",
-                        Value = "true",
-                        Reason = "Extended HUD separation."
-                    });
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                    {
-                        Section = "OptiFG",
-                        Key = "MakeDepthCopy",
-                        Value = "true",
-                        Reason = "Depth buffer clone avoids race conditions."
-                    });
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                    {
-                        Section = "OptiFG",
-                        Key = "MakeMVCopy",
-                        Value = "true",
-                        Reason = "Motion vector cloning eliminates edge ghosting."
-                    });
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                    {
-                        Section = "OptiFG",
-                        Key = "DisableHUDFix",
-                        Value = "false",
-                        Reason = "Maintains HUD fix activity."
-                    });
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                    {
-                        Section = "OptiFG",
-                        Key = "HUDFixImmediate",
-                        Value = "true",
-                        Reason = "Immediate HUD capture prevents flickering."
-                    });
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                    {
-                        Section = "OptiFG",
-                        Key = "AlwaysTrackHeaps",
-                        Value = "true",
-                        Reason = "Tracks render heaps for smooth pacing."
-                    });
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                    {
-                        Section = "OptiFG",
-                        Key = "HUDFixRelaxedResolutionCheck",
-                        Value = "true",
-                        Reason = "Flexible UI resolution checks."
-                    });
+                        // Universal fallback
+                        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                        {
+                            Section = "OptiFG",
+                            Key = "HUDFix",
+                            Value = "true",
+                            Reason = "Anti-Ghosting Shield: eliminates HUD smearing and text trails."
+                        });
+                        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                        {
+                            Section = "OptiFG",
+                            Key = "MakeDepthCopy",
+                            Value = "true",
+                            Reason = "Depth buffer clone avoids race conditions."
+                        });
+                        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                        {
+                            Section = "OptiFG",
+                            Key = "MakeMVCopy",
+                            Value = "true",
+                            Reason = "Motion vector cloning eliminates edge ghost trails."
+                        });
+                        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                        {
+                            Section = "OptiFG",
+                            Key = "DisableHUDFix",
+                            Value = "false",
+                            Reason = "Maintains HUD fix activity."
+                        });
+                        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                        {
+                            Section = "InitFlags",
+                            Key = "DisableReactiveMask",
+                            Value = "false",
+                            Reason = "Retains pixel reactivity."
+                        });
+                        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                        {
+                            Section = "FSR",
+                            Key = "UseReactiveMaskForTransparency",
+                            Value = "true",
+                            Reason = "Transparency reactive masks remove character disocclusion trails."
+                        });
+                        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                        {
+                            Section = "FSR",
+                            Key = "DlssReactiveMaskBias",
+                            Value = "0.45",
+                            Reason = "Optimal reactive bias."
+                        });
+                        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                        {
+                            Section = "FSR",
+                            Key = "ReactiveScale",
+                            Value = "1.0",
+                            Reason = "Standard calibrated FSR reactivity."
+                        });
 
-                    // FSR transparency masks
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                    {
-                        Section = "InitFlags",
-                        Key = "DisableReactiveMask",
-                        Value = "false",
-                        Reason = "Retains pixel reactivity."
-                    });
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                    {
-                        Section = "FSR",
-                        Key = "UseReactiveMaskForTransparency",
-                        Value = "true",
-                        Reason = "Transparency reactive masks remove character disocclusion trails."
-                    });
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                    {
-                        Section = "FSR",
-                        Key = "DlssReactiveMaskBias",
-                        Value = "0.45",
-                        Reason = "Optimal reactive bias."
-                    });
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                    {
-                        Section = "FSR",
-                        Key = "ReactiveScale",
-                        Value = "2.0",
-                        Reason = "Scaled mask reactivity."
-                    });
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                    {
-                        Section = "FSR",
-                        Key = "AccAddPerFrame",
-                        Value = "0.05",
-                        Reason = "Suppresses temporal ghost trails."
-                    });
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                    {
-                        Section = "FSR",
-                        Key = "MinDisOccAcc",
-                        Value = "-0.5",
-                        Reason = "Disocclusion accumulation threshold."
-                    });
-
-                    // Ultra-low Latency Frame Pacing Tuning
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                    {
-                        Section = "FSRFG",
-                        Key = "FramePacingTuning",
-                        Value = "true",
-                        Reason = "Enables custom ultra-responsive frame pacing."
-                    });
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                    {
-                        Section = "FSRFG",
-                        Key = "FPTSafetyMarginInMs",
-                        Value = "0.01",
-                        Reason = "Minimum latency safety margin."
-                    });
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                    {
-                        Section = "FSRFG",
-                        Key = "FPTVarianceFactor",
-                        Value = "0.3",
-                        Reason = "Dynamic variance tuning for lowest input lag."
-                    });
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                    {
-                        Section = "FSRFG",
-                        Key = "UseMutexForSwapchain",
-                        Value = "true",
-                        Reason = "Synchronous mutex protection for swapchain present."
-                    });
+                        // Ultra-low Latency Frame Pacing Tuning for universal pipeline
+                        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                        {
+                            Section = "FSRFG",
+                            Key = "FramePacingTuning",
+                            Value = "true",
+                            Reason = "Enables custom ultra-responsive frame pacing."
+                        });
+                        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                        {
+                            Section = "FSRFG",
+                            Key = "FPTSafetyMarginInMs",
+                            Value = "0.01",
+                            Reason = "Minimum latency safety margin."
+                        });
+                        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                        {
+                            Section = "FSRFG",
+                            Key = "FPTVarianceFactor",
+                            Value = "0.3",
+                            Reason = "Dynamic variance tuning for lowest input lag."
+                        });
+                    }
                 }
 
                 // DLSS Neural Model Preset E (Anti-Ghosting Champion)
@@ -779,51 +759,55 @@ public static class DeploymentPlanner
                     Reason = "DLSS Preset E: state-of-the-art motion stability with zero ghost trails."
                 });
 
-                // Anisotropic Filtering 16x
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                // Only apply Anisotropic and Mipmap overrides on non-virtual-streaming titles
+                // to prevent starving virtual texture streaming pools in games like Forza Horizon
+                if (!isForzaOrVirtualStreaming)
                 {
-                    Section = "Anisotropy",
-                    Key = "AnisotropyOverride",
-                    Value = "16",
-                    Reason = "Enforces 16x anisotropic texture filtering for razor-sharp surface detail."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "Anisotropy",
-                    Key = "ModifyComparison",
-                    Value = "true",
-                    Reason = "Upgrades comparison texture filters to anisotropic."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "Anisotropy",
-                    Key = "ModifyMinMax",
-                    Value = "true",
-                    Reason = "Upgrades min/max texture filters to anisotropic."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "Anisotropy",
-                    Key = "SkipPointFilter",
-                    Value = "true",
-                    Reason = "Preserves pixel point filters."
-                });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "Anisotropy",
+                        Key = "AnisotropyOverride",
+                        Value = "16",
+                        Reason = "Enforces 16x anisotropic texture filtering for razor-sharp surface detail."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "Anisotropy",
+                        Key = "ModifyComparison",
+                        Value = "true",
+                        Reason = "Upgrades comparison texture filters to anisotropic."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "Anisotropy",
+                        Key = "ModifyMinMax",
+                        Value = "true",
+                        Reason = "Upgrades min/max texture filters to anisotropic."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "Anisotropy",
+                        Key = "SkipPointFilter",
+                        Value = "true",
+                        Reason = "Preserves pixel point filters."
+                    });
 
-                // Negative Mipmap LOD Bias
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "Mipmap",
-                    Key = "MipmapBiasOverride",
-                    Value = "-0.5",
-                    Reason = "Negative Mipmap LOD bias compensates for upscaler resolution, keeping textures sharp."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "Mipmap",
-                    Key = "MipmapBiasFixedOverride",
-                    Value = "true",
-                    Reason = "Applies fixed optimal LOD bias across all textures."
-                });
+                    // Negative Mipmap LOD Bias
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "Mipmap",
+                        Key = "MipmapBiasOverride",
+                        Value = "-0.5",
+                        Reason = "Negative Mipmap LOD bias compensates for upscaler resolution, keeping textures sharp."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "Mipmap",
+                        Key = "MipmapBiasFixedOverride",
+                        Value = "true",
+                        Reason = "Applies fixed optimal LOD bias across all textures."
+                    });
+                }
 
                 // AI RCAS Sharpness
                 plan.PlannedConfigModifications.Add(new PlannedConfigEntry
@@ -902,15 +886,46 @@ public static class DeploymentPlanner
     public static string? OverrideHudMode { get; set; }
     public static string? OverrideTheme { get; set; }
 
+    public static bool IsForzaOrVirtualTextureTitle(string gameTitle)
+    {
+        if (string.IsNullOrWhiteSpace(gameTitle))
+            return false;
+
+        return gameTitle.Contains("Forza", StringComparison.OrdinalIgnoreCase) ||
+               gameTitle.Contains("Horizon", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static bool IsStreamlineOrOpenWorldTitle(string gameTitle, RuntimePreflightResult preflight)
+    {
+        if (preflight.StreamlineDetected || preflight.NativeDlssGDetected)
+            return true;
+
+        var compat = CompatibilityDatabase.LookupGame(gameTitle);
+        if (compat?.SupportsNativeFrameGen == true)
+            return true;
+
+        if (string.IsNullOrWhiteSpace(gameTitle))
+            return false;
+
+        return gameTitle.Contains("Forza", StringComparison.OrdinalIgnoreCase) ||
+               gameTitle.Contains("Horizon", StringComparison.OrdinalIgnoreCase) ||
+               gameTitle.Contains("Cyberpunk", StringComparison.OrdinalIgnoreCase) ||
+               gameTitle.Contains("Witcher", StringComparison.OrdinalIgnoreCase) ||
+               gameTitle.Contains("Spider-Man", StringComparison.OrdinalIgnoreCase) ||
+               gameTitle.Contains("Miles Morales", StringComparison.OrdinalIgnoreCase) ||
+               gameTitle.Contains("Alan Wake", StringComparison.OrdinalIgnoreCase) ||
+               gameTitle.Contains("Avatar", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static void AddXtrMenuAndOverlayEntries(DeploymentPlan plan)
     {
-        string devHotkey = OverrideDevHotkey;
-        string hudHotkey = OverrideHudHotkey;
-        string cycleHotkey = OverrideHudCycleHotkey;
-        string fgHotkey = OverrideFrameGenHotkey;
-        string hudPos = OverrideHudPosition;
-        string hudType = OverrideHudMode;
-        string theme = OverrideTheme;
+        string? devHotkey = OverrideDevHotkey;
+        string? hudHotkey = OverrideHudHotkey;
+        string? cycleHotkey = OverrideHudCycleHotkey;
+        string? fgHotkey = OverrideFrameGenHotkey;
+        string? hudPos = OverrideHudPosition;
+        string? hudType = OverrideHudMode;
+        string? theme = OverrideTheme;
 
 #if !XTR_TESTS
         devHotkey ??= Settings.Instance.SelectedDevMenuHotkey ?? "0x2D";
