@@ -494,7 +494,7 @@ public class Settings
         }
     }
 
-    string _selectedHudHotkey = "0x21";
+    string _selectedHudHotkey = "0x79";
     public string SelectedHudHotkey
     {
         get => _selectedHudHotkey;
@@ -508,7 +508,7 @@ public class Settings
         }
     }
 
-    string _selectedHudCycleHotkey = "0x22";
+    string _selectedHudCycleHotkey = "0x78";
     public string SelectedHudCycleHotkey
     {
         get => _selectedHudCycleHotkey;
@@ -522,7 +522,7 @@ public class Settings
         }
     }
 
-    string _selectedFrameGenHotkey = "0x23";
+    string _selectedFrameGenHotkey = "0x7B";
     public string SelectedFrameGenHotkey
     {
         get => _selectedFrameGenHotkey;

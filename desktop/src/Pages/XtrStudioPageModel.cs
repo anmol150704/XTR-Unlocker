@@ -29,13 +29,13 @@ public partial class XtrStudioPageModel : ObservableObject
     public partial string SelectedDevMenuKey { get; set; } = "Insert (0x2D)";
 
     [ObservableProperty]
-    public partial string SelectedHudKey { get; set; } = "Page Up (0x21)";
+    public partial string SelectedHudKey { get; set; } = "F10 (0x79)";
 
     [ObservableProperty]
-    public partial string SelectedCycleKey { get; set; } = "Page Down (0x22)";
+    public partial string SelectedCycleKey { get; set; } = "F9 (0x78)";
 
     [ObservableProperty]
-    public partial string SelectedFgKey { get; set; } = "End (0x23)";
+    public partial string SelectedFgKey { get; set; } = "F12 (0x7B)";
 
     [ObservableProperty]
     public partial int SelectedPositionIndex { get; set; } = 0;
@@ -74,14 +74,15 @@ public partial class XtrStudioPageModel : ObservableObject
 
     public ObservableCollection<string> HudKeys { get; } = new()
     {
-        "Page Up (0x21)",
         "F10 (0x79)",
+        "Page Up (0x21)",
         "F9 (0x78)",
         "Insert (0x2D)"
     };
 
     public ObservableCollection<string> CycleKeys { get; } = new()
     {
+        "F9 (0x78)",
         "Page Down (0x22)",
         "F8 (0x77)",
         "F7 (0x76)"
@@ -89,8 +90,8 @@ public partial class XtrStudioPageModel : ObservableObject
 
     public ObservableCollection<string> FgKeys { get; } = new()
     {
-        "End (0x23)",
         "F12 (0x7B)",
+        "End (0x23)",
         "F6 (0x75)"
     };
 
@@ -124,9 +125,9 @@ public partial class XtrStudioPageModel : ObservableObject
 
         // Load persisted settings
         SelectedDevMenuKey = MapHexToDisplayName(Settings.Instance.SelectedDevMenuHotkey, DevMenuKeys, "Insert (0x2D)");
-        SelectedHudKey = MapHexToDisplayName(Settings.Instance.SelectedHudHotkey, HudKeys, "Page Up (0x21)");
-        SelectedCycleKey = MapHexToDisplayName(Settings.Instance.SelectedHudCycleHotkey, CycleKeys, "Page Down (0x22)");
-        SelectedFgKey = MapHexToDisplayName(Settings.Instance.SelectedFrameGenHotkey, FgKeys, "End (0x23)");
+        SelectedHudKey = MapHexToDisplayName(Settings.Instance.SelectedHudHotkey, HudKeys, "F10 (0x79)");
+        SelectedCycleKey = MapHexToDisplayName(Settings.Instance.SelectedHudCycleHotkey, CycleKeys, "F9 (0x78)");
+        SelectedFgKey = MapHexToDisplayName(Settings.Instance.SelectedFrameGenHotkey, FgKeys, "F12 (0x7B)");
 
         SelectedPositionIndex = Math.Clamp(Settings.Instance.SelectedHudPosition, 0, HudPositions.Count - 1);
         SelectedModeIndex = Settings.Instance.SelectedHudMode == 1 ? 0 :

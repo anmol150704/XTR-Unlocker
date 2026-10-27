@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -87,15 +87,15 @@ public sealed class FrameGenerationPlannerTests
 
             var fpsKey = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Menu" && m.Key == "FpsShortcutKey");
             Assert.IsNotNull(fpsKey);
-            Assert.AreEqual("0x21", fpsKey.Value);
+            Assert.AreEqual("0x79", fpsKey.Value);
 
             var fpsCycleKey = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Menu" && m.Key == "FpsCycleShortcutKey");
             Assert.IsNotNull(fpsCycleKey);
-            Assert.AreEqual("0x22", fpsCycleKey.Value);
+            Assert.AreEqual("0x78", fpsCycleKey.Value);
 
             var fgKey = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Menu" && m.Key == "FGShortcutKey");
             Assert.IsNotNull(fgKey);
-            Assert.AreEqual("0x23", fgKey.Value);
+            Assert.AreEqual("0x7B", fgKey.Value);
 
             var accentColorR = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Menu" && m.Key == "AccentColorR");
             Assert.IsNotNull(accentColorR);
@@ -262,11 +262,11 @@ public sealed class FrameGenerationPlannerTests
 
             var fpsKey = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Menu" && m.Key == "FpsShortcutKey");
             Assert.IsNotNull(fpsKey);
-            Assert.AreEqual("0x21", fpsKey.Value);
+            Assert.AreEqual("0x79", fpsKey.Value);
 
             var fgKey = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Menu" && m.Key == "FGShortcutKey");
             Assert.IsNotNull(fgKey);
-            Assert.AreEqual("0x23", fgKey.Value);
+            Assert.AreEqual("0x7B", fgKey.Value);
         }
         finally
         {
@@ -451,9 +451,9 @@ public sealed class FrameGenerationPlannerTests
             Assert.AreEqual("-0.5", RuntimeConfigService.ReadIniValue(iniContent, "Mipmap", "MipmapBiasOverride"));
             Assert.AreEqual("0.35", RuntimeConfigService.ReadIniValue(iniContent, "Sharpness", "Sharpness"));
             Assert.AreEqual("0x2D", RuntimeConfigService.ReadIniValue(iniContent, "Menu", "ShortcutKey"));
-            Assert.AreEqual("0x21", RuntimeConfigService.ReadIniValue(iniContent, "Menu", "FpsShortcutKey"));
-            Assert.AreEqual("0x22", RuntimeConfigService.ReadIniValue(iniContent, "Menu", "FpsCycleShortcutKey"));
-            Assert.AreEqual("0x23", RuntimeConfigService.ReadIniValue(iniContent, "Menu", "FGShortcutKey"));
+            Assert.AreEqual("0x79", RuntimeConfigService.ReadIniValue(iniContent, "Menu", "FpsShortcutKey"));
+            Assert.AreEqual("0x78", RuntimeConfigService.ReadIniValue(iniContent, "Menu", "FpsCycleShortcutKey"));
+            Assert.AreEqual("0x7B", RuntimeConfigService.ReadIniValue(iniContent, "Menu", "FGShortcutKey"));
             Assert.AreEqual("true", RuntimeConfigService.ReadIniValue(iniContent, "Menu", "ShowFps"));
             Assert.AreEqual("true", RuntimeConfigService.ReadIniValue(iniContent, "Menu", "DisableSplash"));
 

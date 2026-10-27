@@ -1,4 +1,4 @@
-{
+﻿{
     "schemaVersion":  2,
     "id":  "optiscaler-0.9.4-xtr",
     "displayName":  "OptiScaler 0.9.4 Baseline",
@@ -97,12 +97,12 @@
                        },
                        {
                            "path":  "OptiScaler.dll",
-                           "sha256":  "fbfb6676b829dad7e020fb830586a16aa0ec6add78016db48ef12e2ae1803231",
+                           "sha256":  "f6bfb1c2cd60792b168c85d2e53cb26c69ac73608449fe9faa0c329ed08f3be5",
                            "sizeBytes":  25379632
                        },
                        {
                            "path":  "OptiScaler.ini",
-                           "sha256":  "674d8b6a3e8625e25497b01a0d9bab0879362c9ca26c0359f54b3c29d01d829c",
+                           "sha256":  "801d200a929d0fae44905d97b807baf6bd6da1fb74f5c33088aa36e0db8dbebf",
                            "sizeBytes":  47471
                        },
                        {

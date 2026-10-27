@@ -336,6 +336,27 @@ public static class DeploymentPlanner
                 plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                 {
                     Section = "FrameGen",
+                    Key = "DepthValidNow",
+                    Value = "true",
+                    Reason = "Forces depth buffer retention across frames to eliminate disocclusion ghosting."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "FrameGen",
+                    Key = "VelocityValidNow",
+                    Value = "true",
+                    Reason = "Forces motion vector retention across frames to eliminate moving object ghost trails."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "FrameGen",
+                    Key = "HudlessValidNow",
+                    Value = "true",
+                    Reason = "Forces hudless buffer retention."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "FrameGen",
                     Key = "ForceBorderless",
                     Value = "true",
                     Reason = "Eliminates presentation stutter and tearing under frame interpolation."
@@ -579,6 +600,27 @@ public static class DeploymentPlanner
                         Key = "DisableHudless",
                         Value = "false",
                         Reason = "Preserves hudless frame buffers."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "FrameGen",
+                        Key = "DepthValidNow",
+                        Value = "true",
+                        Reason = "Forces depth buffer retention across frames to eliminate disocclusion ghosting."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "FrameGen",
+                        Key = "VelocityValidNow",
+                        Value = "true",
+                        Reason = "Forces motion vector retention across frames to eliminate moving object ghost trails."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "FrameGen",
+                        Key = "HudlessValidNow",
+                        Value = "true",
+                        Reason = "Forces hudless buffer retention."
                     });
                     plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                     {
@@ -872,17 +914,17 @@ public static class DeploymentPlanner
 
 #if !XTR_TESTS
         devHotkey ??= Settings.Instance.SelectedDevMenuHotkey ?? "0x2D";
-        hudHotkey ??= Settings.Instance.SelectedHudHotkey ?? "0x21";
-        cycleHotkey ??= Settings.Instance.SelectedHudCycleHotkey ?? "0x22";
-        fgHotkey ??= Settings.Instance.SelectedFrameGenHotkey ?? "0x23";
+        hudHotkey ??= Settings.Instance.SelectedHudHotkey ?? "0x79";
+        cycleHotkey ??= Settings.Instance.SelectedHudCycleHotkey ?? "0x78";
+        fgHotkey ??= Settings.Instance.SelectedFrameGenHotkey ?? "0x7B";
         hudPos ??= Settings.Instance.SelectedHudPosition.ToString(System.Globalization.CultureInfo.InvariantCulture);
         hudType ??= Settings.Instance.SelectedHudMode.ToString(System.Globalization.CultureInfo.InvariantCulture);
         theme ??= Settings.Instance.SelectedOverlayTheme ?? "Apple Emerald Glass";
 #else
         devHotkey ??= "0x2D";
-        hudHotkey ??= "0x21";
-        cycleHotkey ??= "0x22";
-        fgHotkey ??= "0x23";
+        hudHotkey ??= "0x79";
+        cycleHotkey ??= "0x78";
+        fgHotkey ??= "0x7B";
         hudPos ??= "0";
         hudType ??= "2";
         theme ??= "Apple Emerald Glass";
