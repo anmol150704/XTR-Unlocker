@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <AssemblyName>XTR Unlocker</AssemblyName>
@@ -345,6 +345,9 @@
           <Generator>MSBuild:Compile</Generator>
         </Page>
         <Page Update="TranslationToolboxWindow.xaml">
+          <Generator>MSBuild:Compile</Generator>
+        </Page>
+                <Page Update="Pages\XtrStudioPage.xaml">
           <Generator>MSBuild:Compile</Generator>
         </Page>
         <Page Update="Pages\AcknowledgementsPage.xaml">

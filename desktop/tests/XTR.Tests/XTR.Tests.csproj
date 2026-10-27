@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="MSTest" Version="4.0.2" />
+    <PackageReference Include="System.Management" Version="10.0.13" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,6 +21,7 @@
 
   <ItemGroup>
     <Compile Include="..\..\src\Data\Runtime\*.cs" Link="Data\Runtime\%(Filename)%(Extension)" />
+    <Compile Include="..\..\src\Data\Hardware\*.cs" Link="Data\Hardware\%(Filename)%(Extension)" />
     <Compile Include="..\..\src\Storage.cs" Link="Storage.cs" />
     <Compile Include="..\..\src\AppIdentity.cs" Link="AppIdentity.cs" />
   </ItemGroup>

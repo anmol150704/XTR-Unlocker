@@ -479,4 +479,116 @@ public class Settings
 
         return false;
     }
+
+    string _selectedDevMenuHotkey = "0x2D";
+    public string SelectedDevMenuHotkey
+    {
+        get => _selectedDevMenuHotkey;
+        set
+        {
+            if (_selectedDevMenuHotkey != value)
+            {
+                _selectedDevMenuHotkey = value;
+                if (_autoSave) SaveJson();
+            }
+        }
+    }
+
+    string _selectedHudHotkey = "0x21";
+    public string SelectedHudHotkey
+    {
+        get => _selectedHudHotkey;
+        set
+        {
+            if (_selectedHudHotkey != value)
+            {
+                _selectedHudHotkey = value;
+                if (_autoSave) SaveJson();
+            }
+        }
+    }
+
+    string _selectedHudCycleHotkey = "0x22";
+    public string SelectedHudCycleHotkey
+    {
+        get => _selectedHudCycleHotkey;
+        set
+        {
+            if (_selectedHudCycleHotkey != value)
+            {
+                _selectedHudCycleHotkey = value;
+                if (_autoSave) SaveJson();
+            }
+        }
+    }
+
+    string _selectedFrameGenHotkey = "0x23";
+    public string SelectedFrameGenHotkey
+    {
+        get => _selectedFrameGenHotkey;
+        set
+        {
+            if (_selectedFrameGenHotkey != value)
+            {
+                _selectedFrameGenHotkey = value;
+                if (_autoSave) SaveJson();
+            }
+        }
+    }
+
+    int _selectedHudPosition;
+    public int SelectedHudPosition
+    {
+        get => _selectedHudPosition;
+        set
+        {
+            if (_selectedHudPosition != value)
+            {
+                _selectedHudPosition = value;
+                if (_autoSave) SaveJson();
+            }
+        }
+    }
+
+    int _selectedHudMode = 2;
+    public int SelectedHudMode
+    {
+        get => _selectedHudMode;
+        set
+        {
+            if (_selectedHudMode != value)
+            {
+                _selectedHudMode = value;
+                if (_autoSave) SaveJson();
+            }
+        }
+    }
+
+    string _selectedOverlayTheme = "Apple Emerald Glass";
+    public string SelectedOverlayTheme
+    {
+        get => _selectedOverlayTheme;
+        set
+        {
+            if (_selectedOverlayTheme != value)
+            {
+                _selectedOverlayTheme = value;
+                if (_autoSave) SaveJson();
+            }
+        }
+    }
+
+    bool _inGameHudEnabledByDefault = true;
+    public bool InGameHudEnabledByDefault
+    {
+        get => _inGameHudEnabledByDefault;
+        set
+        {
+            if (_inGameHudEnabledByDefault != value)
+            {
+                _inGameHudEnabledByDefault = value;
+                if (_autoSave) SaveJson();
+            }
+        }
+    }
 }

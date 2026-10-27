@@ -1,4 +1,4 @@
-using DLSS_Swapper.Data;
+﻿using DLSS_Swapper.Data;
 using DLSS_Swapper.Helpers;
 using DLSS_Swapper.Pages;
 using DLSS_Swapper.UserControls;
@@ -174,6 +174,8 @@ public sealed partial class MainWindow : Window
     }
 
 
+        XtrStudioPage? xtrStudioPage;
+    public XtrStudioPage? XtrStudioPage => xtrStudioPage;
     GameGridPage? gameGridPage;
     LibraryPage? libraryPage;
     SettingsPage? settingsPage;
@@ -183,7 +185,14 @@ public sealed partial class MainWindow : Window
     {
         ViewModel.AcknowledgementsVisibility = Visibility.Collapsed;
 
-        if (page == GameGridPage.PageTag)
+                if (page == XtrStudioPage.PageTag)
+        {
+            if (ContentFrame.Content is null || ContentFrame.Content as Page != xtrStudioPage)
+            {
+                ContentFrame.Content = xtrStudioPage ??= new XtrStudioPage();
+            }
+        }
+        else if (page == GameGridPage.PageTag)
         {
             if (ContentFrame.Content is null || ContentFrame.Content as Page != gameGridPage)
             {
@@ -357,7 +366,11 @@ public sealed partial class MainWindow : Window
         // We are now ready to show the games list.
         LoadingStackPanel.Visibility = Visibility.Collapsed;
 
-        GoToPage(GameGridPage.PageTag);
+                GoToPage(XtrStudioPage.PageTag);
+        if (MainNavigationView.MenuItems.Count > 0)
+        {
+            MainNavigationView.SelectedItem = MainNavigationView.MenuItems[0];
+        }
 
         // TODO: Disabled because CommunityToolkit.WinUI.Helpers.SystemInformation.Instance.IsAppUpdated throws exceptions for unpackaged apps.
         /*

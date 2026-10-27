@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -852,8 +852,56 @@ public static class DeploymentPlanner
         return plan;
     }
 
+            public static string? OverrideDevHotkey { get; set; }
+    public static string? OverrideHudHotkey { get; set; }
+    public static string? OverrideHudCycleHotkey { get; set; }
+    public static string? OverrideFrameGenHotkey { get; set; }
+    public static string? OverrideHudPosition { get; set; }
+    public static string? OverrideHudMode { get; set; }
+    public static string? OverrideTheme { get; set; }
+
     private static void AddXtrMenuAndOverlayEntries(DeploymentPlan plan)
     {
+        string devHotkey = OverrideDevHotkey;
+        string hudHotkey = OverrideHudHotkey;
+        string cycleHotkey = OverrideHudCycleHotkey;
+        string fgHotkey = OverrideFrameGenHotkey;
+        string hudPos = OverrideHudPosition;
+        string hudType = OverrideHudMode;
+        string theme = OverrideTheme;
+
+#if !XTR_TESTS
+        devHotkey ??= Settings.Instance.SelectedDevMenuHotkey ?? "0x2D";
+        hudHotkey ??= Settings.Instance.SelectedHudHotkey ?? "0x21";
+        cycleHotkey ??= Settings.Instance.SelectedHudCycleHotkey ?? "0x22";
+        fgHotkey ??= Settings.Instance.SelectedFrameGenHotkey ?? "0x23";
+        hudPos ??= Settings.Instance.SelectedHudPosition.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        hudType ??= Settings.Instance.SelectedHudMode.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        theme ??= Settings.Instance.SelectedOverlayTheme ?? "Apple Emerald Glass";
+#else
+        devHotkey ??= "0x2D";
+        hudHotkey ??= "0x21";
+        cycleHotkey ??= "0x22";
+        fgHotkey ??= "0x23";
+        hudPos ??= "0";
+        hudType ??= "2";
+        theme ??= "Apple Emerald Glass";
+#endif
+
+        string accentR = "0.20", accentG = "0.78", accentB = "0.35";
+        string bgR = "0.08", bgG = "0.09", bgB = "0.11", bgA = "0.92";
+
+        if (theme == "Cyberpunk Neon")
+        {
+            accentR = "0.00"; accentG = "0.94"; accentB = "1.00";
+            bgR = "0.04"; bgG = "0.06"; bgB = "0.09"; bgA = "0.92";
+        }
+        else if (theme == "Stealth Obsidian")
+        {
+            accentR = "0.96"; accentG = "0.62"; accentB = "0.07";
+            bgR = "0.10"; bgG = "0.12"; bgB = "0.15"; bgA = "0.95";
+        }
+
         plan.PlannedConfigModifications.Add(new PlannedConfigEntry
         {
             Section = "Menu",
@@ -872,7 +920,7 @@ public static class DeploymentPlanner
         {
             Section = "Menu",
             Key = "FpsOverlayType",
-            Value = "2",
+            Value = hudType,
             Reason = "Detailed HUD displaying FPS, active upscaler, and generated frame delta."
         });
         plan.PlannedConfigModifications.Add(new PlannedConfigEntry
@@ -886,8 +934,8 @@ public static class DeploymentPlanner
         {
             Section = "Menu",
             Key = "FpsOverlayPos",
-            Value = "0",
-            Reason = "Anchors HUD overlay at Top-Left."
+            Value = hudPos,
+            Reason = "Anchors HUD overlay position."
         });
         plan.PlannedConfigModifications.Add(new PlannedConfigEntry
         {
@@ -914,78 +962,78 @@ public static class DeploymentPlanner
         {
             Section = "Menu",
             Key = "ShortcutKey",
-            Value = "0x2D",
-            Reason = "Enables [Insert] hotkey to toggle engine diagnostics overlay."
+            Value = devHotkey,
+            Reason = "Enables hotkey to toggle engine diagnostics overlay."
         });
         plan.PlannedConfigModifications.Add(new PlannedConfigEntry
         {
             Section = "Menu",
             Key = "FpsShortcutKey",
-            Value = "0x21",
-            Reason = "Enables [Page Up] hotkey to toggle real-time FPS & FG HUD."
+            Value = hudHotkey,
+            Reason = "Enables hotkey to toggle real-time FPS & FG HUD."
         });
         plan.PlannedConfigModifications.Add(new PlannedConfigEntry
         {
             Section = "Menu",
             Key = "FpsCycleShortcutKey",
-            Value = "0x22",
-            Reason = "Enables [Page Down] hotkey to cycle telemetry detail modes."
+            Value = cycleHotkey,
+            Reason = "Enables hotkey to cycle telemetry detail modes."
         });
         plan.PlannedConfigModifications.Add(new PlannedConfigEntry
         {
             Section = "Menu",
             Key = "FGShortcutKey",
-            Value = "0x23",
-            Reason = "Enables [End] hotkey to dynamically toggle Frame Generation."
+            Value = fgHotkey,
+            Reason = "Enables hotkey to dynamically toggle Frame Generation."
         });
         plan.PlannedConfigModifications.Add(new PlannedConfigEntry
         {
             Section = "Menu",
             Key = "AccentColorR",
-            Value = "0.20",
-            Reason = "Apple Emerald Green accent."
+            Value = accentR,
+            Reason = "Theme accent color."
         });
         plan.PlannedConfigModifications.Add(new PlannedConfigEntry
         {
             Section = "Menu",
             Key = "AccentColorG",
-            Value = "0.78",
-            Reason = "Apple Emerald Green accent."
+            Value = accentG,
+            Reason = "Theme accent color."
         });
         plan.PlannedConfigModifications.Add(new PlannedConfigEntry
         {
             Section = "Menu",
             Key = "AccentColorB",
-            Value = "0.35",
-            Reason = "Apple Emerald Green accent."
+            Value = accentB,
+            Reason = "Theme accent color."
         });
         plan.PlannedConfigModifications.Add(new PlannedConfigEntry
         {
             Section = "Menu",
             Key = "BGColorR",
-            Value = "0.08",
-            Reason = "Apple Dark Slate Glass background."
+            Value = bgR,
+            Reason = "Theme background color."
         });
         plan.PlannedConfigModifications.Add(new PlannedConfigEntry
         {
             Section = "Menu",
             Key = "BGColorG",
-            Value = "0.09",
-            Reason = "Apple Dark Slate Glass background."
+            Value = bgG,
+            Reason = "Theme background color."
         });
         plan.PlannedConfigModifications.Add(new PlannedConfigEntry
         {
             Section = "Menu",
             Key = "BGColorB",
-            Value = "0.11",
-            Reason = "Apple Dark Slate Glass background."
+            Value = bgB,
+            Reason = "Theme background color."
         });
         plan.PlannedConfigModifications.Add(new PlannedConfigEntry
         {
             Section = "Menu",
             Key = "BGColorA",
-            Value = "0.92",
-            Reason = "Apple Dark Slate Glass opacity."
+            Value = bgA,
+            Reason = "Theme background opacity."
         });
         plan.PlannedConfigModifications.Add(new PlannedConfigEntry
         {
