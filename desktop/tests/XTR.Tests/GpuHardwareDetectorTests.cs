@@ -1,9 +1,11 @@
+using System.Runtime.Versioning;
 using DLSS_Swapper.Data.Hardware;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace XTR.Tests;
 
 [TestClass]
+[SupportedOSPlatform("windows")]
 public class GpuHardwareDetectorTests
 {
     [TestMethod]

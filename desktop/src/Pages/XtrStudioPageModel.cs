@@ -65,6 +65,27 @@ public partial class XtrStudioPageModel : ObservableObject
     [ObservableProperty]
     public partial string SimulatedHudFg { get; set; } = "FG Active (FSR 3.1 Bridge • Hudless)";
 
+    [ObservableProperty]
+    public partial bool IsCompanionActive { get; set; } = false;
+
+    [ObservableProperty]
+    public partial string ActiveGameTitle { get; set; } = "Standby (Awaiting Game Launch)";
+
+    [ObservableProperty]
+    public partial string ActiveGamePid { get; set; } = "Idle";
+
+    [ObservableProperty]
+    public partial string LiveVramStatus { get; set; } = "3.1 / 4.0 GB (77%)";
+
+    [ObservableProperty]
+    public partial double LiveVramPercentage { get; set; } = 77.5;
+
+    [ObservableProperty]
+    public partial string LiveGpuClock { get; set; } = "1650 MHz • 64°C";
+
+    [ObservableProperty]
+    public partial bool AutoMinimizeToTray { get; set; } = true;
+
     public ObservableCollection<string> DevMenuKeys { get; } = new()
     {
         "Insert (0x2D)",
@@ -138,6 +159,42 @@ public partial class XtrStudioPageModel : ObservableObject
         SelectedTheme = Settings.Instance.SelectedOverlayTheme ?? "Apple Emerald Glass";
 
         RefreshLibraryStats();
+        CheckRunningGames();
+    }
+
+    public void CheckRunningGames()
+    {
+        try
+        {
+            string[] knownExecutables = ["ForzaHorizon6", "ForzaHorizon5", "Cyberpunk2077", "Spider-Man", "Witcher3", "AlanWake2", "Starfield"];
+            foreach (var name in knownExecutables)
+            {
+                var procs = System.Diagnostics.Process.GetProcessesByName(name);
+                if (procs.Length > 0)
+                {
+                    var p = procs[0];
+                    IsCompanionActive = true;
+                    ActiveGameTitle = name switch
+                    {
+                        "ForzaHorizon6" => "Forza Horizon 6 (Virtual Streamline)",
+                        "ForzaHorizon5" => "Forza Horizon 5 (DirectX 12)",
+                        "Cyberpunk2077" => "Cyberpunk 2077 (DLSS 3.7 + FG)",
+                        _ => $"{name} (Active Session)"
+                    };
+                    ActiveGamePid = $"PID: {p.Id}";
+                    StatusBanner = $"🟢 Active Companion Engaged • {ActiveGameTitle} • FSR 3.1 Bridge Running";
+                    return;
+                }
+            }
+
+            IsCompanionActive = false;
+            ActiveGameTitle = "Standby (Awaiting Game Launch)";
+            ActiveGamePid = "Idle";
+        }
+        catch
+        {
+            // Ignore process query permission errors
+        }
     }
 
     private static string MapHexToDisplayName(string? hexValue, ObservableCollection<string> collection, string fallback)

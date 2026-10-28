@@ -198,7 +198,23 @@ public sealed class FrameGenerationPlannerTests
 
             var reactiveScale = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FSR" && m.Key == "ReactiveScale");
             Assert.IsNotNull(reactiveScale);
-            Assert.AreEqual("1.0", reactiveScale.Value);
+            Assert.AreEqual("2.0", reactiveScale.Value);
+
+            var accAddPerFrame = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FSR" && m.Key == "AccAddPerFrame");
+            Assert.IsNotNull(accAddPerFrame);
+            Assert.AreEqual("0.05", accAddPerFrame.Value);
+
+            var minDisOccAcc = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FSR" && m.Key == "MinDisOccAcc");
+            Assert.IsNotNull(minDisOccAcc);
+            Assert.AreEqual("-0.5", minDisOccAcc.Value);
+
+            var hudFixExt = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "OptiFG" && m.Key == "HUDFixExtended");
+            Assert.IsNotNull(hudFixExt);
+            Assert.AreEqual("true", hudFixExt.Value);
+
+            var dlssPreset = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "DLSS" && m.Key == "RenderPresetForAll");
+            Assert.IsNotNull(dlssPreset);
+            Assert.AreEqual("5", dlssPreset.Value);
         }
         finally
         {
@@ -358,8 +374,16 @@ public sealed class FrameGenerationPlannerTests
 
             // Anti-Ghosting shield
             Assert.AreEqual("true", plan.PlannedConfigModifications.First(m => m.Section == "OptiFG" && m.Key == "HUDFix").Value);
+            Assert.AreEqual("true", plan.PlannedConfigModifications.First(m => m.Section == "OptiFG" && m.Key == "HUDFixExtended").Value);
             Assert.AreEqual("true", plan.PlannedConfigModifications.First(m => m.Section == "OptiFG" && m.Key == "MakeDepthCopy").Value);
             Assert.AreEqual("true", plan.PlannedConfigModifications.First(m => m.Section == "OptiFG" && m.Key == "MakeMVCopy").Value);
+            Assert.AreEqual("false", plan.PlannedConfigModifications.First(m => m.Section == "OptiFG" && m.Key == "DisableHUDFix").Value);
+            Assert.AreEqual("false", plan.PlannedConfigModifications.First(m => m.Section == "InitFlags" && m.Key == "DisableReactiveMask").Value);
+            Assert.AreEqual("true", plan.PlannedConfigModifications.First(m => m.Section == "FSR" && m.Key == "UseReactiveMaskForTransparency").Value);
+            Assert.AreEqual("0.45", plan.PlannedConfigModifications.First(m => m.Section == "FSR" && m.Key == "DlssReactiveMaskBias").Value);
+            Assert.AreEqual("2.0", plan.PlannedConfigModifications.First(m => m.Section == "FSR" && m.Key == "ReactiveScale").Value);
+            Assert.AreEqual("0.05", plan.PlannedConfigModifications.First(m => m.Section == "FSR" && m.Key == "AccAddPerFrame").Value);
+            Assert.AreEqual("-0.5", plan.PlannedConfigModifications.First(m => m.Section == "FSR" && m.Key == "MinDisOccAcc").Value);
 
             // DLSS Preset E
             Assert.AreEqual("5", plan.PlannedConfigModifications.First(m => m.Section == "DLSS" && m.Key == "RenderPresetForAll").Value);
@@ -550,6 +574,179 @@ public sealed class FrameGenerationPlannerTests
             // MipmapBiasOverride must NOT be injected
             Assert.IsFalse(plan.PlannedConfigModifications.Any(m => m.Section == "Mipmap" && m.Key == "MipmapBiasOverride"));
             Assert.IsFalse(plan.PlannedConfigModifications.Any(m => m.Section == "Anisotropy" && m.Key == "AnisotropyOverride"));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task MultiBackendFgRouting_DispatchesFsrFgByDefault()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"xtr_mb_fsrfg_{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(tempDir);
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "Game.exe"), "EXE");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "d3d12.dll"), "DX12");
+
+            var pack = await RuntimePack.LoadFromDirectoryAsync(GetBundledPackagePath());
+            Assert.IsNotNull(pack);
+
+            var plan = await DeploymentPlanner.CreatePlanAsync(
+                "mb-fsr-id",
+                "Generic DX12 Game",
+                tempDir,
+                pack,
+                RuntimeIntegrationPreset.DlssWithFrameGeneration);
+
+            Assert.IsTrue(plan.CanExecute);
+            var fgOutput = plan.PlannedConfigModifications.First(m => m.Section == "FrameGen" && m.Key == "FGOutput");
+            Assert.AreEqual("fsrfg", fgOutput.Value);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task MultiBackendFgRouting_DispatchesNukem9StreamlineBridge()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"xtr_mb_nukems_{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(tempDir);
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "Game.exe"), "EXE");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "d3d12.dll"), "DX12");
+
+            var pack = await RuntimePack.LoadFromDirectoryAsync(GetBundledPackagePath());
+            Assert.IsNotNull(pack);
+
+            var plan = await DeploymentPlanner.CreatePlanAsync(
+                "mb-nukems-id",
+                "Streamline DLSS-G Game",
+                tempDir,
+                pack,
+                RuntimeIntegrationPreset.DlssWithFrameGeneration,
+                fgBackendOverride: "nukems");
+
+            Assert.IsTrue(plan.CanExecute);
+            var fgOutput = plan.PlannedConfigModifications.First(m => m.Section == "FrameGen" && m.Key == "FGOutput");
+            Assert.AreEqual("nukems", fgOutput.Value);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task MultiBackendFgRouting_DispatchesIntelXeFg()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"xtr_mb_xefg_{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(tempDir);
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "Game.exe"), "EXE");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "d3d12.dll"), "DX12");
+
+            var pack = await RuntimePack.LoadFromDirectoryAsync(GetBundledPackagePath());
+            Assert.IsNotNull(pack);
+
+            var plan = await DeploymentPlanner.CreatePlanAsync(
+                "mb-xefg-id",
+                "Universal Fallback Game",
+                tempDir,
+                pack,
+                RuntimeIntegrationPreset.DlssWithFrameGeneration,
+                fgBackendOverride: "xefg");
+
+            Assert.IsTrue(plan.CanExecute);
+            var fgOutput = plan.PlannedConfigModifications.First(m => m.Section == "FrameGen" && m.Key == "FGOutput");
+            Assert.AreEqual("xefg", fgOutput.Value);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task MultiBackendFgRouting_StaticOverride_TakesPrecedence()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"xtr_mb_override_{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(tempDir);
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "Game.exe"), "EXE");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "d3d12.dll"), "DX12");
+
+            var pack = await RuntimePack.LoadFromDirectoryAsync(GetBundledPackagePath());
+            Assert.IsNotNull(pack);
+
+            DeploymentPlanner.OverrideFgOutput = "xefg";
+
+            var plan = await DeploymentPlanner.CreatePlanAsync(
+                "mb-override-id",
+                "Universal Game",
+                tempDir,
+                pack,
+                RuntimeIntegrationPreset.DlssWithFrameGeneration);
+
+            Assert.IsTrue(plan.CanExecute);
+            var fgOutput = plan.PlannedConfigModifications.First(m => m.Section == "FrameGen" && m.Key == "FGOutput");
+            Assert.AreEqual("xefg", fgOutput.Value);
+        }
+        finally
+        {
+            DeploymentPlanner.OverrideFgOutput = null;
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ForzaHorizon5_DeploymentPlan_UsesVersionDllAndDisablesHeapTracking()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"xtr_fh5_test_{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(tempDir);
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "ForzaHorizon5.exe"), "EXE");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "d3d12.dll"), "DX12");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "sl.interposer.dll"), "SL_INTERPOSER");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "sl.dlss_g.dll"), "SL_DLSSG");
+
+            var pack = await RuntimePack.LoadFromDirectoryAsync(GetBundledPackagePath());
+            Assert.IsNotNull(pack);
+
+            var plan = await DeploymentPlanner.CreatePlanAsync(
+                "fh5-test-id",
+                "Forza Horizon 5",
+                tempDir,
+                pack,
+                RuntimeIntegrationPreset.DlssWithFrameGeneration);
+
+            Assert.IsTrue(plan.CanExecute);
+            Assert.AreEqual("version.dll", plan.SelectedProxy, "Forza Horizon 5 must default to version.dll proxy.");
+
+            // Heap tracking must be disabled to prevent virtual texture streaming pool starvation
+            Assert.AreEqual("false", plan.PlannedConfigModifications.First(m => m.Section == "OptiFG" && m.Key == "AlwaysTrackHeaps").Value);
+            Assert.AreEqual("false", plan.PlannedConfigModifications.First(m => m.Section == "OptiFG" && m.Key == "HUDFix").Value);
+            Assert.AreEqual("true", plan.PlannedConfigModifications.First(m => m.Section == "OptiFG" && m.Key == "DisableHUDFix").Value);
+
+            // Anti-ghosting calibration enabled
+            Assert.AreEqual("false", plan.PlannedConfigModifications.First(m => m.Section == "InitFlags" && m.Key == "DisableReactiveMask").Value);
+            Assert.AreEqual("2.0", plan.PlannedConfigModifications.First(m => m.Section == "FSR" && m.Key == "ReactiveScale").Value);
+            Assert.AreEqual("0.05", plan.PlannedConfigModifications.First(m => m.Section == "FSR" && m.Key == "AccAddPerFrame").Value);
+            Assert.AreEqual("-0.5", plan.PlannedConfigModifications.First(m => m.Section == "FSR" && m.Key == "MinDisOccAcc").Value);
+            Assert.AreEqual("5", plan.PlannedConfigModifications.First(m => m.Section == "DLSS" && m.Key == "RenderPresetForAll").Value);
         }
         finally
         {

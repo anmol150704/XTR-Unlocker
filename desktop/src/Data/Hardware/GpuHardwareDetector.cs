@@ -26,6 +26,9 @@ public class GpuHardwareInfo
     public bool IsHagsEnabled { get; set; }
     public bool SupportsNativeDlssG { get; set; }
     public bool SupportsUniversalBridge { get; set; } = true;
+    public uint DedicatedVramMb => (uint)(VramBytes / (1024 * 1024));
+    public bool IsAdaOrBlackwell => (Architecture?.Contains("Ada", StringComparison.OrdinalIgnoreCase) ?? false) || (Architecture?.Contains("Blackwell", StringComparison.OrdinalIgnoreCase) ?? false);
+    public bool SupportsFxFramenGenBridge => SupportsUniversalBridge;
     public string RecommendedFgMode { get; set; } = "Universal FG Bridge (FSR 3.1)";
     public string RecommendedNeuralPreset { get; set; } = "Preset E (Anti-Ghosting Champion)";
 

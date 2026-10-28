@@ -486,13 +486,17 @@ public partial class GameControlModel : ObservableObject
             settings.Add(("DLSS", "RenderPresetOverride", "true"));
             settings.Add(("DLSS", "RenderPresetForAll", "5"));
 
-            settings.Add(("Anisotropy", "AnisotropyOverride", "16"));
-            settings.Add(("Anisotropy", "ModifyComparison", "true"));
-            settings.Add(("Anisotropy", "ModifyMinMax", "true"));
-            settings.Add(("Anisotropy", "SkipPointFilter", "true"));
+            bool isForza = DeploymentPlanner.IsForzaOrVirtualTextureTitle(Game.Title);
+            if (!isForza)
+            {
+                settings.Add(("Anisotropy", "AnisotropyOverride", "16"));
+                settings.Add(("Anisotropy", "ModifyComparison", "true"));
+                settings.Add(("Anisotropy", "ModifyMinMax", "true"));
+                settings.Add(("Anisotropy", "SkipPointFilter", "true"));
 
-            settings.Add(("Mipmap", "MipmapBiasOverride", "-0.5"));
-            settings.Add(("Mipmap", "MipmapBiasFixedOverride", "true"));
+                settings.Add(("Mipmap", "MipmapBiasOverride", "-0.5"));
+                settings.Add(("Mipmap", "MipmapBiasFixedOverride", "true"));
+            }
 
             settings.Add(("Sharpness", "OverrideSharpness", "true"));
             settings.Add(("Sharpness", "Sharpness", "0.35"));
@@ -524,14 +528,14 @@ public partial class GameControlModel : ObservableObject
                 settings.Add(("FrameGen", "DisableHudless", "false"));
                 settings.Add(("FrameGen", "ForceBorderless", "true"));
 
-                settings.Add(("OptiFG", "HUDFix", "true"));
-                settings.Add(("OptiFG", "HUDFixExtended", "true"));
-                settings.Add(("OptiFG", "DisableHUDFix", "false"));
-                settings.Add(("OptiFG", "MakeDepthCopy", "true"));
-                settings.Add(("OptiFG", "MakeMVCopy", "true"));
-                settings.Add(("OptiFG", "HUDFixImmediate", "true"));
-                settings.Add(("OptiFG", "AlwaysTrackHeaps", "true"));
-                settings.Add(("OptiFG", "HUDFixRelaxedResolutionCheck", "true"));
+                settings.Add(("OptiFG", "HUDFix", isForza ? "false" : "true"));
+                settings.Add(("OptiFG", "HUDFixExtended", isForza ? "false" : "true"));
+                settings.Add(("OptiFG", "DisableHUDFix", isForza ? "true" : "false"));
+                settings.Add(("OptiFG", "MakeDepthCopy", isForza ? "false" : "true"));
+                settings.Add(("OptiFG", "MakeMVCopy", isForza ? "false" : "true"));
+                settings.Add(("OptiFG", "HUDFixImmediate", isForza ? "false" : "true"));
+                settings.Add(("OptiFG", "AlwaysTrackHeaps", isForza ? "false" : "true"));
+                settings.Add(("OptiFG", "HUDFixRelaxedResolutionCheck", isForza ? "false" : "true"));
                 settings.Add(("InitFlags", "DisableReactiveMask", "false"));
                 settings.Add(("FSR", "UseReactiveMaskForTransparency", "true"));
                 settings.Add(("FSR", "DlssReactiveMaskBias", "0.45"));
@@ -651,6 +655,14 @@ public partial class GameControlModel : ObservableObject
             {
                 ActiveFrameGenMode = "Native DLSS 3 Hardware FG";
             }
+            else if (string.Equals(fgOutput, "nukems", StringComparison.OrdinalIgnoreCase))
+            {
+                ActiveFrameGenMode = "Nukem9 Streamline Bridge (FSR 3.1)";
+            }
+            else if (string.Equals(fgOutput, "xefg", StringComparison.OrdinalIgnoreCase))
+            {
+                ActiveFrameGenMode = "Intel XeFG Universal Bridge";
+            }
             else
             {
                 ActiveFrameGenMode = "Universal FG Bridge (FSR 3.1)";
@@ -753,6 +765,26 @@ public partial class GameControlModel : ObservableObject
                 settings.Add(("Spoofing", "SpoofHAGS", "true"));
                 ActiveFrameGenMode = "Native DLSS 3 Hardware FG";
             }
+            else if (mode.Contains("Nukem", StringComparison.OrdinalIgnoreCase))
+            {
+                settings.Add(("FrameGen", "Enabled", "true"));
+                settings.Add(("FrameGen", "FGInput", "dlssg"));
+                settings.Add(("FrameGen", "FGOutput", "nukems"));
+                settings.Add(("Upscalers", "Dx12Upscaler", "dlss"));
+                settings.Add(("Spoofing", "StreamlineSpoofing", "true"));
+                settings.Add(("Spoofing", "SpoofHAGS", "true"));
+                ActiveFrameGenMode = "Nukem9 Streamline Bridge (FSR 3.1)";
+            }
+            else if (mode.Contains("XeFG", StringComparison.OrdinalIgnoreCase) || mode.Contains("Intel", StringComparison.OrdinalIgnoreCase))
+            {
+                settings.Add(("FrameGen", "Enabled", "true"));
+                settings.Add(("FrameGen", "FGInput", "dlssg"));
+                settings.Add(("FrameGen", "FGOutput", "xefg"));
+                settings.Add(("Upscalers", "Dx12Upscaler", "dlss"));
+                settings.Add(("Spoofing", "StreamlineSpoofing", "true"));
+                settings.Add(("Spoofing", "SpoofHAGS", "true"));
+                ActiveFrameGenMode = "Intel XeFG Universal Bridge";
+            }
             else if (mode.Contains("Universal", StringComparison.OrdinalIgnoreCase) || mode.Contains("FSR", StringComparison.OrdinalIgnoreCase))
             {
                 settings.Add(("FrameGen", "Enabled", "true"));
@@ -785,6 +817,7 @@ public partial class GameControlModel : ObservableObject
     private void ApplyAntiGhostingSetting(bool enabled)
     {
         var settings = new List<(string Section, string Key, string Value)>();
+        bool isForza = DeploymentPlanner.IsForzaOrVirtualTextureTitle(Game.Title);
         if (enabled)
         {
             // [InitFlags]
@@ -803,14 +836,14 @@ public partial class GameControlModel : ObservableObject
             settings.Add(("FSR", "MinDisOccAcc", "-0.5"));
 
             // [OptiFG]
-            settings.Add(("OptiFG", "HUDFix", "true"));
-            settings.Add(("OptiFG", "HUDFixExtended", "true"));
-            settings.Add(("OptiFG", "DisableHUDFix", "false"));
-            settings.Add(("OptiFG", "MakeDepthCopy", "true"));
-            settings.Add(("OptiFG", "MakeMVCopy", "true"));
-            settings.Add(("OptiFG", "HUDFixImmediate", "true"));
-            settings.Add(("OptiFG", "AlwaysTrackHeaps", "true"));
-            settings.Add(("OptiFG", "HUDFixRelaxedResolutionCheck", "true"));
+            settings.Add(("OptiFG", "HUDFix", isForza ? "false" : "true"));
+            settings.Add(("OptiFG", "HUDFixExtended", isForza ? "false" : "true"));
+            settings.Add(("OptiFG", "DisableHUDFix", isForza ? "true" : "false"));
+            settings.Add(("OptiFG", "MakeDepthCopy", isForza ? "false" : "true"));
+            settings.Add(("OptiFG", "MakeMVCopy", isForza ? "false" : "true"));
+            settings.Add(("OptiFG", "HUDFixImmediate", isForza ? "false" : "true"));
+            settings.Add(("OptiFG", "AlwaysTrackHeaps", isForza ? "false" : "true"));
+            settings.Add(("OptiFG", "HUDFixRelaxedResolutionCheck", isForza ? "false" : "true"));
         }
         else
         {

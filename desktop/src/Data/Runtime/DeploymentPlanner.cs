@@ -69,6 +69,7 @@ public static class DeploymentPlanner
         RuntimePack pack,
         RuntimeIntegrationPreset preset,
         string? proxyOverride = null,
+        string? fgBackendOverride = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(gameId);
@@ -76,7 +77,7 @@ public static class DeploymentPlanner
         ArgumentNullException.ThrowIfNull(pack);
 
         var compatRecord = CompatibilityDatabase.LookupGame(gameTitle) ?? CompatibilityDatabase.LookupGame(gameId);
-        var proxy = proxyOverride ?? compatRecord?.RecommendedProxy ?? pack.RecommendedProxy ?? "dxgi.dll";
+        var proxy = proxyOverride ?? compatRecord?.RecommendedProxy ?? (IsForzaOrVirtualTextureTitle(gameTitle) ? "version.dll" : null) ?? pack.RecommendedProxy ?? "dxgi.dll";
 
 
         var preflight = await RuntimePreflightService.RunPreflightAsync(gameId, gameRoot, pack, proxy, gameTitle, cancellationToken).ConfigureAwait(false);
@@ -218,14 +219,19 @@ public static class DeploymentPlanner
                         : "Derives frame-generation motion vectors from the active DLSS upscaler."
                 });
 
-                var fgOutput = "fsrfg";
+                var fgOutput = ResolveFgOutput(fgBackendOverride, pack, preflight);
 
                 plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                 {
                     Section = "FrameGen",
                     Key = "FGOutput",
                     Value = fgOutput,
-                    Reason = "Routes frame generation through the verified DirectX 12 hardware frame interpolation pipeline."
+                    Reason = fgOutput switch
+                    {
+                        "nukems" => "Routes frame generation through the Nukem9 Streamline DLSS-G to FSR 3.1 bridge.",
+                        "xefg" => "Routes frame generation through the Intel XeFG hardware interpolation pipeline.",
+                        _ => "Routes frame generation through the verified DirectX 12 hardware frame interpolation pipeline."
+                    }
                 });
 
                 // Spoof Ada Lovelace (RTX 4090) to Streamline and DXGI so games unlock the native DLSS-G switch in menu
@@ -340,6 +346,13 @@ public static class DeploymentPlanner
                     plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                     {
                         Section = "OptiFG",
+                        Key = "HUDFixExtended",
+                        Value = "true",
+                        Reason = "Extended HUD element coverage for crosshairs and subtitles."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "OptiFG",
                         Key = "MakeDepthCopy",
                         Value = "true",
                         Reason = "Creates depth buffer clone to avoid race conditions with DX12 presentation."
@@ -358,35 +371,51 @@ public static class DeploymentPlanner
                         Value = "false",
                         Reason = "Ensures HUD element tracking is fully active."
                     });
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                    {
-                        Section = "InitFlags",
-                        Key = "DisableReactiveMask",
-                        Value = "false",
-                        Reason = "Prevents stripping responsive pixel masks."
-                    });
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                    {
-                        Section = "FSR",
-                        Key = "UseReactiveMaskForTransparency",
-                        Value = "true",
-                        Reason = "Enables reactive transparency masks to eliminate character disocclusion trails."
-                    });
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                    {
-                        Section = "FSR",
-                        Key = "DlssReactiveMaskBias",
-                        Value = "0.45",
-                        Reason = "Optimal reactive bias balancing edge sharpness and ghost prevention."
-                    });
-                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                    {
-                        Section = "FSR",
-                        Key = "ReactiveScale",
-                        Value = "1.0",
-                        Reason = "Standard calibrated reactive mask scale for rock-solid stability."
-                    });
                 }
+
+                // Anti-Ghosting Shield Calibration for all FrameGen bridge modes:
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "InitFlags",
+                    Key = "DisableReactiveMask",
+                    Value = "false",
+                    Reason = "Prevents stripping responsive pixel masks."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "FSR",
+                    Key = "UseReactiveMaskForTransparency",
+                    Value = "true",
+                    Reason = "Enables reactive transparency masks to eliminate character disocclusion trails."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "FSR",
+                    Key = "DlssReactiveMaskBias",
+                    Value = "0.45",
+                    Reason = "Optimal reactive bias balancing edge sharpness and ghost prevention."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "FSR",
+                    Key = "ReactiveScale",
+                    Value = "2.0",
+                    Reason = "Calibrated reactive mask scale for rock-solid stability."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "FSR",
+                    Key = "AccAddPerFrame",
+                    Value = "0.05",
+                    Reason = "High-velocity disocclusion flush eliminating ghost smears at high speeds."
+                });
+                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                {
+                    Section = "FSR",
+                    Key = "MinDisOccAcc",
+                    Value = "-0.5",
+                    Reason = "Disocclusion accumulation threshold delaying history blending."
+                });
 
                 // DLSS Neural Model Preset E (Anti-Ghosting Champion)
                 plan.PlannedConfigModifications.Add(new PlannedConfigEntry
@@ -569,12 +598,19 @@ public static class DeploymentPlanner
                             ? "Derives motion vectors directly from native game Streamline engine."
                             : "Derives motion vectors from the active upscaler pipeline."
                     });
+                    var turboFgOutput = ResolveFgOutput(fgBackendOverride, pack, preflight);
+
                     plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                     {
                         Section = "FrameGen",
                         Key = "FGOutput",
-                        Value = "fsrfg",
-                        Reason = "Routes through optimized DirectX 12 hardware frame interpolation."
+                        Value = turboFgOutput,
+                        Reason = turboFgOutput switch
+                        {
+                            "nukems" => "Routes frame generation through the Nukem9 Streamline DLSS-G to FSR 3.1 bridge.",
+                            "xefg" => "Routes frame generation through the Intel XeFG hardware interpolation pipeline.",
+                            _ => "Routes through optimized DirectX 12 hardware frame interpolation."
+                        }
                     });
                     plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                     {
@@ -671,6 +707,13 @@ public static class DeploymentPlanner
                         plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                         {
                             Section = "OptiFG",
+                            Key = "HUDFixExtended",
+                            Value = "true",
+                            Reason = "Anti-Ghosting Shield: extended HUD tracking."
+                        });
+                        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                        {
+                            Section = "OptiFG",
                             Key = "MakeDepthCopy",
                             Value = "true",
                             Reason = "Depth buffer clone avoids race conditions."
@@ -688,34 +731,6 @@ public static class DeploymentPlanner
                             Key = "DisableHUDFix",
                             Value = "false",
                             Reason = "Maintains HUD fix activity."
-                        });
-                        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                        {
-                            Section = "InitFlags",
-                            Key = "DisableReactiveMask",
-                            Value = "false",
-                            Reason = "Retains pixel reactivity."
-                        });
-                        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                        {
-                            Section = "FSR",
-                            Key = "UseReactiveMaskForTransparency",
-                            Value = "true",
-                            Reason = "Transparency reactive masks remove character disocclusion trails."
-                        });
-                        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                        {
-                            Section = "FSR",
-                            Key = "DlssReactiveMaskBias",
-                            Value = "0.45",
-                            Reason = "Optimal reactive bias."
-                        });
-                        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                        {
-                            Section = "FSR",
-                            Key = "ReactiveScale",
-                            Value = "1.0",
-                            Reason = "Standard calibrated FSR reactivity."
                         });
 
                         // Ultra-low Latency Frame Pacing Tuning for universal pipeline
@@ -741,6 +756,50 @@ public static class DeploymentPlanner
                             Reason = "Dynamic variance tuning for lowest input lag."
                         });
                     }
+
+                    // Anti-Ghosting Calibration for all FrameGen bridge modes in TurboBoost:
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "InitFlags",
+                        Key = "DisableReactiveMask",
+                        Value = "false",
+                        Reason = "Retains pixel reactivity."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "FSR",
+                        Key = "UseReactiveMaskForTransparency",
+                        Value = "true",
+                        Reason = "Transparency reactive masks remove character disocclusion trails."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "FSR",
+                        Key = "DlssReactiveMaskBias",
+                        Value = "0.45",
+                        Reason = "Optimal reactive bias."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "FSR",
+                        Key = "ReactiveScale",
+                        Value = "2.0",
+                        Reason = "Calibrated FSR reactivity."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "FSR",
+                        Key = "AccAddPerFrame",
+                        Value = "0.05",
+                        Reason = "High-velocity disocclusion flush eliminating ghost smears at high speeds."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "FSR",
+                        Key = "MinDisOccAcc",
+                        Value = "-0.5",
+                        Reason = "Disocclusion accumulation threshold delaying history blending."
+                    });
                 }
 
                 // DLSS Neural Model Preset E (Anti-Ghosting Champion)
@@ -878,13 +937,39 @@ public static class DeploymentPlanner
         return plan;
     }
 
-            public static string? OverrideDevHotkey { get; set; }
+    public static string? OverrideDevHotkey { get; set; }
     public static string? OverrideHudHotkey { get; set; }
     public static string? OverrideHudCycleHotkey { get; set; }
     public static string? OverrideFrameGenHotkey { get; set; }
     public static string? OverrideHudPosition { get; set; }
     public static string? OverrideHudMode { get; set; }
     public static string? OverrideTheme { get; set; }
+    private static readonly AsyncLocal<string?> FgOutputOverride = new();
+    public static string? OverrideFgOutput
+    {
+        get => FgOutputOverride.Value;
+        set => FgOutputOverride.Value = value;
+    }
+
+    public static string ResolveFgOutput(
+        string? requestedBackend = null,
+        RuntimePack? pack = null,
+        RuntimePreflightResult? preflight = null)
+    {
+        var candidate = (requestedBackend ?? OverrideFgOutput)?.Trim().ToLowerInvariant();
+        if (!string.IsNullOrEmpty(candidate))
+        {
+            return candidate switch
+            {
+                "nukem" or "nukems" or "nukem9" => "nukems",
+                "xefg" or "xess" or "intel" => "xefg",
+                "fsr" or "fsrfg" or "fsr3" or "fsr31" or "amd" => "fsrfg",
+                _ => candidate
+            };
+        }
+
+        return "fsrfg";
+    }
 
     public static bool IsForzaOrVirtualTextureTitle(string gameTitle)
     {

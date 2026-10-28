@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DefineConstants>$(DefineConstants);XTR_TESTS;XTR_E2E</DefineConstants>
+    <NoWarn>$(NoWarn);MSTEST0037;MSTEST0032;MSTEST0017</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" Version="4.0.2" />
+    <PackageReference Include="System.Management" Version="10.0.13" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\src\Data\Runtime\*.cs" Link="Data\Runtime\%(Filename)%(Extension)" />
+    <Compile Include="..\..\src\Data\Hardware\*.cs" Link="Data\Hardware\%(Filename)%(Extension)" />
+    <Compile Include="..\..\src\Storage.cs" Link="Storage.cs" />
+    <Compile Include="..\..\src\AppIdentity.cs" Link="AppIdentity.cs" />
+  </ItemGroup>
+
+</Project>
