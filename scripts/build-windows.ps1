@@ -40,18 +40,28 @@ if ($SelfContained) {
 if (-not $SkipTests) {
     $testsProject = Join-Path $repoRoot "desktop/tests/XTR.Tests/XTR.Tests.csproj"
     if (Test-Path $testsProject) {
-        Write-Host "Running automated test suite..."
+        Write-Host "Running automated unit test suite (XTR.Tests)..."
         & dotnet test $testsProject --configuration $Configuration
         if ($LASTEXITCODE -ne 0) {
-            throw "The XTR automated test suite failed."
+            throw "The XTR unit test suite failed."
+        }
+    }
+
+    $e2eTestsProject = Join-Path $repoRoot "desktop/tests/XTR.E2ETests/XTR.E2ETests.csproj"
+    if (Test-Path $e2eTestsProject) {
+        Write-Host "Running automated end-to-end test suite (XTR.E2ETests)..."
+        & dotnet test $e2eTestsProject --configuration $Configuration
+        if ($LASTEXITCODE -ne 0) {
+            throw "The XTR end-to-end test suite failed."
         }
     }
 }
 
 $bundledRuntime = Join-Path $desktopOutput "Runtime/OptiScaler"
 if (-not (Test-Path (Join-Path $bundledRuntime "OptiScaler.dll")) -or
-    -not (Test-Path (Join-Path $bundledRuntime "OptiScaler.ini"))) {
-    throw "The bundled OptiScaler runtime was not copied beside the XTR application."
+    -not (Test-Path (Join-Path $bundledRuntime "OptiScaler.ini")) -or
+    -not (Test-Path (Join-Path $bundledRuntime "plugins/xtr_hud.asi"))) {
+    throw "The bundled OptiScaler runtime or xtr_hud.asi was not copied beside the XTR application."
 }
 
 Write-Host "XTR Unlocker and its bundled OptiScaler runtime were verified in $desktopOutput"

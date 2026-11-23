@@ -2,6 +2,8 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using System.Threading.Tasks;
 using DLSS_Swapper.Data.Runtime;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -178,9 +180,30 @@ public sealed class HudAndCompanionFeatureTests
     public void F13_Studio_NoWebviewOrElectronDependencies()
     {
         Assert.IsTrue(XtrStudioFootprintContract.IsProhibitedWebDependency("Microsoft.Web.WebView2.Core"));
+        Assert.IsTrue(XtrStudioFootprintContract.IsProhibitedWebDependency("System.Drawing.Common"));
+        Assert.IsTrue(XtrStudioFootprintContract.IsProhibitedWebDependency("CommunityToolkit.WinUI.UI.Controls.DataGrid"));
+        Assert.IsTrue(XtrStudioFootprintContract.IsProhibitedWebDependency("NvAPIWrapper"));
         Assert.IsTrue(XtrStudioFootprintContract.IsProhibitedWebDependency("CefSharp.Wpf"));
         Assert.IsTrue(XtrStudioFootprintContract.IsProhibitedWebDependency("Electron"));
-        Assert.IsFalse(XtrStudioFootprintContract.IsProhibitedWebDependency("Wpf.Ui"));
+        Assert.IsFalse(XtrStudioFootprintContract.IsProhibitedWebDependency("WinUI.TableView"));
+        Assert.IsFalse(XtrStudioFootprintContract.IsProhibitedWebDependency("SkiaSharp"));
+
+        var appDll = XtrStudioFootprintContract.FindCompiledAppAssemblyPath();
+        if (appDll != null && File.Exists(appDll))
+        {
+            using var stream = File.OpenRead(appDll);
+            using var pe = new System.Reflection.PortableExecutable.PEReader(stream);
+            var mr = pe.GetMetadataReader();
+            foreach (var h in mr.AssemblyReferences)
+            {
+                var refName = mr.GetString(mr.GetAssemblyReference(h).Name);
+                Assert.IsFalse(
+                    refName.Equals("System.Drawing.Common", StringComparison.OrdinalIgnoreCase) ||
+                    refName.Equals("CommunityToolkit.WinUI.UI.Controls.DataGrid", StringComparison.OrdinalIgnoreCase) ||
+                    refName.StartsWith("NvAPIWrapper", StringComparison.OrdinalIgnoreCase),
+                    $"Compiled XTR Unlocker.dll must not reference {refName}");
+            }
+        }
     }
 
     [TestMethod]

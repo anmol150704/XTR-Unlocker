@@ -25,10 +25,31 @@ public static class XtrStudioFootprintContract
         "Microsoft.Web.WebView2.Core",
         "Microsoft.Web.WebView2.WinForms",
         "Microsoft.Web.WebView2.Wpf",
+        "System.Drawing.Common",
+        "CommunityToolkit.WinUI.UI.Controls.DataGrid",
+        "NvAPIWrapper",
         "CefSharp",
         "CefSharp.Wpf",
         "Electron"
     ];
+
+    public static string? FindCompiledAppAssemblyPath()
+    {
+        var baseDir = AppContext.BaseDirectory;
+        var candidates = new[]
+        {
+            Path.Combine(baseDir, "..", "..", "..", "..", "src", "bin", "x64", "Release", "net10.0-windows10.0.26100.0", "win-x64", "XTR Unlocker.dll"),
+            Path.Combine(baseDir, "..", "..", "..", "..", "src", "bin", "x64", "Debug", "net10.0-windows10.0.26100.0", "win-x64", "XTR Unlocker.dll")
+        };
+
+        foreach (var candidate in candidates)
+        {
+            var fullPath = Path.GetFullPath(candidate);
+            if (File.Exists(fullPath)) return fullPath;
+        }
+
+        return null;
+    }
 
     public static bool IsProhibitedWebDependency(string assemblyName)
     {

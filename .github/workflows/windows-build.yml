@@ -22,9 +22,11 @@ jobs:
       - name: Build XTR and bundle OptiScaler
         shell: pwsh
         run: .\scripts\build-windows.ps1 -Configuration Release
-      - name: Run automated test suite
+      - name: Run automated test suites
         shell: pwsh
-        run: dotnet test desktop/tests/XTR.Tests/XTR.Tests.csproj --configuration Release --no-build --verbosity normal
+        run: |
+          dotnet test desktop/tests/XTR.Tests/XTR.Tests.csproj --configuration Release --no-build --verbosity normal
+          dotnet test desktop/tests/XTR.E2ETests/XTR.E2ETests.csproj --configuration Release --no-build --verbosity normal
       - name: Upload Windows app build
         uses: actions/upload-artifact@v4
         with:

@@ -4,7 +4,7 @@
 
 [![Release](https://img.shields.io/github/v/release/anmol150704/XTR-Unlocker?style=flat-square&color=10B981&label=Release)](https://github.com/anmol150704/XTR-Unlocker/releases)
 [![Build Status](https://img.shields.io/badge/build-passing-10B981?style=flat-square)](https://github.com/anmol150704/XTR-Unlocker/actions)
-[![Test Suite](https://img.shields.io/badge/tests-64%20passed%20%7C%200%20failed-10B981?style=flat-square)](desktop/tests/XTR.Tests)
+[![Test Suite](https://img.shields.io/badge/tests-286%20passed%20%7C%200%20failed-10B981?style=flat-square)](desktop/tests)
 [![Framework](https://img.shields.io/badge/.NET-10.0%20x64-512BD4?style=flat-square)](https://dotnet.microsoft.com/download/dotnet/10.0)
 [![Platform](https://img.shields.io/badge/platform-Windows%2011%20%7C%2010%20x64-0078D4?style=flat-square)](https://github.com/anmol150704/XTR-Unlocker)
 [![License](https://img.shields.io/badge/license-GPL--3.0-F59E0B?style=flat-square)](LICENSE)

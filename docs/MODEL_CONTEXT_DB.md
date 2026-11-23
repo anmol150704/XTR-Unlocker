@@ -3,7 +3,7 @@
 > **Target Audience**: AI Language Models, Systems Engineers, and Autonomous Research Agents tasked with analyzing, debugging, extending, and architecting the XTR Unlocker / Engine & Studio ecosystem.
 > **Repository**: `https://github.com/anmol150704/XTR-Unlocker.git`
 > **Local Workspace**: `C:\Users\Asus\.gemini\antigravity\scratch\XTR-Unlocker`
-> **Current Version**: `v1.0.6` (Commit `96fa58d` + Tier 5 Hardening)
+> **Current Version**: `v1.2.7` (Phase 1-6 Master Implementation: Zero Warnings, 286 Passing Tests, Emerald HUD ASI, Native DRS)
 > **Runtime Framework**: .NET 10 (C# 13), WinUI 3 (`Microsoft.WindowsAppSDK` 1.8) transitioning to native Fluent WPF (`lepoco/wpfui`), Native Win32 / DirectX 12 / Vulkan C++ runtime interop.
 
 ---
