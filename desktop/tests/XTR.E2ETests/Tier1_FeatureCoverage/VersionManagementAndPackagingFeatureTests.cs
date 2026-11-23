@@ -78,7 +78,7 @@ public sealed class VersionManagementAndPackagingFeatureTests
     }
 
     [TestMethod]
-    public void F15_Packaging_ManifestFile_Pins18RuntimeFiles()
+    public void F15_Packaging_ManifestFile_PinsRuntimeFiles()
     {
         var manifest = XtrPackagingValidatorContract.LoadManifest(TestPaths.XtrRuntimeJsonPath);
         Assert.AreEqual(XtrPackagingValidatorContract.ExpectedPinnedFileCount, manifest.FileHashes.Count,
@@ -104,7 +104,7 @@ public sealed class VersionManagementAndPackagingFeatureTests
         bool valid = XtrPackagingValidatorContract.VerifyRuntimeFilesIntegrity(
             TestPaths.BundledPackagePath, manifest, out var errors);
 
-        Assert.IsTrue(valid, $"All 18 runtime files on disk must match manifest SHA256. Errors: {string.Join("; ", errors)}");
+        Assert.IsTrue(valid, $"All {XtrPackagingValidatorContract.ExpectedPinnedFileCount} runtime files on disk must match manifest SHA256. Errors: {string.Join("; ", errors)}");
     }
 
     [TestMethod]

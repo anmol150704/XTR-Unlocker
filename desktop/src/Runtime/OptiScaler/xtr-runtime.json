@@ -1,4 +1,4 @@
-{
+﻿{
     "schemaVersion":  3,
     "id":  "optiscaler-0.9.5-xtr",
     "displayName":  "OptiScaler 0.9.5 Production Bundle",
@@ -130,6 +130,11 @@
                            "path":  "Licenses/XeSS_LICENSE.txt",
                            "sha256":  "784be42c39a4a4d03cf85d88e15e59d75828fca773ce45b8dbfffbd7eaf208df",
                            "sizeBytes":  4194
+                       },
+                       {
+                           "path":  "plugins/xtr_hud.asi",
+                           "sha256":  "f4b62b2fbc8a88ce0b0e2062bd26c46ac6e1bb65d6cc93cd1a38f1831e1f909e",
+                           "sizeBytes":  348160
                        }
                    ],
     "licenses":  [

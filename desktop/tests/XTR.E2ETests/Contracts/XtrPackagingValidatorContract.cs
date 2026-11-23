@@ -23,7 +23,7 @@ public sealed class XtrRuntimeManifest
 
 public static class XtrPackagingValidatorContract
 {
-    public const int ExpectedPinnedFileCount = 18;
+    public const int ExpectedPinnedFileCount = 19;
 
     public static XtrRuntimeManifest LoadManifest(string jsonPath)
     {

@@ -1300,6 +1300,13 @@ public static class DeploymentPlanner
             Value = "true",
             Reason = "High-quality monospace typography."
         });
+        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+        {
+            Section = "Plugins",
+            Key = "LoadAsiPlugins",
+            Value = "true",
+            Reason = "Enables OptiScaler to load in-game ASI plugins such as xtr_hud.asi."
+        });
     }
 
     private static async Task<string> ComputeSha256Async(string filePath, CancellationToken cancellationToken)

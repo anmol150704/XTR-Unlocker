@@ -233,7 +233,7 @@ public sealed class PairwiseFeatureInteractionTests
     {
         // Pair 10: DLL Switcher (F14) + Manifest SHA-256 Verification (F15)
         var manifest = XtrPackagingValidatorContract.LoadManifest(TestPaths.XtrRuntimeJsonPath);
-        Assert.AreEqual(18, manifest.FileHashes.Count);
+        Assert.AreEqual(XtrPackagingValidatorContract.ExpectedPinnedFileCount, manifest.FileHashes.Count);
 
         string optiscalerPath = Path.Combine(TestPaths.BundledPackagePath, "OptiScaler.dll");
         string computedHash = XtrPackagingValidatorContract.ComputeSha256Hex(optiscalerPath);
