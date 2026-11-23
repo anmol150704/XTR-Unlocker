@@ -67,7 +67,7 @@ public sealed class RuntimePackLicense
 /// </summary>
 public sealed class RuntimePack
 {
-    public const int CurrentSchemaVersion = 2;
+    public const int CurrentSchemaVersion = 3;
 
     [JsonPropertyName("schemaVersion")]
     public int SchemaVersion { get; set; } = CurrentSchemaVersion;

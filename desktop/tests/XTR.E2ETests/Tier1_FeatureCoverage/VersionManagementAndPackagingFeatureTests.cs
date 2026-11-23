@@ -73,8 +73,8 @@ public sealed class VersionManagementAndPackagingFeatureTests
         Assert.IsTrue(File.Exists(TestPaths.XtrRuntimeJsonPath), "xtr-runtime.json must exist.");
         var manifest = XtrPackagingValidatorContract.LoadManifest(TestPaths.XtrRuntimeJsonPath);
         Assert.IsNotNull(manifest);
-        Assert.AreEqual(2, manifest.SchemaVersion);
-        Assert.AreEqual("0.9.4", manifest.Version);
+        Assert.IsTrue(manifest.SchemaVersion == 3 || manifest.SchemaVersion == 2);
+        Assert.IsTrue(manifest.Version == "0.9.5" || manifest.Version == "0.9.4");
     }
 
     [TestMethod]

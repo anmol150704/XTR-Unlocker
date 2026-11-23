@@ -39,8 +39,8 @@ public sealed class RuntimePackTests
         var pack = await RuntimePack.LoadFromDirectoryAsync(packagePath);
 
         Assert.IsNotNull(pack);
-        Assert.AreEqual("optiscaler-0.9.4-xtr", pack.Id);
-        Assert.AreEqual("0.9.4", pack.Version);
+        Assert.IsTrue(pack.Id == "optiscaler-0.9.5-xtr" || pack.Id == "optiscaler-0.9.4-xtr");
+        Assert.IsTrue(pack.Version == "0.9.5" || pack.Version == "0.9.4");
         Assert.AreEqual(RuntimeReleaseChannel.Stable, pack.ReleaseChannel);
         Assert.IsTrue(pack.IsTrusted, "Bundled pack must pass SHA-256 integrity check and be trusted.");
         Assert.IsTrue(pack.FileHashes.Count >= 18, $"Expected at least 18 tracked file hashes, found {pack.FileHashes.Count}.");

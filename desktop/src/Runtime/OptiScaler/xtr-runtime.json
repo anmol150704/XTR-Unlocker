@@ -1,15 +1,16 @@
 {
-    "schemaVersion":  2,
-    "id":  "optiscaler-0.9.4-xtr",
-    "displayName":  "OptiScaler 0.9.4 Baseline",
-    "version":  "0.9.4",
-    "sourceUrl":  "https://github.com/optiscaler/OptiScaler/releases/tag/v0.9.4",
-    "releaseDate":  "2024-09-01T00:00:00Z",
+    "schemaVersion":  3,
+    "id":  "optiscaler-0.9.5-xtr",
+    "displayName":  "OptiScaler 0.9.5 Production Bundle",
+    "version":  "0.9.5",
+    "sourceUrl":  "https://github.com/optiscaler/OptiScaler/releases/tag/v0.9.5",
+    "releaseDate":  "2024-11-20T00:00:00Z",
     "releaseChannel":  "Stable",
     "components":  [
                        "OptiScaler engine",
                        "FSR and XeSS providers",
-                       "DLSSG-to-FSR3 bridge"
+                       "DLSSG-to-FSR3 bridge",
+                       "DirectX Agility SDK runtime"
                    ],
     "supportedApis":  [
                           "DX11",
@@ -17,7 +18,7 @@
                           "Vulkan"
                       ],
     "supportedGpuFamilies":  [
-                                 "NVIDIA RTX 20/30/40",
+                                 "NVIDIA RTX 20/30/40/50",
                                  "AMD RDNA",
                                  "Intel Arc"
                              ],
@@ -34,9 +35,9 @@
     "configurationSchema":  "optiscaler-ini-v1",
     "capabilities":  {
                          "dlssUpdate":  true,
-                         "dlssFrameGeneration":  false,
-                         "multiFrameGeneration":  false,
-                         "dlssNeuralRendering":  false,
+                         "dlssFrameGeneration":  true,
+                         "multiFrameGeneration":  true,
+                         "dlssNeuralRendering":  true,
                          "fsrXeSsFallback":  true
                      },
     "fileHashes":  [
@@ -103,7 +104,7 @@
                        {
                            "path":  "OptiScaler.ini",
                            "sha256":  "30e5eb6f6a5e64862ca27e3251781c76f2f21af9ded73c9fd5b6fa0802574265",
-                           "sizeBytes":  47410
+                           "sizeBytes":  47412
                        },
                        {
                            "path":  "D3D12_Optiscaler/D3D12Core.dll",
@@ -148,5 +149,5 @@
                          "notice":  "Intel XeSS Community License"
                      }
                  ],
-    "notes":  "Baseline official OptiScaler engine bundle. Safe and verified across DirectX 11, 12, and Vulkan games."
+    "notes":  "OptiScaler 0.9.5 production release bundle with XeSS 3.0, FSR 2.4/3.1, and DirectX 12 Agility SDK integration."
 }

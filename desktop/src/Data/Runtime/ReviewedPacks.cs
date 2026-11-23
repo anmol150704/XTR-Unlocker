@@ -9,7 +9,7 @@ namespace DLSS_Swapper.Data.Runtime;
 /// </summary>
 public static class ReviewedPacks
 {
-    public const string BaselineOptiScalerId = "optiscaler-0.9.4-xtr";
+    public const string BaselineOptiScalerId = "optiscaler-0.9.5-xtr";
     public const string DlssUnlockedId = "dlss-unlocked-0.9.72-xtr";
 
     public static RuntimePack CreateDlssUnlockedDescriptor(string? packageRoot = null)

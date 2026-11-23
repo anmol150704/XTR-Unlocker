@@ -290,7 +290,9 @@ public partial class XtrStudioPageModel : ObservableObject
                         try
                         {
                             var plan = await DeploymentPlanner.CreatePlanAsync(game.ID, game.Title, game.InstallPath, pack, RuntimeIntegrationPreset.TurboBoost, cancellationToken: ct);
-                            var manifest = await RuntimeInstallService.InstallPlanAsync(plan, ct);
+                            var manifest = game.RuntimeManifest is not null
+                                ? await RuntimeInstallService.UpgradePlanAsync(plan, ct)
+                                : await RuntimeInstallService.InstallPlanAsync(plan, ct);
                             await game.SaveRuntimeManifestAsync(manifest);
                             Interlocked.Increment(ref count);
                         }

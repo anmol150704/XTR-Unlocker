@@ -132,6 +132,295 @@ internal static class RuntimeInstallService
         }
     }
 
+    internal static async Task<RuntimeInstallManifest> UpgradePlanAsync(
+        DeploymentPlan plan,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(plan);
+        if (!plan.CanExecute)
+            throw new InvalidOperationException($"Cannot execute deployment plan: {plan.Summary}");
+
+        var gameLock = GameLocks.GetOrAdd(plan.GameId, static _ => new SemaphoreSlim(1, 1));
+        await gameLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            return await UpgradeCoreAsync(plan, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            gameLock.Release();
+        }
+    }
+
+    private static async Task<RuntimeInstallManifest> UpgradeCoreAsync(
+        DeploymentPlan plan,
+        CancellationToken cancellationToken)
+    {
+        var gameId = plan.GameId;
+        var gameRoot = plan.GameRoot;
+        var packageRoot = plan.Pack.PackageRoot ?? throw new InvalidOperationException("Package root is missing from plan.");
+        var proxyName = plan.SelectedProxy;
+
+        if (!ProxyNames.Contains(proxyName))
+            throw new InvalidDataException("Choose a supported OptiScaler proxy filename.");
+
+        var root = NormalizeExistingDirectory(gameRoot, "The game install folder could not be found.");
+        var package = NormalizeExistingDirectory(packageRoot, "The selected OptiScaler package folder could not be found.");
+
+        var existingManifest = await RuntimeInstallManifestStore.LoadAsync(gameId, cancellationToken).ConfigureAwait(false)
+            ?? throw new InvalidOperationException("XTR has no runtime install record for this game to upgrade. Install first.");
+
+        if (!PathEquals(root, existingManifest.InstallRoot))
+            throw new InvalidOperationException("The game's install folder changed since the runtime was installed. Refresh the game library before upgrading.");
+
+        var runtimeDll = Path.Combine(package, "OptiScaler.dll");
+        var runtimeIni = Path.Combine(package, "OptiScaler.ini");
+        if (!File.Exists(runtimeDll) || !File.Exists(runtimeIni))
+            throw new InvalidDataException("Select an extracted OptiScaler release folder containing OptiScaler.dll and OptiScaler.ini.");
+
+        var sourceFiles = EnumeratePackageFiles(package, proxyName);
+        var bundleMetadata = await RuntimeBundleMetadata.LoadAsync(package, cancellationToken).ConfigureAwait(false);
+        var backupRoot = Storage.GetRuntimeBackupsPath(gameId);
+        Directory.CreateDirectory(backupRoot);
+
+        // Keep mapping of original backups from previous manifest!
+        // CRITICAL INVARIANT: NEVER OVERWRITE ORIGINAL STOCK BACKUPS
+        var existingBackupsByRelativePath = new Dictionary<string, (string? BackupPath, string? OriginalSha256)>(StringComparer.OrdinalIgnoreCase);
+        foreach (var file in existingManifest.Files)
+        {
+            existingBackupsByRelativePath[file.RelativePath] = (file.OriginalBackupPath, file.OriginalSha256);
+        }
+
+        var newBackupSessionId = Guid.NewGuid().ToString("N");
+
+        var updatedManifest = new RuntimeInstallManifest
+        {
+            GameId = gameId,
+            RuntimeId = bundleMetadata?.Id ?? plan.Pack.Id ?? RuntimeId,
+            RuntimeVersion = bundleMetadata?.Version ?? plan.Pack.Version ?? FileVersionInfo.GetVersionInfo(runtimeDll).ProductVersion ?? "unknown",
+            ProxyFileName = proxyName,
+            InstallRoot = root,
+            InstalledUtc = DateTimeOffset.UtcNow,
+        };
+
+        if (bundleMetadata is not null)
+            updatedManifest.Components.AddRange(bundleMetadata.Components.Where(component => !string.IsNullOrWhiteSpace(component)));
+        if (updatedManifest.Components.Count == 0)
+            updatedManifest.Components.Add("OptiScaler engine");
+
+        var packageRelativePaths = sourceFiles.Select(file => file.Item2).ToArray();
+        if (packageRelativePaths.Any(path => path.Contains("dlssg_sm86", StringComparison.OrdinalIgnoreCase)))
+            updatedManifest.Components.Add("RTX 20/30 frame-generation unlocker");
+        if (packageRelativePaths.Any(path => path.Contains("dlss-enabler-headless", StringComparison.OrdinalIgnoreCase)))
+            updatedManifest.Components.Add("DLSS Enabler companion");
+        if (packageRelativePaths.Any(path => path.StartsWith("OptiScaler/streamline/", StringComparison.OrdinalIgnoreCase)))
+            updatedManifest.Components.Add("Streamline bridge");
+        if (packageRelativePaths.Any(path => path.Contains("dlssg_to_fsr3", StringComparison.OrdinalIgnoreCase)))
+            updatedManifest.Components.Add("DLSSG to FSR3 bridge");
+        updatedManifest.Components = updatedManifest.Components
+            .Where(component => !string.IsNullOrWhiteSpace(component))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var stagingRoot = Path.Combine(Storage.GetTemp(), "runtime-upgrade", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(stagingRoot);
+
+        // Track rollback copies of currently deployed files so that any mid-flight failure can be restored
+        var rollbackFiles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var committed = new List<RuntimeOwnedFile>();
+
+        try
+        {
+            // Stage new package files
+            foreach (var (sourcePath, relativePath) in sourceFiles)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var stagedPath = ResolveBeneath(stagingRoot, relativePath);
+                Directory.CreateDirectory(Path.GetDirectoryName(stagedPath)!);
+                File.Copy(sourcePath, stagedPath, overwrite: false);
+
+                var destinationPath = ResolveBeneath(root, relativePath);
+                EnsureNoReparsePoints(root, relativePath);
+
+                var entry = new RuntimeOwnedFile
+                {
+                    RelativePath = relativePath,
+                    InstalledSha256 = await HashFileAsync(stagedPath, cancellationToken).ConfigureAwait(false),
+                };
+
+                if (existingBackupsByRelativePath.TryGetValue(relativePath, out var existingBackup))
+                {
+                    // This file was already managed by XTR in the existing installation!
+                    // If it had an original backup, preserve that original backup.
+                    // If it didn't have a backup, it was introduced by XTR and has NO original backup.
+                    entry.OriginalBackupPath = existingBackup.BackupPath;
+                    entry.OriginalSha256 = existingBackup.OriginalSha256;
+                }
+                else if (File.Exists(destinationPath))
+                {
+                    // A newly introduced file in this pack was already in the game folder (not previously deployed by XTR)
+                    var originalHash = await HashFileAsync(destinationPath, cancellationToken).ConfigureAwait(false);
+                    var backupRelativePath = Path.Combine(newBackupSessionId, relativePath);
+                    var backupPath = ResolveBeneath(backupRoot, backupRelativePath);
+                    Directory.CreateDirectory(Path.GetDirectoryName(backupPath)!);
+                    File.Copy(destinationPath, backupPath, overwrite: false);
+                    entry.OriginalBackupPath = backupRelativePath.Replace(Path.DirectorySeparatorChar, '/');
+                    entry.OriginalSha256 = originalHash;
+                }
+
+                updatedManifest.Files.Add(entry);
+            }
+
+            // Merge OptiScaler.ini: preserve user configurations, apply plan modifications
+            var targetIniPath = Path.Combine(root, "OptiScaler.ini");
+            var stagedIniPath = ResolveBeneath(stagingRoot, "OptiScaler.ini");
+            if (File.Exists(targetIniPath) && File.Exists(stagedIniPath))
+            {
+                var stagedIniText = await File.ReadAllTextAsync(stagedIniPath, cancellationToken).ConfigureAwait(false);
+
+                if (plan.PlannedConfigModifications.Count > 0)
+                {
+                    stagedIniText = RuntimeConfigService.ReplaceIniValues(stagedIniText, plan.PlannedConfigModifications);
+                }
+
+                await File.WriteAllTextAsync(stagedIniPath, stagedIniText, cancellationToken).ConfigureAwait(false);
+
+                var iniEntry = updatedManifest.Files.FirstOrDefault(f => string.Equals(f.RelativePath, "OptiScaler.ini", StringComparison.OrdinalIgnoreCase));
+                if (iniEntry != null)
+                {
+                    iniEntry.InstalledSha256 = await HashFileAsync(stagedIniPath, cancellationToken).ConfigureAwait(false);
+                }
+            }
+
+            // Atomic deployment of upgraded files
+            foreach (var entry in updatedManifest.Files)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var stagedPath = ResolveBeneath(stagingRoot, entry.RelativePath);
+                var destinationPath = ResolveBeneath(root, entry.RelativePath);
+                Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+
+                if (File.Exists(destinationPath))
+                {
+                    var rollbackStash = Path.Combine(stagingRoot, "rollback_" + Guid.NewGuid().ToString("N"));
+                    File.Copy(destinationPath, rollbackStash, overwrite: false);
+                    rollbackFiles[destinationPath] = rollbackStash;
+                }
+
+                var temporaryDestination = destinationPath + $".{Guid.NewGuid():N}.xtrtmp";
+                try
+                {
+                    File.Copy(stagedPath, temporaryDestination, overwrite: false);
+                    if (File.Exists(destinationPath))
+                        File.Replace(temporaryDestination, destinationPath, null, ignoreMetadataErrors: true);
+                    else
+                        File.Move(temporaryDestination, destinationPath);
+
+                    committed.Add(entry);
+                }
+                finally
+                {
+                    TryDeleteFile(temporaryDestination);
+                }
+            }
+
+            await RuntimeInstallManifestStore.SaveAsync(updatedManifest, cancellationToken).ConfigureAwait(false);
+
+            // Update Integration Profile
+            if (plan.PlannedConfigModifications.Count > 0)
+            {
+                var profile = await RuntimeIntegrationProfileStore.LoadAsync(gameId, cancellationToken).ConfigureAwait(false)
+                    ?? new RuntimeIntegrationProfile
+                    {
+                        GameId = plan.GameId,
+                        Api = plan.PreflightResult.DetectedApi,
+                        SupportState = plan.Pack.IsTrusted ? "supported" : "experimental",
+                        SupportReason = plan.Summary
+                    };
+
+                profile.RuntimeId = updatedManifest.RuntimeId;
+                profile.RuntimeVersion = updatedManifest.RuntimeVersion;
+                profile.ProxyFileName = updatedManifest.ProxyFileName ?? plan.SelectedProxy;
+
+                foreach (var mod in plan.PlannedConfigModifications)
+                {
+                    if (mod.Section.Equals("Upscalers", StringComparison.OrdinalIgnoreCase))
+                    {
+                        profile.SelectedUpscaler = mod.Value;
+                    }
+                    else if (mod.Section.Equals("FrameGen", StringComparison.OrdinalIgnoreCase) && mod.Key.Equals("Enabled", StringComparison.OrdinalIgnoreCase))
+                    {
+                        profile.FrameGenerationEnabled = mod.Value;
+                    }
+                    else if (mod.Section.Equals("FrameGen", StringComparison.OrdinalIgnoreCase) && mod.Key.Equals("FGInput", StringComparison.OrdinalIgnoreCase))
+                    {
+                        profile.FrameGenerationInput = mod.Value;
+                    }
+                    else if (mod.Section.Equals("FrameGen", StringComparison.OrdinalIgnoreCase) && mod.Key.Equals("FGOutput", StringComparison.OrdinalIgnoreCase))
+                    {
+                        profile.FrameGenerationOutput = mod.Value;
+                    }
+                }
+
+                if (plan.Preset == RuntimeIntegrationPreset.TurboBoost)
+                {
+                    profile.Options["Preset"] = "TurboBoost";
+                }
+                else if (plan.Preset == RuntimeIntegrationPreset.NativeDlssG)
+                {
+                    profile.Options["Preset"] = "NativeDlssG";
+                }
+                else if (plan.Preset == RuntimeIntegrationPreset.DlssWithFrameGeneration)
+                {
+                    profile.Options["Preset"] = "DlssWithFrameGeneration";
+                }
+                else if (plan.Preset == RuntimeIntegrationPreset.LatestDlssOnly)
+                {
+                    profile.Options["Preset"] = "LatestDlssOnly";
+                }
+
+                await RuntimeIntegrationProfileStore.SaveAsync(profile, cancellationToken).ConfigureAwait(false);
+            }
+
+            return updatedManifest;
+        }
+        catch (Exception upgradeError)
+        {
+            if (upgradeError is InvalidOperationException or InvalidDataException or OperationCanceledException)
+            {
+                throw;
+            }
+
+            // Roll back to previous state
+            foreach (var (dest, stash) in rollbackFiles)
+            {
+                try
+                {
+                    if (File.Exists(stash))
+                    {
+                        File.Copy(stash, dest, overwrite: true);
+                    }
+                }
+                catch { }
+            }
+
+            foreach (var comm in committed)
+            {
+                var dest = ResolveBeneath(root, comm.RelativePath);
+                if (!rollbackFiles.ContainsKey(dest))
+                {
+                    TryDeleteFile(dest);
+                }
+            }
+
+            throw new IOException("XTR runtime upgrade failed and was rolled back to previous state.", upgradeError);
+        }
+        finally
+        {
+            TryDeleteDirectory(stagingRoot);
+        }
+    }
+
     private static async Task<RuntimeInstallManifest> InstallCoreAsync(
         string gameId,
         string gameRoot,

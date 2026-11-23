@@ -1058,10 +1058,11 @@ public partial class GameControlModel : ObservableObject
         };
         planPanel.Children.Add(detailsExpander);
 
+        bool isUpgrade = Game.RuntimeManifest is not null;
         var dialog = new EasyContentDialog(gameControl.XamlRoot)
         {
-            Title = dialogTitle,
-            PrimaryButtonText = "Install runtime",
+            Title = isUpgrade ? $"Upgrade runtime: {pack.DisplayName}" : dialogTitle,
+            PrimaryButtonText = isUpgrade ? "Upgrade runtime" : "Install runtime",
             CloseButtonText = "Cancel",
             DefaultButton = ContentDialogButton.Primary,
             Content = planPanel
@@ -1075,7 +1076,9 @@ public partial class GameControlModel : ObservableObject
 
         try
         {
-            var manifest = await RuntimeInstallService.InstallPlanAsync(plan);
+            var manifest = isUpgrade
+                ? await RuntimeInstallService.UpgradePlanAsync(plan)
+                : await RuntimeInstallService.InstallPlanAsync(plan);
             await Game.SaveRuntimeManifestAsync(manifest);
             var profile = await RuntimeIntegrationProfileStore.LoadAsync(Game.ID);
             if (profile is not null)
@@ -1084,13 +1087,13 @@ public partial class GameControlModel : ObservableObject
             }
             InitializeDeployedSettings();
             RefreshDiagnostics();
-            await ShowRuntimeDialogAsync("Runtime installed", $"{pack.DisplayName} is active for {Game.Title}. Reversible backups recorded.");
+            await ShowRuntimeDialogAsync(isUpgrade ? "Runtime upgraded" : "Runtime installed", $"{pack.DisplayName} is active for {Game.Title}. Reversible backups recorded.");
             return true;
         }
         catch (Exception ex)
         {
             Logger.Error(ex);
-            await ShowRuntimeDialogAsync("Install failed", ex.Message);
+            await ShowRuntimeDialogAsync(isUpgrade ? "Upgrade failed" : "Install failed", ex.Message);
             return false;
         }
     }
