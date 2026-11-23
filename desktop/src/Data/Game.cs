@@ -5,7 +5,6 @@ using DLSS_Swapper.Interfaces;
 using DLSS_Swapper.Data.Runtime;
 using DLSS_Swapper.UserControls;
 using Microsoft.UI.Xaml.Controls;
-using NvAPIWrapper.DRS;
 using SQLite;
 using SkiaSharp;
 using System;
@@ -58,7 +57,7 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
     public partial uint? DlssGPreset { get; set; }
 
     [Ignore]
-    public DriverSettingsProfile? DriverSettingsProfile { get; set; }
+    public NativeDrsProfile? DriverSettingsProfile { get; set; }
 
     /*
     [ObservableProperty]

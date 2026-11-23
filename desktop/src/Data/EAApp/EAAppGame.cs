@@ -1,8 +1,9 @@
 using System;
-using System.Drawing;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using DLSS_Swapper.Interfaces;
+using SkiaSharp;
 using SQLite;
 using Windows.Win32;
 
@@ -85,26 +86,21 @@ internal class EAAppGame : Game
 
                         if (shinfo.hIcon != IntPtr.Zero)
                         {
-                            using (var icon = Icon.FromHandle(shinfo.hIcon))
+                            try
                             {
-                                if (icon is null)
+                                using var skBitmap = ExtractHIconToBitmap((IntPtr)shinfo.hIcon);
+                                if (skBitmap is not null)
                                 {
-                                    return;
-                                }
-
-                                using (var bitmap = icon.ToBitmap())
-                                {
-                                    if (bitmap is null)
-                                    {
-                                        return;
-                                    }
-
-                                    bitmap.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
+                                    using var image = SKImage.FromBitmap(skBitmap);
+                                    using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+                                    data?.SaveTo(memoryStream);
                                     memoryStream.Seek(0, SeekOrigin.Begin);
-
                                 }
                             }
-                            PInvoke.DestroyIcon(shinfo.hIcon);
+                            finally
+                            {
+                                PInvoke.DestroyIcon(shinfo.hIcon);
+                            }
                         }
                         else
                         {
@@ -140,6 +136,160 @@ internal class EAAppGame : Game
         else
         {
             Logger.Error($"Unknown extension {extension} for DisplayIconPath {DisplayIconPath} in game {Title}");
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct ICONINFO
+    {
+        public bool fIcon;
+        public int xHotspot;
+        public int yHotspot;
+        public IntPtr hbmMask;
+        public IntPtr hbmColor;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct BITMAP
+    {
+        public int bmType;
+        public int bmWidth;
+        public int bmHeight;
+        public int bmWidthBytes;
+        public ushort bmPlanes;
+        public ushort bmBitsPixel;
+        public IntPtr bmBits;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct BITMAPINFOHEADER
+    {
+        public uint biSize;
+        public int biWidth;
+        public int biHeight;
+        public ushort biPlanes;
+        public ushort biBitCount;
+        public uint biCompression;
+        public uint biSizeImage;
+        public int biXPelsPerMeter;
+        public int biYPelsPerMeter;
+        public uint biClrUsed;
+        public uint biClrImportant;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct BITMAPINFO
+    {
+        public BITMAPINFOHEADER bmiHeader;
+        public uint bmiColors;
+    }
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetIconInfo(IntPtr hIcon, out ICONINFO piconinfo);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern IntPtr GetDC(IntPtr hWnd);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
+
+    [DllImport("gdi32.dll", SetLastError = true)]
+    private static extern int GetObject(IntPtr hgdiobj, int cbBuffer, out BITMAP lpvObject);
+
+    [DllImport("gdi32.dll", SetLastError = true)]
+    private static extern int GetDIBits(IntPtr hdc, IntPtr hbmp, uint uStartScan, uint cScanLines, IntPtr lpvBits, ref BITMAPINFO lpbi, uint uUsage);
+
+    [DllImport("gdi32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool DeleteObject(IntPtr hObject);
+
+    private static SKBitmap? ExtractHIconToBitmap(IntPtr hIcon)
+    {
+        if (hIcon == IntPtr.Zero)
+        {
+            return null;
+        }
+
+        if (!GetIconInfo(hIcon, out var iconInfo))
+        {
+            return null;
+        }
+
+        try
+        {
+            if (iconInfo.hbmColor == IntPtr.Zero)
+            {
+                return null;
+            }
+
+            if (GetObject(iconInfo.hbmColor, Marshal.SizeOf<BITMAP>(), out var bmp) == 0)
+            {
+                return null;
+            }
+
+            var width = bmp.bmWidth;
+            var height = bmp.bmHeight;
+            if (width <= 0 || height <= 0)
+            {
+                return null;
+            }
+
+            var skBitmap = new SKBitmap(new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Premul));
+            var hdc = GetDC(IntPtr.Zero);
+            if (hdc == IntPtr.Zero)
+            {
+                skBitmap.Dispose();
+                return null;
+            }
+
+            try
+            {
+                var bmi = new BITMAPINFO
+                {
+                    bmiHeader = new BITMAPINFOHEADER
+                    {
+                        biSize = (uint)Marshal.SizeOf<BITMAPINFOHEADER>(),
+                        biWidth = width,
+                        biHeight = -height, // top-down
+                        biPlanes = 1,
+                        biBitCount = 32,
+                        biCompression = 0, // BI_RGB
+                    }
+                };
+
+                var linesCopied = GetDIBits(
+                    hdc,
+                    iconInfo.hbmColor,
+                    0,
+                    (uint)height,
+                    skBitmap.GetPixels(),
+                    ref bmi,
+                    0); // DIB_RGB_COLORS = 0
+
+                if (linesCopied == 0)
+                {
+                    skBitmap.Dispose();
+                    return null;
+                }
+
+                return skBitmap;
+            }
+            finally
+            {
+                ReleaseDC(IntPtr.Zero, hdc);
+            }
+        }
+        finally
+        {
+            if (iconInfo.hbmColor != IntPtr.Zero)
+            {
+                DeleteObject(iconInfo.hbmColor);
+            }
+            if (iconInfo.hbmMask != IntPtr.Zero)
+            {
+                DeleteObject(iconInfo.hbmMask);
+            }
         }
     }
 }

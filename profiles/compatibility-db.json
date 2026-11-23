@@ -1,0 +1,302 @@
+{
+  "schemaVersion": 1,
+  "lastUpdated": "2026-11-23T12:00:00Z",
+  "profiles": [
+    {
+      "title": "Cyberpunk 2077",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": true,
+      "notes": "Full native Streamline and DLSS Frame Generation support on DX12."
+    },
+    {
+      "title": "Forza Horizon 5",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "version.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": true,
+      "notes": "ForzaTech virtual texture streaming. Requires version.dll proxy and native Streamline passthrough."
+    },
+    {
+      "title": "Forza Horizon 6",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "version.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": true,
+      "notes": "Next-gen ForzaTech virtual texture streaming. Requires version.dll proxy and zero-overhead native Streamline passthrough."
+    },
+    {
+      "title": "The Witcher 3: Wild Hunt",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": true,
+      "notes": "DX12 executable (witcher3.exe) supports DLSS Frame Generation."
+    },
+    {
+      "title": "Marvel's Spider-Man Remastered",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": true,
+      "notes": "Native DLSS 3 Frame Generation supported."
+    },
+    {
+      "title": "Marvel's Spider-Man 2",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": true,
+      "notes": "Native DLSS 3.7+ and FSR 3.1 frame generation supported."
+    },
+    {
+      "title": "Alan Wake 2",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": true,
+      "notes": "Northlight Engine mesh shaders. Full DLSS 3.5 Ray Reconstruction and Frame Generation."
+    },
+    {
+      "title": "Black Myth: Wukong",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": true,
+      "notes": "Unreal Engine 5. Full DLSS 3 Frame Generation and Full Ray Tracing support."
+    },
+    {
+      "title": "Starfield",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": true,
+      "notes": "Creation Engine 2. Native DLSS 3 Frame Generation."
+    },
+    {
+      "title": "Indiana Jones and the Great Circle",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": true,
+      "notes": "id Tech engine. Native DLSS 3.7+ and Full Ray Tracing."
+    },
+    {
+      "title": "S.T.A.L.K.E.R. 2: Heart of Chornobyl",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": true,
+      "notes": "Unreal Engine 5. Full DLSS 3 and FSR 3.1 Frame Generation."
+    },
+    {
+      "title": "Monster Hunter Wilds",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": true,
+      "notes": "RE Engine. Native DLSS Frame Generation supported."
+    },
+    {
+      "title": "Baldur's Gate 3",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX11",
+      "supportsNativeFrameGen": false,
+      "notes": "DirectX 11 and Vulkan supported. DLSS 2 Super Resolution."
+    },
+    {
+      "title": "Hogwarts Legacy",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": true,
+      "notes": "Unreal Engine 4. Native DLSS Frame Generation."
+    },
+    {
+      "title": "Resident Evil 4",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": false,
+      "notes": "RE Engine. OptiScaler FSR 3.1 injection unlocks upscaling."
+    },
+    {
+      "title": "Dead Space",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": false,
+      "notes": "Frostbite engine. DLSS 2 Super Resolution."
+    },
+    {
+      "title": "Dying Light 2 Stay Human",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": true,
+      "notes": "C-Engine. Full DLSS 3 Frame Generation supported."
+    },
+    {
+      "title": "Returnal",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": true,
+      "notes": "Unreal Engine 4. DLSS 3 Frame Generation."
+    },
+    {
+      "title": "Ghost of Tsushima Director's Cut",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": true,
+      "notes": "Native DLSS 3 and FSR 3 Frame Generation supported."
+    },
+    {
+      "title": "God of War Ragnarok",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": true,
+      "notes": "Native DLSS 3.7 Frame Generation supported."
+    },
+    {
+      "title": "Horizon Forbidden West",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": true,
+      "notes": "Decima Engine. Full DLSS 3 Frame Generation."
+    },
+    {
+      "title": "Dragon's Dogma 2",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": true,
+      "notes": "RE Engine. Native DLSS 3 Frame Generation."
+    },
+    {
+      "title": "Diablo IV",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": true,
+      "notes": "Full DLSS 3 Frame Generation and Ray Tracing."
+    },
+    {
+      "title": "Remnant II",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": true,
+      "notes": "Unreal Engine 5. Native DLSS 3 Frame Generation."
+    },
+    {
+      "title": "Lords of the Fallen",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": true,
+      "notes": "Unreal Engine 5. DLSS 3 Frame Generation."
+    },
+    {
+      "title": "Lies of P",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": false,
+      "notes": "Unreal Engine 4. Ultra-smooth DLSS 2 implementation."
+    },
+    {
+      "title": "Final Fantasy XVI",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": true,
+      "notes": "Native DLSS 3 Frame Generation."
+    },
+    {
+      "title": "Red Dead Redemption 2",
+      "level": "VerifiedCompatible",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "Vulkan",
+      "supportsNativeFrameGen": false,
+      "notes": "Vulkan and DX12 supported. DLSS 2 Super Resolution."
+    },
+    {
+      "title": "Elden Ring",
+      "level": "CommunityTested",
+      "recommendedProxy": "dxgi.dll",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": false,
+      "notes": "Easy Anti-Cheat must be disabled for offline modding before injecting proxies."
+    },
+    {
+      "title": "Apex Legends",
+      "level": "MultiplayerBlocked",
+      "recommendedProxy": "none",
+      "recommendedApi": "DX11",
+      "supportsNativeFrameGen": false,
+      "notes": "Multiplayer game protected by Easy Anti-Cheat. DLL proxy injection blocked for safety."
+    },
+    {
+      "title": "VALORANT",
+      "level": "MultiplayerBlocked",
+      "recommendedProxy": "none",
+      "recommendedApi": "DX11",
+      "supportsNativeFrameGen": false,
+      "notes": "Kernel-level Vanguard anti-cheat active. Proxy DLL injection blocked for account safety."
+    },
+    {
+      "title": "Destiny 2",
+      "level": "MultiplayerBlocked",
+      "recommendedProxy": "none",
+      "recommendedApi": "DX11",
+      "supportsNativeFrameGen": false,
+      "notes": "BattlEye anti-cheat active. Proxy DLL injection blocked for safety."
+    },
+    {
+      "title": "Tom Clancy's Rainbow Six Siege",
+      "level": "MultiplayerBlocked",
+      "recommendedProxy": "none",
+      "recommendedApi": "DX11",
+      "supportsNativeFrameGen": false,
+      "notes": "BattlEye anti-cheat active. Proxy injection blocked."
+    },
+    {
+      "title": "Fortnite",
+      "level": "MultiplayerBlocked",
+      "recommendedProxy": "none",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": false,
+      "notes": "BattlEye / Easy Anti-Cheat active. Proxy injection blocked."
+    },
+    {
+      "title": "Call of Duty: Warzone",
+      "level": "MultiplayerBlocked",
+      "recommendedProxy": "none",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": false,
+      "notes": "RICOCHET kernel anti-cheat active. Proxy injection blocked."
+    },
+    {
+      "title": "Counter-Strike 2",
+      "level": "MultiplayerBlocked",
+      "recommendedProxy": "none",
+      "recommendedApi": "Vulkan",
+      "supportsNativeFrameGen": false,
+      "notes": "VAC anti-cheat active. Proxy injection blocked for account safety."
+    },
+    {
+      "title": "Helldivers 2",
+      "level": "MultiplayerBlocked",
+      "recommendedProxy": "none",
+      "recommendedApi": "DX12",
+      "supportsNativeFrameGen": false,
+      "notes": "nProtect GameGuard active. Proxy injection blocked."
+    }
+  ]
+}

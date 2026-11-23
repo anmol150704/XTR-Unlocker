@@ -76,32 +76,14 @@ public sealed partial class TranslationToolboxWindow : Window
                 }
                 else
                 {
-                    var currentColumn = MainDataGrid.CurrentColumn;
                     var currentRowIndex = MainDataGrid.SelectedIndex;
                     var newRowIndex = currentRowIndex + 1;
                     if (newRowIndex < ViewModel.TranslationRows.Count)
                     {
-                        // TODO: Ensure we don't crahs of teh end
                         MainDataGrid.SelectedIndex = newRowIndex;
-                        MainDataGrid.CurrentColumn = currentColumn;
-
-                        MainDataGrid.ScrollIntoView(ViewModel.TranslationRows[newRowIndex], currentColumn);
-
+                        MainDataGrid.ScrollIntoView(ViewModel.TranslationRows[newRowIndex]);
                         MainDataGrid.Focus(FocusState.Programmatic);
-                        MainDataGrid.BeginEdit();
                     }
-                    else
-                    {
-                        // We are at the end, remove focus.
-                        //BottomStackPanel.Focus(FocusState.Programmatic);
-                    }
-
-                    //textBox.Focus(FocusState.Unfocused);
-                    //FocusManager.TryMoveFocus(FocusNavigationDirection.Next, );
-                    // (FocusState.Unfocused);
-                    //control.Focus(FocusState.Unfocused); // Optionally, you can use FocusManager.TryMoveFocus
-                    //OtherTextBox.Focus(FocusState.Programmatic); // Move focus to another TextBox
-                    //FocusManager.TryMoveFocus(FocusNavigationDirection.Next);
                     e.Handled = true;
                 }
             }
