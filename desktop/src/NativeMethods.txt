@@ -14,3 +14,15 @@ DXGI_ADAPTER_DESC1
 DXGI_QUERY_VIDEO_MEMORY_INFO
 SHOpenFolderAndSelectItems
 SetProcessWorkingSetSizeEx
+GetCurrentProcess
+Shell_NotifyIconW
+NOTIFYICONDATAW
+CreatePopupMenu
+AppendMenuW
+DestroyMenu
+TrackPopupMenu
+GetCursorPos
+SetForegroundWindow
+PostMessageW
+QueryPerformanceCounter
+QueryPerformanceFrequency
