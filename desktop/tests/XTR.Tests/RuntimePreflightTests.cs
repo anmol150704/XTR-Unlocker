@@ -86,9 +86,16 @@ public sealed class RuntimePreflightTests
             var result = await RuntimePreflightService.RunPreflightAsync("test-ac-game", tempDir, pack);
 
             Assert.IsTrue(result.HasAntiCheatRisk);
-            Assert.AreEqual(PreflightStatus.NeedsAttention, result.Status);
-            Assert.AreEqual("Needs attention", result.Headline);
+            Assert.AreEqual(PreflightStatus.Blocked, result.Status);
+            Assert.IsFalse(result.CanProceed);
+            Assert.AreEqual("Anti-cheat detected", result.Headline);
             Assert.IsTrue(result.Explanation.Contains("anti-cheat", StringComparison.OrdinalIgnoreCase));
+
+            // With offline override active, user can proceed under caution (SEC-06)
+            var overrideResult = await RuntimePreflightService.RunPreflightAsync("test-ac-game", tempDir, pack, allowOfflineAntiCheatOverride: true);
+            Assert.IsTrue(overrideResult.HasAntiCheatRisk);
+            Assert.AreEqual(PreflightStatus.NeedsAttention, overrideResult.Status);
+            Assert.IsTrue(overrideResult.CanProceed);
         }
         finally
         {

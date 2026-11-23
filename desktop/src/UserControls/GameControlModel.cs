@@ -88,7 +88,9 @@ public partial class GameControlModel : ObservableObject
         "Preset F (Fast Motion & Reduced Shimmer)",
         "Preset C (Low Ghosting / High Stability)",
         "Preset D (Classic DLSS 2.5 Profile)",
-        "Preset J (Transformer Model)"
+        "Preset J (Transformer Model)",
+        "Preset K (DLSS 4 / 4.5 Ultra-Low Latency Transformer)",
+        "Preset M (DLSS 4.5 FP8 Optical Transformer)"
     };
 
     public IReadOnlyList<string> AvailableOverlayPositions { get; } = new[]
@@ -478,76 +480,32 @@ public partial class GameControlModel : ObservableObject
             if (string.IsNullOrEmpty(root) || !Directory.Exists(root))
                 return;
 
-            var settings = new List<(string Section, string Key, string Value)>();
-            settings.Add(("Upscalers", "Dx12Upscaler", "dlss"));
-            settings.Add(("Upscalers", "Dx11Upscaler", "dlss"));
-            settings.Add(("Upscalers", "VulkanUpscaler", "dlss"));
+            var packagePath = RuntimeInstallService.GetBundledPackagePath();
+            if (packagePath is null)
+                return;
 
-            settings.Add(("DLSS", "RenderPresetOverride", "true"));
-            settings.Add(("DLSS", "RenderPresetForAll", "5"));
+            var pack = await RuntimePack.LoadFromDirectoryAsync(packagePath);
+            if (pack is null)
+                return;
 
-            bool isForza = DeploymentPlanner.IsForzaOrVirtualTextureTitle(Game.Title);
-            if (!isForza)
+            var plan = await DeploymentPlanner.CreatePlanAsync(
+                Game.ID,
+                Game.Title,
+                root,
+                pack,
+                RuntimeIntegrationPreset.TurboBoost);
+
+            var settings = plan.PlannedConfigModifications
+                .Select(m => (m.Section, m.Key, m.Value))
+                .ToList();
+
+            if (plan.PlannedConfigModifications.Any(m => m.Section == "FrameGen" && m.Key == "Enabled" && m.Value == "true"))
             {
-                settings.Add(("Anisotropy", "AnisotropyOverride", "16"));
-                settings.Add(("Anisotropy", "ModifyComparison", "true"));
-                settings.Add(("Anisotropy", "ModifyMinMax", "true"));
-                settings.Add(("Anisotropy", "SkipPointFilter", "true"));
-
-                settings.Add(("Mipmap", "MipmapBiasOverride", "-0.5"));
-                settings.Add(("Mipmap", "MipmapBiasFixedOverride", "true"));
-            }
-
-            settings.Add(("Sharpness", "OverrideSharpness", "true"));
-            settings.Add(("Sharpness", "Sharpness", "0.35"));
-
-            settings.Add(("Spoofing", "StreamlineSpoofing", "true"));
-            settings.Add(("Spoofing", "SpoofHAGS", "true"));
-
-            settings.Add(("Menu", "OverlayMenu", "true"));
-            settings.Add(("Menu", "ShowFps", "true"));
-            settings.Add(("Menu", "FpsOverlayType", "2"));
-            settings.Add(("Menu", "DisableSplash", "true"));
-            settings.Add(("Menu", "ShortcutKey", "-1"));
-
-            if (string.Equals(ActiveFrameGenMode, "Native DLSS 3 Hardware FG", StringComparison.OrdinalIgnoreCase) ||
-                (Game.CurrentDLSS_G is not null && !string.Equals(ActiveFrameGenMode, "Universal FG Bridge (FSR 3.1)", StringComparison.OrdinalIgnoreCase)))
-            {
-                settings.Add(("FrameGen", "Enabled", "false"));
-                settings.Add(("FrameGen", "FGInput", "nofg"));
-                settings.Add(("FrameGen", "FGOutput", "nofg"));
-                ActiveFrameGenMode = "Native DLSS 3 Hardware FG";
+                ActiveFrameGenMode = "Universal FG Bridge (FSR 3.1)";
             }
             else
             {
-                settings.Add(("FrameGen", "Enabled", "true"));
-                settings.Add(("FrameGen", "FGInput", "dlssg"));
-                settings.Add(("FrameGen", "FGOutput", "fsrfg"));
-                settings.Add(("FrameGen", "DrawUIOverFG", "true"));
-                settings.Add(("FrameGen", "DisableUI", "false"));
-                settings.Add(("FrameGen", "DisableHudless", "false"));
-                settings.Add(("FrameGen", "ForceBorderless", "true"));
-
-                settings.Add(("OptiFG", "HUDFix", isForza ? "false" : "true"));
-                settings.Add(("OptiFG", "HUDFixExtended", isForza ? "false" : "true"));
-                settings.Add(("OptiFG", "DisableHUDFix", isForza ? "true" : "false"));
-                settings.Add(("OptiFG", "MakeDepthCopy", isForza ? "false" : "true"));
-                settings.Add(("OptiFG", "MakeMVCopy", isForza ? "false" : "true"));
-                settings.Add(("OptiFG", "HUDFixImmediate", isForza ? "false" : "true"));
-                settings.Add(("OptiFG", "AlwaysTrackHeaps", isForza ? "false" : "true"));
-                settings.Add(("OptiFG", "HUDFixRelaxedResolutionCheck", isForza ? "false" : "true"));
-                settings.Add(("InitFlags", "DisableReactiveMask", "false"));
-                settings.Add(("FSR", "UseReactiveMaskForTransparency", "true"));
-                settings.Add(("FSR", "DlssReactiveMaskBias", "0.45"));
-                settings.Add(("FSR", "ReactiveScale", "2.0"));
-                settings.Add(("FSR", "AccAddPerFrame", "0.05"));
-                settings.Add(("FSR", "MinDisOccAcc", "-0.5"));
-
-                settings.Add(("FSRFG", "FramePacingTuning", "true"));
-                settings.Add(("FSRFG", "FPTSafetyMarginInMs", "0.01"));
-                settings.Add(("FSRFG", "FPTVarianceFactor", "0.3"));
-                settings.Add(("FSRFG", "UseMutexForSwapchain", "true"));
-                ActiveFrameGenMode = "Universal FG Bridge (FSR 3.1)";
+                ActiveFrameGenMode = "Native DLSS 3 Hardware FG";
             }
 
             await RuntimeConfigService.UpdateSettingsAsync(root, settings);
@@ -561,13 +519,19 @@ public partial class GameControlModel : ObservableObject
 
             InitializeDeployedSettings();
             RefreshDiagnostics();
-            await ShowRuntimeDialogAsync("⚡ XTR Turbo Boost Activated", "Engine optimizations successfully applied:\n\n• DLSS Neural Model: Preset E (Ghosting Shield)\n• Texture Filtering: 16x Anisotropic + Mipmap LOD Bias (-0.5)\n• Low-Latency Mutex Frame Pacing\n• AI Edge Sharpening: RCAS 35%\n• In-Game Real-Time Telemetry: Active");
+            await ShowRuntimeDialogAsync("⚡ XTR Turbo Boost Activated", "Engine optimizations successfully applied:\n\n• DLSS Neural Model: Hardware-Tiered (Preset K/M)\n• Texture Filtering: 16x Anisotropic + Mipmap LOD Bias (-0.5)\n• Low-Latency Mutex Frame Pacing\n• AI Edge Sharpening: RCAS 35%\n• In-Game Real-Time Telemetry: Active");
         }
         catch (Exception ex)
         {
             Logger.Error(ex, "Failed to activate Turbo Boost");
         }
     }
+
+    [RelayCommand]
+    Task QuickSwapDlss45Async() => QuickSwapDlssCoreAsync("310.6", "310.5", "310.");
+
+    [RelayCommand]
+    Task QuickSwapDlss40Async() => QuickSwapDlssCoreAsync("310.2", "310.1", "310.0");
 
     [RelayCommand]
     Task QuickSwapDlss37Async() => QuickSwapDlssCoreAsync("3.7");
@@ -581,12 +545,12 @@ public partial class GameControlModel : ObservableObject
     [RelayCommand]
     Task OpenDlssPickerAsync() => ChangeRecordAsync(GameAssetType.DLSS);
 
-    private async Task QuickSwapDlssCoreAsync(string targetPrefix)
+    private async Task QuickSwapDlssCoreAsync(params string[] targetPrefixes)
     {
         try
         {
             var match = DLLManager.Instance.DLSSRecords
-                .Where(r => r.Version.StartsWith(targetPrefix) && r.LocalRecord?.IsDownloaded == true)
+                .Where(r => targetPrefixes.Any(p => r.Version.StartsWith(p, StringComparison.OrdinalIgnoreCase)) && r.LocalRecord?.IsDownloaded == true)
                 .OrderByDescending(r => r.VersionNumber)
                 .FirstOrDefault();
 
@@ -606,7 +570,7 @@ public partial class GameControlModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Logger.Error(ex, "Failed to quick swap DLSS to {Target}", targetPrefix);
+            Logger.Error(ex, "Failed to quick swap DLSS to {Target}", string.Join(",", targetPrefixes));
         }
     }
 
@@ -675,6 +639,8 @@ public partial class GameControlModel : ObservableObject
             {
                 SelectedEngineNeuralPreset = presetCode switch
                 {
+                    "13" => "Preset M (DLSS 4.5 FP8 Optical Transformer)",
+                    "11" => "Preset K (DLSS 4 / 4.5 Ultra-Low Latency Transformer)",
                     "5" => "Preset E (Anti-Ghosting Champion)",
                     "6" => "Preset F (Fast Motion & Reduced Shimmer)",
                     "3" => "Preset C (Low Ghosting / High Stability)",
@@ -911,6 +877,8 @@ public partial class GameControlModel : ObservableObject
     {
         var (overrideEnabled, presetVal) = preset switch
         {
+            var p when p.Contains("Preset M", StringComparison.OrdinalIgnoreCase) => ("true", "13"),
+            var p when p.Contains("Preset K", StringComparison.OrdinalIgnoreCase) => ("true", "11"),
             var p when p.Contains("Preset E", StringComparison.OrdinalIgnoreCase) => ("true", "5"),
             var p when p.Contains("Preset F", StringComparison.OrdinalIgnoreCase) => ("true", "6"),
             var p when p.Contains("Preset C", StringComparison.OrdinalIgnoreCase) => ("true", "3"),

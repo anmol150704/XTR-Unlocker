@@ -35,13 +35,13 @@ public class GpuHardwareDetectorTests
     }
 
     [TestMethod]
-    public void ClassifyGpu_Rtx2050_IdentifiesTuringWithUniversalBridgeAndSpoofing()
+    public void ClassifyGpu_Rtx2050_IdentifiesAmpereWithUniversalBridgeAndSpoofing()
     {
         var info = new GpuHardwareInfo { Name = "NVIDIA GeForce RTX 2050" };
         GpuHardwareDetector.ClassifyGpu(info);
 
         Assert.AreEqual(GpuVendor.Nvidia, info.Vendor);
-        Assert.IsTrue(info.Architecture.Contains("Turing"));
+        Assert.IsTrue(info.Architecture.Contains("Ampere"));
         Assert.IsFalse(info.SupportsNativeDlssG);
         Assert.IsTrue(info.RecommendedFgMode.Contains("Universal FG Bridge"));
         Assert.IsTrue(info.RecommendedFgMode.Contains("Streamline Spoofing"));

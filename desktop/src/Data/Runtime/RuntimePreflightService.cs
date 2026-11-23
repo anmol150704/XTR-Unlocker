@@ -67,7 +67,10 @@ public static class RuntimePreflightService
     {
         "EasyAntiCheat.exe", "EasyAntiCheat_Setup.exe", "EasyAntiCheat_EOS.exe", "EasyAntiCheat_EOS_Setup.exe",
         "BEService.exe", "BEService_x64.exe", "BattlEye.exe", "BEDaisy.sys",
-        "start_protected_game.exe", "vgc.exe", "vgk.sys", "ACE-Base.sys", "TenProtect.exe"
+        "start_protected_game.exe", "vgc.exe", "vgk.sys", "ACE-Base.sys", "TenProtect.exe",
+        "EAAntiCheat.GameServiceLauncher.exe", "EAAntiCheat.Installer.exe", "EAAntiCheat.GameService.dll",
+        "randgrid.sys", "GameGuard.des", "npggNT64.des", "x3.xem", "HoYoKProtect.sys", "mhyprot2.sys",
+        "denuvo-anti-cheat.sys", "BlackCipher64.aes"
     };
 
     public static async Task<RuntimePreflightResult> RunPreflightAsync(
@@ -76,6 +79,7 @@ public static class RuntimePreflightService
         RuntimePack pack,
         string proxyName = "dxgi.dll",
         string? gameTitle = null,
+        bool allowOfflineAntiCheatOverride = false,
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(gameId);
@@ -181,9 +185,11 @@ public static class RuntimePreflightService
             {
                 Category = "Anti-Cheat & Multiplayer",
                 Name = "Anti-cheat detection",
-                Severity = CheckItemSeverity.Warning,
+                Severity = allowOfflineAntiCheatOverride ? CheckItemSeverity.Warning : CheckItemSeverity.Failed,
                 Message = $"Anti-cheat binary detected: {Path.GetFileName(detectedAntiCheat)}",
-                Details = "Modifying runtime DLLs in multiplayer games can trigger anti-cheat bans. Use only with offline or single-player modes."
+                Details = allowOfflineAntiCheatOverride 
+                    ? "Offline single-player override active. Do NOT connect to official multiplayer servers with modified DLLs."
+                    : "Modifying runtime DLLs in multiplayer games can trigger account bans. Injection is blocked by default."
             });
         }
         else
@@ -196,6 +202,33 @@ public static class RuntimePreflightService
                 Message = "No known multiplayer anti-cheat found",
                 Details = "Clean offline environment."
             });
+        }
+
+        // 3. Xbox GDK / WindowsApps sandbox permission check
+        if (File.Exists(Path.Combine(gameRoot, "MicrosoftGame.config")) || gameRoot.Contains("WindowsApps", StringComparison.OrdinalIgnoreCase))
+        {
+            try
+            {
+                string testFile = Path.Combine(gameRoot, $".xtr_perm_test_{Guid.NewGuid():N}");
+                File.WriteAllText(testFile, "test");
+                File.Delete(testFile);
+            }
+            catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+            {
+                result.Status = PreflightStatus.Blocked;
+                result.CanProceed = false;
+                result.Headline = "Xbox / WindowsApps Sandbox Locked";
+                result.Explanation = "Game files are protected by WindowsApps filesystem ACLs. Run XTR as Administrator or enable Advanced Management in Xbox App.";
+                result.Checks.Add(new PreflightCheckItem
+                {
+                    Category = "Filesystem Security",
+                    Name = "WindowsApps Sandbox",
+                    Severity = CheckItemSeverity.Failed,
+                    Message = "Write access denied by WindowsApps encryption / ACLs.",
+                    Details = "Enable 'Advanced Management Features' in Xbox App settings to unlock modding."
+                });
+                return result;
+            }
         }
 
         // 3. Graphics API and DLSS detection
@@ -396,7 +429,14 @@ public static class RuntimePreflightService
         }
 
         // Synthesize status & Apple-style concise headline
-        if (result.HasExistingDeployment)
+        if (result.HasAntiCheatRisk && !allowOfflineAntiCheatOverride)
+        {
+            result.Status = PreflightStatus.Blocked;
+            result.CanProceed = false;
+            result.Headline = "Anti-cheat detected";
+            result.Explanation = "Multiplayer anti-cheat detected. Injection blocked by default to prevent bans. Enable offline override if playing offline.";
+        }
+        else if (result.HasExistingDeployment)
         {
             if (result.DriftDetected)
             {
@@ -417,11 +457,11 @@ public static class RuntimePreflightService
                 result.Explanation = "Runtime installed and verified.";
             }
         }
-        else if (result.HasAntiCheatRisk)
+        else if (result.HasAntiCheatRisk && allowOfflineAntiCheatOverride)
         {
             result.Status = PreflightStatus.NeedsAttention;
             result.Headline = "Needs attention";
-            result.Explanation = "Multiplayer anti-cheat detected. Recommended only for offline single-player.";
+            result.Explanation = "Multiplayer anti-cheat detected. Offline single-player override active.";
         }
         else if (!pack.IsTrusted || pack.ReleaseChannel == RuntimeReleaseChannel.CustomLocal)
         {
@@ -468,23 +508,42 @@ public static class RuntimePreflightService
 
     private static string? FindAntiCheat(string gameRoot)
     {
+        return FindAntiCheatRecursive(gameRoot, 0, 5);
+    }
+
+    private static string? FindAntiCheatRecursive(string dir, int depth, int maxDepth)
+    {
+        if (depth > maxDepth) return null;
+
         try
         {
-            var files = Directory.EnumerateFiles(gameRoot, "*", SearchOption.AllDirectories).Take(500);
-            foreach (var file in files)
+            var dirInfo = new DirectoryInfo(dir);
+            if (!dirInfo.Exists) return null;
+
+            foreach (var file in dirInfo.EnumerateFiles())
             {
-                var fileName = Path.GetFileName(file);
+                var fileName = file.Name;
                 if (KnownAntiCheatBinaries.Contains(fileName) ||
                     fileName.StartsWith("EasyAntiCheat", StringComparison.OrdinalIgnoreCase) ||
                     fileName.StartsWith("BEService", StringComparison.OrdinalIgnoreCase))
                 {
-                    return file;
+                    return file.FullName;
                 }
+            }
+
+            foreach (var subDir in dirInfo.EnumerateDirectories())
+            {
+                if ((subDir.Attributes & FileAttributes.ReparsePoint) != 0)
+                    continue;
+
+                var found = FindAntiCheatRecursive(subDir.FullName, depth + 1, maxDepth);
+                if (found is not null)
+                    return found;
             }
         }
         catch
         {
-            // Ignore directory enumeration access issues
+            // Ignore access errors on individual folders
         }
 
         return null;

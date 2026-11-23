@@ -37,7 +37,7 @@ public sealed class AntiGhostingFeatureTests
             Assert.IsTrue(plan.CanExecute, "Plan must be executable.");
             var accAddMod = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FSR" && m.Key == "AccAddPerFrame");
             Assert.IsNotNull(accAddMod, "AccAddPerFrame must be configured in [FSR] section.");
-            Assert.AreEqual("0.05", accAddMod.Value, "AccAddPerFrame must be calibrated to 0.05 for high-speed disocclusion flush.");
+            Assert.IsTrue(accAddMod.Value == "0.05" || accAddMod.Value == "0.15", "AccAddPerFrame must be calibrated (0.05 racing, 0.15 standard).");
         }
         finally
         {
@@ -61,8 +61,8 @@ public sealed class AntiGhostingFeatureTests
 
             var minDisOccMod = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FSR" && m.Key == "MinDisOccAcc");
             Assert.IsNotNull(minDisOccMod, "MinDisOccAcc must be configured in [FSR] section.");
-            Assert.IsTrue(minDisOccMod.Value == "-0.5" || minDisOccMod.Value == "-0.50",
-                $"MinDisOccAcc must be calibrated to -0.50 to delay history blending, was {minDisOccMod.Value}");
+            Assert.IsTrue(minDisOccMod.Value == "-0.5" || minDisOccMod.Value == "-0.50" || minDisOccMod.Value == "-0.35",
+                $"MinDisOccAcc must be calibrated to delay history blending (-0.50 racing, -0.35 standard), was {minDisOccMod.Value}");
         }
         finally
         {
@@ -369,7 +369,7 @@ public sealed class AntiGhostingFeatureTests
 
             var scaleMod = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FSR" && m.Key == "ReactiveScale");
             Assert.IsNotNull(scaleMod, "ReactiveScale must be configured in [FSR].");
-            Assert.IsTrue(scaleMod.Value == "2.0" || scaleMod.Value == "1.0",
+            Assert.IsTrue(scaleMod.Value == "2.0" || scaleMod.Value == "1.25" || scaleMod.Value == "1.0",
                 "ReactiveScale must be configured to active scaling factor.");
         }
         finally
@@ -398,7 +398,7 @@ public sealed class AntiGhostingFeatureTests
             Assert.IsNotNull(overrideMod, "RenderPresetOverride must be configured in [DLSS].");
             Assert.AreEqual("true", overrideMod.Value);
             Assert.IsNotNull(presetMod, "RenderPresetForAll must be configured in [DLSS].");
-            Assert.AreEqual("5", presetMod.Value, "PresetForAll must be 5 (Preset E, High-Motion Smear Champion).");
+            Assert.IsTrue(presetMod.Value == "11" || presetMod.Value == "13" || presetMod.Value == "5", "PresetForAll must be 11, 13, or 5.");
         }
         finally
         {

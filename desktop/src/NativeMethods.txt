@@ -7,3 +7,10 @@ SHCreateItemFromParsingName
 SHGetFileInfoW
 DestroyIcon
 ExtractIconExW
+CreateDXGIFactory1
+IDXGIFactory6
+IDXGIAdapter3
+DXGI_ADAPTER_DESC1
+DXGI_QUERY_VIDEO_MEMORY_INFO
+SHOpenFolderAndSelectItems
+SetProcessWorkingSetSizeEx

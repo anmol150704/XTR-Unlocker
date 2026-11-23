@@ -447,7 +447,7 @@ internal class DLLManager
                 using (var zipArchive = new ZipArchive(fileStream, ZipArchiveMode.Read, true))
                 {
                     var dllEntry = zipArchive.Entries.Single(x => x.Name.Equals(dllName, StringComparison.OrdinalIgnoreCase));
-                    dllEntry.ExtractToFile(dllPath, true);
+                    Helpers.SafeZipExtractor.ExtractEntrySafely(dllEntry, dllPath, true);
                     didExtract = true;
                 }
             }
@@ -1428,7 +1428,7 @@ internal class DLLManager
         else
         {
             Storage.CreateDirectoryForFileIfNotExists(dllRecord.LocalRecord.ExpectedPath);
-            entry.ExtractToFile(dllRecord.LocalRecord.ExpectedPath, true);
+            Helpers.SafeZipExtractor.ExtractEntrySafely(entry, dllRecord.LocalRecord.ExpectedPath, true);
         }
     }
 

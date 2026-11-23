@@ -115,7 +115,9 @@ internal class GitHubUpdater
         {
             // NOOP
             Logger.Error(err);
+#if DEBUG
             Debugger.Break();
+#endif
             return null;
         }
     }
@@ -322,6 +324,16 @@ internal class GitHubUpdater
 
         if (shouldDownload)
         {
+            if (!Uri.TryCreate(gitHubAsset.BrowserDownloadUrl, UriKind.Absolute, out var assetUri) ||
+                !assetUri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase) ||
+                !(assetUri.Host.Equals("github.com", StringComparison.OrdinalIgnoreCase) ||
+                  assetUri.Host.EndsWith(".github.com", StringComparison.OrdinalIgnoreCase) ||
+                  assetUri.Host.Equals("objects.githubusercontent.com", StringComparison.OrdinalIgnoreCase) ||
+                  assetUri.Host.EndsWith(".githubusercontent.com", StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new InvalidOperationException($"Untrusted download host: {gitHubAsset.BrowserDownloadUrl}");
+            }
+
             var cancellationTokenSource = new CancellationTokenSource();
 
             var downloadingDialog = new EasyContentDialog(xamlRoot)
@@ -425,6 +437,24 @@ internal class GitHubUpdater
 
             try
             {
+                // Verify hash and Authenticode signature before executing installer (SEC-01)
+                using (var fileStream = File.OpenRead(tempDownloadFile))
+                {
+                    var fileHash = fileStream.GetSha256Hash();
+                    if (!string.IsNullOrWhiteSpace(gitHubAsset.Digest) &&
+                        !gitHubAsset.Digest.Equals($"sha256:{fileHash}", StringComparison.OrdinalIgnoreCase))
+                    {
+                        File.Delete(tempDownloadFile);
+                        throw new System.Security.Cryptography.CryptographicException($"Update file hash mismatch. Expected: {gitHubAsset.Digest}, Actual: sha256:{fileHash}");
+                    }
+                }
+
+                if (!WinTrust.VerifyEmbeddedSignature(tempDownloadFile))
+                {
+                    File.Delete(tempDownloadFile);
+                    throw new System.Security.SecurityException("Update file failed Authenticode signature verification.");
+                }
+
                 var processStartInfo = new ProcessStartInfo()
                 {
                     FileName = tempDownloadFile,

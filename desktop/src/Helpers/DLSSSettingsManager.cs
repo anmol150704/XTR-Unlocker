@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using Microsoft.Win32;
 
 namespace DLSS_Swapper.Helpers;
@@ -17,12 +18,26 @@ internal class DLSSSettingsManager
 
     }
 
+    private static readonly System.Text.RegularExpressions.Regex SafeRegPattern = new(@"^[a-zA-Z0-9_\\ -]+$", System.Text.RegularExpressions.RegexOptions.Compiled);
+
     bool RunRegAdd(string key, string name, string type, string value)
     {
+        if (!SafeRegPattern.IsMatch(key) || !SafeRegPattern.IsMatch(name) || !SafeRegPattern.IsMatch(type) || !SafeRegPattern.IsMatch(value))
+        {
+            Logger.Error($"Invalid characters in registry parameters: key={key}, name={name}, type={type}, value={value}");
+            return false;
+        }
+
+        var regExePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "reg.exe");
+        if (!File.Exists(regExePath))
+        {
+            regExePath = "reg.exe";
+        }
+
         var processInfo = new ProcessStartInfo()
         {
-            FileName = "reg",
-            Arguments = $"add \"{key}\" /f /v {name} /t {type} /d {value}",
+            FileName = regExePath,
+            Arguments = $"add \"{key}\" /f /v \"{name}\" /t {type} /d \"{value}\"",
             Verb = "runas",
             UseShellExecute = true,
             CreateNoWindow = true
@@ -41,13 +56,13 @@ internal class DLSSSettingsManager
                         return true;
                     }
 
-                    throw new Exception("Process exit code was {process.ExitCode}");
+                    throw new Exception($"Process exit code was {process.ExitCode}");
                 }
             }
         }
         catch (Exception err)
         {
-            Logger.Error(err, $"Could not command \"{processInfo.FileName} {processInfo.Arguments}");
+            Logger.Error(err, $"Could not run command \"{processInfo.FileName} {processInfo.Arguments}\"");
         }
 
         return false;

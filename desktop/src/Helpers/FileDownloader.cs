@@ -110,6 +110,11 @@ public partial class FileDownloader : ObservableObject
         var buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
         try
         {
+            if (!_url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException($"Insecure HTTP download rejected: {_url}. Only HTTPS is permitted.");
+            }
+
             Logger.Verbose($"{LogPrefix}Starting download of {_url}");
 
             using (var response = await App.CurrentApp.HttpClient.GetAsync(_url, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false))
@@ -121,12 +126,20 @@ public partial class FileDownloader : ObservableObject
 
                 if (Settings.Instance.LoggingLevel == LoggingLevel.Verbose)
                 {
+                    static bool IsSensitiveHeader(string key) =>
+                        key.Equals("Authorization", StringComparison.OrdinalIgnoreCase) ||
+                        key.Equals("Proxy-Authorization", StringComparison.OrdinalIgnoreCase) ||
+                        key.Equals("Cookie", StringComparison.OrdinalIgnoreCase) ||
+                        key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase) ||
+                        key.Equals("X-Api-Key", StringComparison.OrdinalIgnoreCase);
+
                     Logger.Verbose($"{LogPrefix}HTTP Version: {response.Version}");
                     if (response.RequestMessage?.Headers is not null)
                     {
                         foreach (var header in response.RequestMessage.Headers)
                         {
-                            Logger.Verbose($"{LogPrefix}Request Header {header.Key}: {string.Join(", ", header.Value)}");
+                            var val = IsSensitiveHeader(header.Key) ? "[REDACTED]" : string.Join(", ", header.Value);
+                            Logger.Verbose($"{LogPrefix}Request Header {header.Key}: {val}");
                         }
                     }
 
@@ -134,7 +147,8 @@ public partial class FileDownloader : ObservableObject
                     {
                         foreach (var header in response.Headers)
                         {
-                            Logger.Verbose($"{LogPrefix}Response Header {header.Key}: {string.Join(", ", header.Value)}");
+                            var val = IsSensitiveHeader(header.Key) ? "[REDACTED]" : string.Join(", ", header.Value);
+                            Logger.Verbose($"{LogPrefix}Response Header {header.Key}: {val}");
                         }
                     }
 
@@ -142,12 +156,18 @@ public partial class FileDownloader : ObservableObject
                     {
                         foreach (var header in response.Content.Headers)
                         {
-                            Logger.Verbose($"{LogPrefix}Content Header {header.Key}: {string.Join(", ", header.Value)}");
+                            var val = IsSensitiveHeader(header.Key) ? "[REDACTED]" : string.Join(", ", header.Value);
+                            Logger.Verbose($"{LogPrefix}Content Header {header.Key}: {val}");
                         }
                     }
                 }
 
+                const long MaxAllowedDownloadBytes = 512L * 1024 * 1024; // 512 MB
                 contentLength = response.Content.Headers?.ContentLength ?? -1;
+                if (contentLength > MaxAllowedDownloadBytes)
+                {
+                    throw new InvalidOperationException($"Download size exceeds 512 MB limit: {contentLength} bytes.");
+                }
 
                 App.CurrentApp.RunOnUIThread(() =>
                 {
@@ -164,9 +184,13 @@ public partial class FileDownloader : ObservableObject
                     var bytesRead = 0;
                     while ((bytesRead = await responseStream.ReadAsync(buffer.AsMemory(0, BufferSize), cancellationToken).ConfigureAwait(false)) > 0)
                     {
-                        await outputStream.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
-                        //Interlocked.Add(ref totalBytesRead, bytesRead);
                         totalBytesRead += bytesRead;
+                        if (totalBytesRead > MaxAllowedDownloadBytes)
+                        {
+                            throw new InvalidOperationException("Download exceeded maximum allowed size of 512 MB.");
+                        }
+
+                        await outputStream.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
                     }
                 }
             }

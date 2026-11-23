@@ -36,38 +36,57 @@ internal class Database
     public Database()
     {
 
-    void RenameTable(SQLiteConnection connection, string from, string to)
+        static bool IsSafeIdentifier(string identifier) =>
+            System.Text.RegularExpressions.Regex.IsMatch(identifier, @"^[a-zA-Z0-9_]+$");
+
+        void RenameTable(SQLiteConnection connection, string from, string to)
         {
+            if (!IsSafeIdentifier(from) || !IsSafeIdentifier(to))
+            {
+                Logger.Error($"Invalid table name during migration: from='{from}', to='{to}'");
+                return;
+            }
+
             try
             {
-                var tableExists = connection.ExecuteScalar<int>($"SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='{from}'") > 0;
+                var tableExists = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=?", from) > 0;
                 if (tableExists)
                 {
-                    connection.Execute($"ALTER TABLE {from} RENAME TO {to}");
+                    connection.Execute($"ALTER TABLE \"{from}\" RENAME TO \"{to}\"");
                 }
             }
             catch (Exception ex)
             {
                 Logger.Error(ex);
+#if DEBUG
                 Debugger.Break();
+#endif
             }
         }
 
         void RenameColumn(SQLiteConnection connection, string table, string from, string to)
         {
+            if (!IsSafeIdentifier(table) || !IsSafeIdentifier(from) || !IsSafeIdentifier(to))
+            {
+                Logger.Error($"Invalid identifier during column migration: table='{table}', from='{from}', to='{to}'");
+                return;
+            }
+
             try
             {
-                var columns = connection.Query<SQLiteConnection.ColumnInfo>($"PRAGMA table_info({table})");
+                var columns = connection.Query<SQLiteConnection.ColumnInfo>($"PRAGMA table_info(\"{table}\")");
 
                 if (columns.Any(c => c.Name == from))
                 {
-                    connection.Execute($"ALTER TABLE {table} RENAME COLUMN {from} TO {to}");
+                    connection.Execute($"ALTER TABLE \"{table}\" RENAME COLUMN \"{from}\" TO \"{to}\"");
                 }
             }
             catch (Exception ex)
             {
                 Logger.Error(ex);
+#if DEBUG
                 Debugger.Break();
+#endif
             }
         }
 

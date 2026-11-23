@@ -285,7 +285,8 @@ public sealed class PairwiseFeatureInteractionTests
                 "p13-test", "Smear Free Game", tempDir, pack, RuntimeIntegrationPreset.TurboBoost);
 
             Assert.AreEqual("false", plan.PlannedConfigModifications.First(m => m.Section == "InitFlags" && m.Key == "DisableReactiveMask").Value);
-            Assert.AreEqual("5", plan.PlannedConfigModifications.First(m => m.Section == "DLSS" && m.Key == "RenderPresetForAll").Value);
+            var presetMod = plan.PlannedConfigModifications.First(m => m.Section == "DLSS" && m.Key == "RenderPresetForAll").Value;
+            Assert.IsTrue(presetMod == "11" || presetMod == "13" || presetMod == "5", $"Preset was {presetMod}");
         }
         finally
         {

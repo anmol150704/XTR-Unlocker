@@ -35,9 +35,17 @@ public sealed class StreamlineAndDispatcherBoundaryTests
             var plan = await DeploymentPlanner.CreatePlanAsync(
                 "non-sl-test", "Standard Game", tempDir, pack, RuntimeIntegrationPreset.DlssWithFrameGeneration);
 
-            // Universal games should NOT have AlwaysTrackHeaps=false injected
+            // Universal games preserve default heap tracking unless constrained by 4GB VRAM guardrail
             var heapMod = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "OptiFG" && m.Key == "AlwaysTrackHeaps");
-            Assert.IsNull(heapMod, "Universal non-Streamline games must preserve default heap tracking.");
+            if (OperatingSystem.IsWindows() && GpuHardwareDetector.GetHardwareInfo().DedicatedVramMb <= 4608)
+            {
+                Assert.IsNotNull(heapMod, "4GB VRAM guardrail must inject AlwaysTrackHeaps=false on <=4GB hardware.");
+                Assert.AreEqual("false", heapMod.Value);
+            }
+            else
+            {
+                Assert.IsNull(heapMod, "Universal non-Streamline games must preserve default heap tracking on >4GB GPUs.");
+            }
         }
         finally
         {

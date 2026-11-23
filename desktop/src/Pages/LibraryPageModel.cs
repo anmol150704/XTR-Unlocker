@@ -506,7 +506,9 @@ public partial class LibraryPageModel : ObservableObject
             {
                 // This should never happen.
                 Logger.Error("dllRecord.LocalRecord is null");
+#if DEBUG
                 Debugger.Break();
+#endif
                 importResults.Add(DLLImportResult.FromFail(importedPath, "dllRecord.LocalRecord is null"));
                 return false;
             }
@@ -717,7 +719,7 @@ public partial class LibraryPageModel : ObservableObject
                                 var tempFile = Path.Combine(tempExtractPath, Guid.NewGuid().ToString("D"), zippedDll.Name);
                                 Storage.CreateDirectoryForFileIfNotExists(tempFile);
 
-                                zippedDll.ExtractToFile(tempFile, true);
+                                Helpers.SafeZipExtractor.ExtractEntrySafely(zippedDll, tempFile, true);
 
                                 ++processedDllsInZip;
                                 ++totalDllsProcessed;

@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using DLSS_Swapper.Data.Hardware;
 
 namespace DLSS_Swapper.Data.Runtime;
 
@@ -52,6 +55,7 @@ public sealed class DeploymentPlan
     public RuntimePack Pack { get; set; } = null!;
     public string SelectedProxy { get; set; } = "dxgi.dll";
     public RuntimePreflightResult PreflightResult { get; set; } = null!;
+    public GpuHardwareInfo? GpuInfo { get; set; }
     public List<PlannedFileAction> PlannedCopies { get; set; } = new();
     public List<PlannedBackupAction> PlannedBackups { get; set; } = new();
     public List<PlannedConfigEntry> PlannedConfigModifications { get; set; } = new();
@@ -62,6 +66,17 @@ public sealed class DeploymentPlan
 
 public static class DeploymentPlanner
 {
+    public static Task<DeploymentPlan> CreatePlanAsync(
+        string gameId,
+        string gameTitle,
+        string gameRoot,
+        RuntimePack pack,
+        RuntimeIntegrationPreset preset,
+        string? proxyOverride,
+        string? fgBackendOverride,
+        CancellationToken cancellationToken)
+        => CreatePlanAsync(gameId, gameTitle, gameRoot, pack, preset, proxyOverride, fgBackendOverride, null, false, cancellationToken);
+
     public static async Task<DeploymentPlan> CreatePlanAsync(
         string gameId,
         string gameTitle,
@@ -70,17 +85,27 @@ public static class DeploymentPlanner
         RuntimeIntegrationPreset preset,
         string? proxyOverride = null,
         string? fgBackendOverride = null,
+        GpuHardwareInfo? gpuInfo = null,
+        bool allowOfflineAntiCheatOverride = false,
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(gameId);
         ArgumentException.ThrowIfNullOrWhiteSpace(gameRoot);
         ArgumentNullException.ThrowIfNull(pack);
 
+        gpuInfo ??= OperatingSystem.IsWindows() ? GpuHardwareDetector.GetHardwareInfo() : new GpuHardwareInfo();
+
         var compatRecord = CompatibilityDatabase.LookupGame(gameTitle) ?? CompatibilityDatabase.LookupGame(gameId);
         var proxy = proxyOverride ?? compatRecord?.RecommendedProxy ?? (IsForzaOrVirtualTextureTitle(gameTitle) ? "version.dll" : null) ?? pack.RecommendedProxy ?? "dxgi.dll";
 
-
-        var preflight = await RuntimePreflightService.RunPreflightAsync(gameId, gameRoot, pack, proxy, gameTitle, cancellationToken).ConfigureAwait(false);
+        var preflight = await RuntimePreflightService.RunPreflightAsync(
+            gameId,
+            gameRoot,
+            pack,
+            proxy,
+            gameTitle,
+            allowOfflineAntiCheatOverride,
+            cancellationToken).ConfigureAwait(false);
 
         var plan = new DeploymentPlan
         {
@@ -91,6 +116,7 @@ public static class DeploymentPlanner
             Pack = pack,
             SelectedProxy = proxy,
             PreflightResult = preflight,
+            GpuInfo = gpuInfo,
             CanExecute = preflight.CanProceed
         };
 
@@ -274,7 +300,7 @@ public static class DeploymentPlanner
                 });
                 plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                 {
-                    Section = "FrameGen",
+                    Section = "XeFG",
                     Key = "ForceBorderless",
                     Value = "true",
                     Reason = "Eliminates presentation stutter and tearing under frame interpolation."
@@ -371,9 +397,28 @@ public static class DeploymentPlanner
                         Value = "false",
                         Reason = "Ensures HUD element tracking is fully active."
                     });
+
+                    if (gpuInfo.DedicatedVramMb <= 4608)
+                    {
+                        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                        {
+                            Section = "OptiFG",
+                            Key = "AlwaysTrackHeaps",
+                            Value = "false",
+                            Reason = "4GB VRAM guardrail: disables heavy heap tracking to prevent VRAM oversubscription and swapchain stalls."
+                        });
+                    }
                 }
 
                 // Anti-Ghosting Shield Calibration for all FrameGen bridge modes:
+                bool isRacing = IsHighVelocityRacingTitle(gameTitle);
+                string accAdd = isRacing ? "0.05" : "0.15";
+                string minDisOcc = isRacing ? "-0.5" : "-0.35";
+                string reactiveScale = isRacing ? "2.0" : "1.25";
+                string ghostingReason = isRacing
+                    ? "Racing profile: high-velocity disocclusion flush eliminating ghost smears at extreme speeds."
+                    : "Standard profile: balanced reactive mask scaling and edge stability.";
+
                 plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                 {
                     Section = "InitFlags",
@@ -399,39 +444,47 @@ public static class DeploymentPlanner
                 {
                     Section = "FSR",
                     Key = "ReactiveScale",
-                    Value = "2.0",
-                    Reason = "Calibrated reactive mask scale for rock-solid stability."
+                    Value = reactiveScale,
+                    Reason = ghostingReason
                 });
                 plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                 {
                     Section = "FSR",
                     Key = "AccAddPerFrame",
-                    Value = "0.05",
-                    Reason = "High-velocity disocclusion flush eliminating ghost smears at high speeds."
+                    Value = accAdd,
+                    Reason = ghostingReason
                 });
                 plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                 {
                     Section = "FSR",
                     Key = "MinDisOccAcc",
-                    Value = "-0.5",
-                    Reason = "Disocclusion accumulation threshold delaying history blending."
+                    Value = minDisOcc,
+                    Reason = ghostingReason
                 });
 
-                // DLSS Neural Model Preset E (Anti-Ghosting Champion)
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                // DLSS Neural Model Hardware-Tiered Presets
+                if (gpuInfo.Vendor == GpuVendor.Nvidia && gpuInfo.RecommendedDlssPresetId > 0)
                 {
-                    Section = "DLSS",
-                    Key = "RenderPresetOverride",
-                    Value = "true",
-                    Reason = "Overrides DLSS neural network model to eliminate motion smear."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "DLSS",
-                    Key = "RenderPresetForAll",
-                    Value = "5",
-                    Reason = "Forces DLSS Preset E across all performance modes to eliminate ghosting trails."
-                });
+                    string dlssPreset = gpuInfo.RecommendedDlssPresetId.ToString(CultureInfo.InvariantCulture);
+                    string presetReason = gpuInfo.IsAdaOrBlackwell
+                        ? "Forces DLSS Preset M across all performance modes for Ada/Blackwell optical architecture."
+                        : "Forces DLSS Preset K across all performance modes for ultra-low latency on Turing & Ampere.";
+
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "DLSS",
+                        Key = "RenderPresetOverride",
+                        Value = "true",
+                        Reason = "Overrides DLSS neural network model to eliminate motion smear."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "DLSS",
+                        Key = "RenderPresetForAll",
+                        Value = dlssPreset,
+                        Reason = presetReason
+                    });
+                }
 
                 // Enable OptiScaler in-game detection overlay and full XTR Apple Liquid styling & hotkeys
                 AddXtrMenuAndOverlayEntries(plan);
@@ -502,21 +555,29 @@ public static class DeploymentPlanner
                     Reason = "Ensures Hardware Accelerated GPU Scheduling requirements are satisfied for native DLSS-G."
                 });
 
-                // DLSS Neural Model Preset E (Anti-Ghosting Champion)
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                // DLSS Neural Model Hardware-Tiered Presets
+                if (gpuInfo.Vendor == GpuVendor.Nvidia && gpuInfo.RecommendedDlssPresetId > 0)
                 {
-                    Section = "DLSS",
-                    Key = "RenderPresetOverride",
-                    Value = "true",
-                    Reason = "Overrides DLSS neural network model to eliminate motion smear."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "DLSS",
-                    Key = "RenderPresetForAll",
-                    Value = "5",
-                    Reason = "Forces DLSS Preset E across all performance modes to eliminate ghosting trails."
-                });
+                    string dlssPreset = gpuInfo.RecommendedDlssPresetId.ToString(CultureInfo.InvariantCulture);
+                    string presetReason = gpuInfo.IsAdaOrBlackwell
+                        ? "Forces DLSS Preset M across all performance modes for Ada/Blackwell optical architecture."
+                        : "Forces DLSS Preset K across all performance modes for ultra-low latency on Turing & Ampere.";
+
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "DLSS",
+                        Key = "RenderPresetOverride",
+                        Value = "true",
+                        Reason = "Overrides DLSS neural network model to eliminate motion smear."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "DLSS",
+                        Key = "RenderPresetForAll",
+                        Value = dlssPreset,
+                        Reason = presetReason
+                    });
+                }
 
                 // Enable OptiScaler in-game detection overlay and full XTR Apple Liquid styling & hotkeys
                 AddXtrMenuAndOverlayEntries(plan);
@@ -526,31 +587,34 @@ public static class DeploymentPlanner
                 plan.Headline = "⚡ Activate XTR Turbo Boost";
                 plan.Summary = "Maximum performance and responsiveness: DLSS upscaling, optimized frame generation, Preset E anti-ghosting, and calibrated frame pacing.";
 
+                string defaultUpscaler = (gpuInfo.Vendor == GpuVendor.Nvidia) ? "dlss" : "fsr31";
                 plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                 {
                     Section = "Upscalers",
                     Key = "Dx12Upscaler",
-                    Value = "dlss",
-                    Reason = "Prioritizes DLSS upscaling for pristine image quality and performance."
+                    Value = defaultUpscaler,
+                    Reason = (gpuInfo.Vendor == GpuVendor.Nvidia)
+                        ? "Prioritizes DLSS upscaling for pristine image quality and performance."
+                        : "Prioritizes FSR 3.1 upscaling on non-NVIDIA hardware."
                 });
                 plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                 {
                     Section = "Upscalers",
                     Key = "Dx11Upscaler",
-                    Value = "dlss",
-                    Reason = "Directs OptiScaler to route DirectX 11 upscaling through DLSS."
+                    Value = defaultUpscaler,
+                    Reason = "Directs OptiScaler to route DirectX 11 upscaling."
                 });
                 plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                 {
                     Section = "Upscalers",
                     Key = "VulkanUpscaler",
-                    Value = "dlss",
-                    Reason = "Directs OptiScaler to route Vulkan upscaling through DLSS."
+                    Value = defaultUpscaler,
+                    Reason = "Directs OptiScaler to route Vulkan upscaling."
                 });
 
                 bool isForzaOrVirtualStreaming = IsForzaOrVirtualTextureTitle(gameTitle);
 
-                if (!isForzaOrVirtualStreaming && preflight.NativeDlssGDetected)
+                if (!isForzaOrVirtualStreaming && preflight.NativeDlssGDetected && gpuInfo.IsAdaOrBlackwell)
                 {
                     // Native Ada Lovelace Optical Flow bypass for non-virtual-streaming titles
                     plan.PlannedConfigModifications.Add(new PlannedConfigEntry
@@ -635,7 +699,7 @@ public static class DeploymentPlanner
                     });
                     plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                     {
-                        Section = "FrameGen",
+                        Section = "XeFG",
                         Key = "ForceBorderless",
                         Value = "true",
                         Reason = "Eliminates presentation stutter under frame interpolation."
@@ -733,6 +797,17 @@ public static class DeploymentPlanner
                             Reason = "Maintains HUD fix activity."
                         });
 
+                        if (gpuInfo.DedicatedVramMb <= 4608)
+                        {
+                            plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                            {
+                                Section = "OptiFG",
+                                Key = "AlwaysTrackHeaps",
+                                Value = "false",
+                                Reason = "4GB VRAM guardrail: disables heavy heap tracking to prevent VRAM oversubscription and swapchain stalls."
+                            });
+                        }
+
                         // Ultra-low Latency Frame Pacing Tuning for universal pipeline
                         plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                         {
@@ -758,6 +833,14 @@ public static class DeploymentPlanner
                     }
 
                     // Anti-Ghosting Calibration for all FrameGen bridge modes in TurboBoost:
+                    bool isTbRacing = IsHighVelocityRacingTitle(gameTitle);
+                    string tbAccAdd = isTbRacing ? "0.05" : "0.15";
+                    string tbMinDisOcc = isTbRacing ? "-0.5" : "-0.35";
+                    string tbReactiveScale = isTbRacing ? "2.0" : "1.25";
+                    string tbGhostingReason = isTbRacing
+                        ? "Racing profile: high-velocity disocclusion flush eliminating ghost smears at extreme speeds."
+                        : "Standard profile: balanced reactive mask scaling and edge stability.";
+
                     plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                     {
                         Section = "InitFlags",
@@ -783,40 +866,48 @@ public static class DeploymentPlanner
                     {
                         Section = "FSR",
                         Key = "ReactiveScale",
-                        Value = "2.0",
-                        Reason = "Calibrated FSR reactivity."
+                        Value = tbReactiveScale,
+                        Reason = tbGhostingReason
                     });
                     plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                     {
                         Section = "FSR",
                         Key = "AccAddPerFrame",
-                        Value = "0.05",
-                        Reason = "High-velocity disocclusion flush eliminating ghost smears at high speeds."
+                        Value = tbAccAdd,
+                        Reason = tbGhostingReason
                     });
                     plan.PlannedConfigModifications.Add(new PlannedConfigEntry
                     {
                         Section = "FSR",
                         Key = "MinDisOccAcc",
-                        Value = "-0.5",
-                        Reason = "Disocclusion accumulation threshold delaying history blending."
+                        Value = tbMinDisOcc,
+                        Reason = tbGhostingReason
                     });
                 }
 
-                // DLSS Neural Model Preset E (Anti-Ghosting Champion)
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                // DLSS Neural Model Hardware-Tiered Presets
+                if (gpuInfo.Vendor == GpuVendor.Nvidia && gpuInfo.RecommendedDlssPresetId > 0)
                 {
-                    Section = "DLSS",
-                    Key = "RenderPresetOverride",
-                    Value = "true",
-                    Reason = "Overrides neural network model for ghosting elimination."
-                });
-                plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-                {
-                    Section = "DLSS",
-                    Key = "RenderPresetForAll",
-                    Value = "5",
-                    Reason = "DLSS Preset E: state-of-the-art motion stability with zero ghost trails."
-                });
+                    string dlssPreset = gpuInfo.RecommendedDlssPresetId.ToString(CultureInfo.InvariantCulture);
+                    string presetReason = gpuInfo.IsAdaOrBlackwell
+                        ? "Forces DLSS Preset M across all performance modes for Ada/Blackwell optical architecture."
+                        : "Forces DLSS Preset K across all performance modes for ultra-low latency on Turing & Ampere.";
+
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "DLSS",
+                        Key = "RenderPresetOverride",
+                        Value = "true",
+                        Reason = "Overrides neural network model for ghosting elimination."
+                    });
+                    plan.PlannedConfigModifications.Add(new PlannedConfigEntry
+                    {
+                        Section = "DLSS",
+                        Key = "RenderPresetForAll",
+                        Value = dlssPreset,
+                        Reason = presetReason
+                    });
+                }
 
                 // Only apply Anisotropic and Mipmap overrides on non-virtual-streaming titles
                 // to prevent starving virtual texture streaming pools in games like Forza Horizon
@@ -978,6 +1069,24 @@ public static class DeploymentPlanner
 
         return gameTitle.Contains("Forza", StringComparison.OrdinalIgnoreCase) ||
                gameTitle.Contains("Horizon", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static bool IsHighVelocityRacingTitle(string gameTitle)
+    {
+        if (string.IsNullOrWhiteSpace(gameTitle))
+            return false;
+
+        return gameTitle.Contains("Forza", StringComparison.OrdinalIgnoreCase) ||
+               gameTitle.Contains("Horizon", StringComparison.OrdinalIgnoreCase) ||
+               gameTitle.Contains("F1", StringComparison.OrdinalIgnoreCase) ||
+               gameTitle.Contains("Need for Speed", StringComparison.OrdinalIgnoreCase) ||
+               gameTitle.Contains("NFS", StringComparison.OrdinalIgnoreCase) ||
+               gameTitle.Contains("WRC", StringComparison.OrdinalIgnoreCase) ||
+               gameTitle.Contains("Dirt", StringComparison.OrdinalIgnoreCase) ||
+               gameTitle.Contains("Grid", StringComparison.OrdinalIgnoreCase) ||
+               gameTitle.Contains("Assetto", StringComparison.OrdinalIgnoreCase) ||
+               gameTitle.Contains("The Crew", StringComparison.OrdinalIgnoreCase) ||
+               gameTitle.Contains("Gran Turismo", StringComparison.OrdinalIgnoreCase);
     }
 
     public static bool IsStreamlineOrOpenWorldTitle(string gameTitle, RuntimePreflightResult preflight)

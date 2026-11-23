@@ -240,8 +240,8 @@ internal static class WinTrust
         WinVerifyTrustResult lStatus;
         uint dwLastError;
 
-        WinTrustFileInfo FileData;
-        WinTrustData WinTrustData;
+        WinTrustFileInfo FileData = default;
+        WinTrustData WinTrustData = default;
 
         var validSignature = false;
         try
@@ -406,22 +406,8 @@ internal static class WinTrust
         }
         finally
         {
-            //FileData.Dispose();
-            //WinTrustData.Dispose();
-
-            /*
-            if (FileData is not null)
-            {
-                FileData.Dispose();
-                //winTrustFileInfo = null;
-            }
-
-            if (WinTrustData is not null)
-            {
-                WinTrustData.Dispose();
-                //WinTrustData = null;
-            }
-            */
+            WinTrustData.Dispose();
+            FileData.Dispose();
         }
 
         return validSignature;

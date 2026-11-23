@@ -313,11 +313,31 @@ internal class FileSystemHelper
 
     internal static void OpenFolderInExplorer(string path)
     {
-        Process.Start("explorer.exe", path);
+        if (string.IsNullOrWhiteSpace(path)) return;
+        var fullPath = Path.GetFullPath(path);
+        if (!Directory.Exists(fullPath) && !File.Exists(fullPath)) return;
+
+        var psi = new ProcessStartInfo
+        {
+            FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe"),
+            UseShellExecute = false
+        };
+        psi.ArgumentList.Add(fullPath);
+        Process.Start(psi);
     }
 
     internal static void OpenFolderInExplorerSelectFile(string path)
     {
-        Process.Start("explorer.exe", $"/select,{path}");
+        if (string.IsNullOrWhiteSpace(path)) return;
+        var fullPath = Path.GetFullPath(path);
+        if (!File.Exists(fullPath) && !Directory.Exists(fullPath)) return;
+
+        var psi = new ProcessStartInfo
+        {
+            FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe"),
+            UseShellExecute = false
+        };
+        psi.ArgumentList.Add($"/select,{fullPath}");
+        Process.Start(psi);
     }
 }

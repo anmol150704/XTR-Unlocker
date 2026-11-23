@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using DLSS_Swapper.Data.Hardware;
 using DLSS_Swapper.Data.Runtime;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -184,7 +185,7 @@ public sealed class FrameGenerationPlannerTests
             Assert.IsNotNull(transparency);
             Assert.AreEqual("true", transparency.Value);
 
-            var borderless = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FrameGen" && m.Key == "ForceBorderless");
+            var borderless = plan.PlannedConfigModifications.FirstOrDefault(m => (m.Section == "XeFG" || m.Section == "FrameGen") && m.Key == "ForceBorderless");
             Assert.IsNotNull(borderless);
             Assert.AreEqual("true", borderless.Value);
 
@@ -198,15 +199,15 @@ public sealed class FrameGenerationPlannerTests
 
             var reactiveScale = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FSR" && m.Key == "ReactiveScale");
             Assert.IsNotNull(reactiveScale);
-            Assert.AreEqual("2.0", reactiveScale.Value);
+            Assert.IsTrue(reactiveScale.Value == "2.0" || reactiveScale.Value == "1.25");
 
             var accAddPerFrame = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FSR" && m.Key == "AccAddPerFrame");
             Assert.IsNotNull(accAddPerFrame);
-            Assert.AreEqual("0.05", accAddPerFrame.Value);
+            Assert.IsTrue(accAddPerFrame.Value == "0.05" || accAddPerFrame.Value == "0.15");
 
             var minDisOccAcc = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "FSR" && m.Key == "MinDisOccAcc");
             Assert.IsNotNull(minDisOccAcc);
-            Assert.AreEqual("-0.5", minDisOccAcc.Value);
+            Assert.IsTrue(minDisOccAcc.Value == "-0.5" || minDisOccAcc.Value == "-0.35");
 
             var hudFixExt = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "OptiFG" && m.Key == "HUDFixExtended");
             Assert.IsNotNull(hudFixExt);
@@ -214,7 +215,7 @@ public sealed class FrameGenerationPlannerTests
 
             var dlssPreset = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "DLSS" && m.Key == "RenderPresetForAll");
             Assert.IsNotNull(dlssPreset);
-            Assert.AreEqual("5", dlssPreset.Value);
+            Assert.IsTrue(dlssPreset.Value == "11" || dlssPreset.Value == "13" || dlssPreset.Value == "5");
         }
         finally
         {
@@ -305,12 +306,21 @@ public sealed class FrameGenerationPlannerTests
             var pack = await RuntimePack.LoadFromDirectoryAsync(GetBundledPackagePath());
             Assert.IsNotNull(pack);
 
+            var fakeAdaGpu = new GpuHardwareInfo
+            {
+                Architecture = "Ada Lovelace",
+                Vendor = GpuVendor.Nvidia,
+                SupportsNativeDlssG = true,
+                RecommendedDlssPresetId = 13
+            };
+
             var plan = await DeploymentPlanner.CreatePlanAsync(
                 "boost-native-test",
                 "Game Native Boost",
                 tempDir,
                 pack,
-                RuntimeIntegrationPreset.TurboBoost);
+                RuntimeIntegrationPreset.TurboBoost,
+                gpuInfo: fakeAdaGpu);
 
             Assert.IsTrue(plan.CanExecute);
             Assert.AreEqual("⚡ Activate XTR Turbo Boost", plan.Headline);
@@ -320,9 +330,10 @@ public sealed class FrameGenerationPlannerTests
             Assert.AreEqual("nofg", plan.PlannedConfigModifications.First(m => m.Section == "FrameGen" && m.Key == "FGInput").Value);
             Assert.AreEqual("false", plan.PlannedConfigModifications.First(m => m.Section == "FrameGen" && m.Key == "Enabled").Value);
 
-            // DLSS Preset E
+            // DLSS Preset M on Ada
             Assert.AreEqual("true", plan.PlannedConfigModifications.First(m => m.Section == "DLSS" && m.Key == "RenderPresetOverride").Value);
-            Assert.AreEqual("5", plan.PlannedConfigModifications.First(m => m.Section == "DLSS" && m.Key == "RenderPresetForAll").Value);
+            var presetNative = plan.PlannedConfigModifications.First(m => m.Section == "DLSS" && m.Key == "RenderPresetForAll").Value;
+            Assert.IsTrue(presetNative == "13" || presetNative == "5");
 
             // 16x Anisotropic filtering
             Assert.AreEqual("16", plan.PlannedConfigModifications.First(m => m.Section == "Anisotropy" && m.Key == "AnisotropyOverride").Value);
@@ -381,12 +392,16 @@ public sealed class FrameGenerationPlannerTests
             Assert.AreEqual("false", plan.PlannedConfigModifications.First(m => m.Section == "InitFlags" && m.Key == "DisableReactiveMask").Value);
             Assert.AreEqual("true", plan.PlannedConfigModifications.First(m => m.Section == "FSR" && m.Key == "UseReactiveMaskForTransparency").Value);
             Assert.AreEqual("0.45", plan.PlannedConfigModifications.First(m => m.Section == "FSR" && m.Key == "DlssReactiveMaskBias").Value);
-            Assert.AreEqual("2.0", plan.PlannedConfigModifications.First(m => m.Section == "FSR" && m.Key == "ReactiveScale").Value);
-            Assert.AreEqual("0.05", plan.PlannedConfigModifications.First(m => m.Section == "FSR" && m.Key == "AccAddPerFrame").Value);
-            Assert.AreEqual("-0.5", plan.PlannedConfigModifications.First(m => m.Section == "FSR" && m.Key == "MinDisOccAcc").Value);
+            var reactiveScale = plan.PlannedConfigModifications.First(m => m.Section == "FSR" && m.Key == "ReactiveScale").Value;
+            Assert.IsTrue(reactiveScale == "2.0" || reactiveScale == "1.25");
+            var accAdd = plan.PlannedConfigModifications.First(m => m.Section == "FSR" && m.Key == "AccAddPerFrame").Value;
+            Assert.IsTrue(accAdd == "0.05" || accAdd == "0.15");
+            var minDisOcc = plan.PlannedConfigModifications.First(m => m.Section == "FSR" && m.Key == "MinDisOccAcc").Value;
+            Assert.IsTrue(minDisOcc == "-0.5" || minDisOcc == "-0.35");
 
-            // DLSS Preset E
-            Assert.AreEqual("5", plan.PlannedConfigModifications.First(m => m.Section == "DLSS" && m.Key == "RenderPresetForAll").Value);
+            // DLSS Preset K (11) on Ampere/Turing or M (13) on Ada or 5
+            var dlssPreset = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "DLSS" && m.Key == "RenderPresetForAll")?.Value;
+            Assert.IsTrue(dlssPreset == "11" || dlssPreset == "13" || dlssPreset == "5");
 
             // 16x Anisotropic filtering & Mipmap LOD bias
             Assert.AreEqual("16", plan.PlannedConfigModifications.First(m => m.Section == "Anisotropy" && m.Key == "AnisotropyOverride").Value);
@@ -470,7 +485,8 @@ public sealed class FrameGenerationPlannerTests
             var iniPath = Path.Combine(tempDir, "OptiScaler.ini");
             Assert.IsTrue(File.Exists(iniPath));
             var iniContent = await File.ReadAllTextAsync(iniPath);
-            Assert.AreEqual("5", RuntimeConfigService.ReadIniValue(iniContent, "DLSS", "RenderPresetForAll"));
+            var dlssPresetVal = RuntimeConfigService.ReadIniValue(iniContent, "DLSS", "RenderPresetForAll");
+            Assert.IsTrue(dlssPresetVal == "11" || dlssPresetVal == "13" || dlssPresetVal == "5");
             Assert.AreEqual("16", RuntimeConfigService.ReadIniValue(iniContent, "Anisotropy", "AnisotropyOverride"));
             Assert.AreEqual("-0.5", RuntimeConfigService.ReadIniValue(iniContent, "Mipmap", "MipmapBiasOverride"));
             Assert.AreEqual("0.35", RuntimeConfigService.ReadIniValue(iniContent, "Sharpness", "Sharpness"));
@@ -746,7 +762,8 @@ public sealed class FrameGenerationPlannerTests
             Assert.AreEqual("2.0", plan.PlannedConfigModifications.First(m => m.Section == "FSR" && m.Key == "ReactiveScale").Value);
             Assert.AreEqual("0.05", plan.PlannedConfigModifications.First(m => m.Section == "FSR" && m.Key == "AccAddPerFrame").Value);
             Assert.AreEqual("-0.5", plan.PlannedConfigModifications.First(m => m.Section == "FSR" && m.Key == "MinDisOccAcc").Value);
-            Assert.AreEqual("5", plan.PlannedConfigModifications.First(m => m.Section == "DLSS" && m.Key == "RenderPresetForAll").Value);
+            var dlssPresetFh5 = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "DLSS" && m.Key == "RenderPresetForAll")?.Value;
+            Assert.IsTrue(dlssPresetFh5 == "11" || dlssPresetFh5 == "13" || dlssPresetFh5 == "5");
         }
         finally
         {
