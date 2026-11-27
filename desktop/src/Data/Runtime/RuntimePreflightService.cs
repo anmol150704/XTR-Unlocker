@@ -45,6 +45,11 @@ public sealed class RuntimePreflightResult
     public string? NativeDlssVersion { get; set; }
     public bool NativeDlssGDetected { get; set; }
     public bool StreamlineDetected { get; set; }
+    public bool StreamlineDlssDetected { get; set; }
+    public string? NgxOtaDlssVersion { get; set; }
+    public bool FidelityFxSdk2Detected { get; set; }
+    public bool XeSsDetected { get; set; }
+    public string? PrimaryDlssPath { get; set; }
     public bool HasExistingDeployment { get; set; }
     public string? ExistingDeploymentVersion { get; set; }
     public bool DriftDetected { get; set; }
@@ -73,13 +78,36 @@ public static class RuntimePreflightService
         "denuvo-anti-cheat.sys", "BlackCipher64.aes"
     };
 
-    public static async Task<RuntimePreflightResult> RunPreflightAsync(
+    public static Task<RuntimePreflightResult> RunPreflightAsync(
         string gameId,
         string gameRoot,
         RuntimePack pack,
         string proxyName = "dxgi.dll",
         string? gameTitle = null,
         bool allowOfflineAntiCheatOverride = false,
+        CancellationToken cancellationToken = default)
+        => RunPreflightAsync(gameId, gameRoot, pack, proxyName, gameTitle, allowOfflineAntiCheatOverride, ngxModelsRootOverride: null, cancellationToken);
+
+    public static Task<RuntimePreflightResult> RunPreflightAsync(
+        string gameId,
+        string gameRoot,
+        RuntimePack pack,
+        string proxyName,
+        string? gameTitle,
+        bool allowOfflineAntiCheatOverride,
+        string? ngxModelsRootOverride,
+        CancellationToken cancellationToken = default)
+        => RunPreflightAsync(gameId, gameRoot, pack, proxyName, gameTitle, allowOfflineAntiCheatOverride, ngxModelsRootOverride, probeWritePermissions: true, cancellationToken);
+
+    public static async Task<RuntimePreflightResult> RunPreflightAsync(
+        string gameId,
+        string gameRoot,
+        RuntimePack pack,
+        string proxyName,
+        string? gameTitle,
+        bool allowOfflineAntiCheatOverride,
+        string? ngxModelsRootOverride,
+        bool probeWritePermissions,
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(gameId);
@@ -205,7 +233,8 @@ public static class RuntimePreflightService
         }
 
         // 3. Xbox GDK / WindowsApps sandbox permission check
-        if (File.Exists(Path.Combine(gameRoot, "MicrosoftGame.config")) || gameRoot.Contains("WindowsApps", StringComparison.OrdinalIgnoreCase))
+        if (probeWritePermissions &&
+            (File.Exists(Path.Combine(gameRoot, "MicrosoftGame.config")) || gameRoot.Contains("WindowsApps", StringComparison.OrdinalIgnoreCase)))
         {
             try
             {
@@ -231,30 +260,59 @@ public static class RuntimePreflightService
             }
         }
 
-        // 3. Graphics API and DLSS detection
-        result.DetectedApi = DetectGraphicsApi(gameRoot);
+        // 3. Graphics API and DLSS/Streamline/FidelityFX/XeSS detection
+        var discovery = UpscalerDiscoveryService.Discover(gameRoot, ngxModelsRootOverride);
+        result.DetectedApi = discovery.DetectedGraphicsApi;
+        result.StreamlineDetected = discovery.StreamlineStackDetected;
+        result.StreamlineDlssDetected = discovery.HasStreamlineNgxOtaDlss;
+        result.NgxOtaDlssVersion = discovery.NgxOta.DlssVersion;
+        result.FidelityFxSdk2Detected = discovery.FidelityFxSdk2Files.Count > 0;
+        result.XeSsDetected = discovery.XeSSFiles.Count > 0;
+
         result.Checks.Add(new PreflightCheckItem
         {
             Category = "Graphics API",
             Name = "Rendering API",
             Severity = CheckItemSeverity.Passed,
             Message = $"Detected API: {result.DetectedApi}",
-            Details = $"API detected via root libraries and shaders in {Path.GetFileName(gameRoot)}."
+            Details = $"API detected via libraries and shaders in {Path.GetFileName(gameRoot)}."
         });
 
-        var dlssDll = FindFileIgnoreCase(gameRoot, "nvngx_dlss.dll");
-        if (dlssDll is not null)
+        if (discovery.HasLocalNgxDlss)
         {
+            var dlssFile = discovery.LocalNgxDlss[0];
             result.NativeDlssDetected = true;
-            var ver = FileVersionInfo.GetVersionInfo(dlssDll).ProductVersion;
-            result.NativeDlssVersion = string.IsNullOrWhiteSpace(ver) ? "detected" : ver;
+            result.PrimaryDlssPath = dlssFile.FullPath;
+            result.NativeDlssVersion = !string.IsNullOrWhiteSpace(dlssFile.ProductVersion)
+                ? dlssFile.ProductVersion
+                : (dlssFile.FileVersion ?? "detected");
             result.Checks.Add(new PreflightCheckItem
             {
                 Category = "DLSS Integration",
                 Name = "Native DLSS upscaler",
                 Severity = CheckItemSeverity.Passed,
                 Message = $"Native DLSS {result.NativeDlssVersion} found",
-                Details = dlssDll
+                Details = dlssFile.FullPath
+            });
+        }
+        else if (discovery.HasStreamlineNgxOtaDlss)
+        {
+            result.NativeDlssDetected = false;
+            var verNote = !string.IsNullOrWhiteSpace(discovery.NgxOta.DlssVersion)
+                ? $" (NGX OTA v{discovery.NgxOta.DlssVersion})"
+                : " (NGX OTA / DirectSR managed)";
+            var detailPath = discovery.StreamlineDirectSr.FirstOrDefault()?.FullPath
+                ?? discovery.StreamlineDlssPlugin.FirstOrDefault()?.FullPath
+                ?? discovery.StreamlineInterposer.FirstOrDefault()?.FullPath
+                ?? gameRoot;
+
+            result.Checks.Add(new PreflightCheckItem
+            {
+                Category = "DLSS Integration",
+                Name = "Streamline DLSS upscaler",
+                Severity = CheckItemSeverity.Passed,
+                Message = $"Streamline DLSS{verNote} active",
+                Details = detailPath
             });
         }
         else
@@ -269,31 +327,46 @@ public static class RuntimePreflightService
             });
         }
 
-        var dlssgDll = FindFileIgnoreCase(gameRoot, "nvngx_dlssg.dll");
-        if (dlssgDll is not null)
+        result.NativeDlssGDetected = discovery.HasLocalNgxDlssG || discovery.HasStreamlineNgxOtaDlssG;
+        if (discovery.HasLocalNgxDlssG)
         {
-            result.NativeDlssGDetected = true;
             result.Checks.Add(new PreflightCheckItem
             {
                 Category = "DLSS Integration",
                 Name = "Native Frame Generation",
                 Severity = CheckItemSeverity.Passed,
                 Message = "Native DLSS-G frame generation detected",
-                Details = dlssgDll
+                Details = discovery.LocalNgxDlssG[0].FullPath
+            });
+        }
+        else if (discovery.HasStreamlineNgxOtaDlssG)
+        {
+            result.Checks.Add(new PreflightCheckItem
+            {
+                Category = "DLSS Integration",
+                Name = "Native Frame Generation",
+                Severity = CheckItemSeverity.Passed,
+                Message = "Streamline DLSS-G frame generation detected",
+                Details = discovery.StreamlineDlssGPlugin.FirstOrDefault()?.FullPath
+                    ?? discovery.StreamlineInterposer.FirstOrDefault()?.FullPath
+                    ?? gameRoot
             });
         }
 
-        var streamlineDll = FindFileIgnoreCase(gameRoot, "sl.interposer.dll");
-        if (streamlineDll is not null)
+        if (discovery.StreamlineStackDetected)
         {
-            result.StreamlineDetected = true;
+            var streamlineDetail = discovery.StreamlineInterposer.FirstOrDefault()?.FullPath
+                ?? discovery.StreamlineDirectSr.FirstOrDefault()?.FullPath
+                ?? discovery.Files.FirstOrDefault(f => f.Kind.ToString().StartsWith("Streamline", StringComparison.Ordinal))?.FullPath
+                ?? gameRoot;
+
             result.Checks.Add(new PreflightCheckItem
             {
                 Category = "DLSS Integration",
                 Name = "Streamline Interposer",
                 Severity = CheckItemSeverity.Passed,
                 Message = "Streamline integration detected",
-                Details = streamlineDll
+                Details = streamlineDetail
             });
         }
 
@@ -316,15 +389,16 @@ public static class RuntimePreflightService
             }
             else
             {
+                bool isTampered = pack.IsTrusted || pack.FileHashes.Count > 0;
                 result.Checks.Add(new PreflightCheckItem
                 {
                     Category = "Runtime Pack",
                     Name = "Cryptographic integrity",
-                    Severity = pack.IsTrusted ? CheckItemSeverity.Failed : CheckItemSeverity.Warning,
-                    Message = pack.IsTrusted ? "Package integrity check failed" : "Unverified package (custom/local)",
+                    Severity = isTampered ? CheckItemSeverity.Failed : CheckItemSeverity.Warning,
+                    Message = isTampered ? "Package integrity check failed" : "Unverified package (custom/local)",
                     Details = string.Join("; ", errors)
                 });
-                if (pack.IsTrusted)
+                if (isTampered)
                 {
                     result.CanProceed = false;
                     result.Status = PreflightStatus.Blocked;
@@ -547,42 +621,6 @@ public static class RuntimePreflightService
         }
 
         return null;
-    }
-
-    private static string DetectGraphicsApi(string gameRoot)
-    {
-        if (FindFileIgnoreCase(gameRoot, "D3D12Core.dll") is not null ||
-            Directory.Exists(Path.Combine(gameRoot, "D3D12")) ||
-            Directory.GetFiles(gameRoot, "*d3d12*.dll", SearchOption.TopDirectoryOnly).Length > 0)
-        {
-            return "DX12";
-        }
-
-        if (Directory.GetFiles(gameRoot, "*vulkan*.dll", SearchOption.TopDirectoryOnly).Length > 0 ||
-            FindFileIgnoreCase(gameRoot, "vulkan-1.dll") is not null)
-        {
-            return "Vulkan";
-        }
-
-        if (Directory.GetFiles(gameRoot, "*d3d11*.dll", SearchOption.TopDirectoryOnly).Length > 0)
-        {
-            return "DX11";
-        }
-
-        return "DX12"; // Default modern target
-    }
-
-    private static string? FindFileIgnoreCase(string directory, string filename)
-    {
-        try
-        {
-            return Directory.EnumerateFiles(directory, filename, SearchOption.TopDirectoryOnly)
-                .FirstOrDefault();
-        }
-        catch
-        {
-            return null;
-        }
     }
 
     private static async Task<string> ComputeSha256Async(string filePath, CancellationToken cancellationToken)

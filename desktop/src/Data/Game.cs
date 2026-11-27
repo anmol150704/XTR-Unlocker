@@ -138,6 +138,11 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
     [NotifyPropertyChangedFor(nameof(FrameGenDotColor))]
     public partial RuntimeIntegrationProfile? RuntimeProfile { get; set; }
 
+    partial void OnRuntimeProfileChanged(RuntimeIntegrationProfile? value)
+    {
+        RefreshRuntimeHealth();
+    }
+
     [ObservableProperty]
     [Ignore]
     [NotifyPropertyChangedFor(nameof(IntegrationStatus))]
@@ -154,26 +159,214 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
     [NotifyPropertyChangedFor(nameof(DlssArchitectureSummary))]
     public partial RuntimeInstallManifest? RuntimeManifest { get; set; }
 
+    partial void OnRuntimeManifestChanged(RuntimeInstallManifest? value)
+    {
+        RefreshRuntimeHealth();
+    }
+
+    [ObservableProperty]
     [Ignore]
-    public string IntegrationStatus => RuntimeManifest is not null
-        ? CurrentDLSS is not null ? "Runtime ready - DLSS detected" : "Runtime installed - DLSS not detected"
-        : CurrentDLSS is not null ? "DLSS detected - runtime not installed" : "No runtime configured";
+    [NotifyPropertyChangedFor(nameof(IntegrationStatus))]
+    [NotifyPropertyChangedFor(nameof(DlssArchitectureSummary))]
+    public partial bool HasStreamlineStack { get; set; }
+
+    [ObservableProperty]
+    [Ignore]
+    [NotifyPropertyChangedFor(nameof(IntegrationStatus))]
+    [NotifyPropertyChangedFor(nameof(DlssGenerationText))]
+    [NotifyPropertyChangedFor(nameof(DlssVersionLabel))]
+    [NotifyPropertyChangedFor(nameof(DlssBadgeText))]
+    [NotifyPropertyChangedFor(nameof(DlssArchitectureSummary))]
+    [NotifyPropertyChangedFor(nameof(HasAnyDlss))]
+    public partial bool HasStreamlineDlss { get; set; }
+
+    [ObservableProperty]
+    [Ignore]
+    [NotifyPropertyChangedFor(nameof(DlssArchitectureSummary))]
+    [NotifyPropertyChangedFor(nameof(HasFrameGenBadge))]
+    [NotifyPropertyChangedFor(nameof(HasNativeDlssGOnly))]
+    [NotifyPropertyChangedFor(nameof(FrameGenBadgeText))]
+    public partial bool HasStreamlineDlssG { get; set; }
+
+    [ObservableProperty]
+    [Ignore]
+    [NotifyPropertyChangedFor(nameof(DlssArchitectureSummary))]
+    public partial bool HasStreamlineDlssD { get; set; }
+
+    [ObservableProperty]
+    [Ignore]
+    [NotifyPropertyChangedFor(nameof(DlssGenerationText))]
+    [NotifyPropertyChangedFor(nameof(DlssVersionLabel))]
+    [NotifyPropertyChangedFor(nameof(DlssBadgeText))]
+    public partial string? StreamlineDlssVersion { get; set; }
+
+    [ObservableProperty]
+    [Ignore]
+    public partial string? StreamlineDlssGVersion { get; set; }
+
+    [ObservableProperty]
+    [Ignore]
+    public partial string? StreamlineDlssDVersion { get; set; }
+
+    [ObservableProperty]
+    [Ignore]
+    public partial string? StreamlineSdkVersion { get; set; }
+
+    [ObservableProperty]
+    [Ignore]
+    public partial bool HasFidelityFxSdk2 { get; set; }
+
+    private RuntimeHealthReport? _cachedRuntimeHealth;
+
+    internal RuntimeHealthReport? GetVerifiedRuntimeHealth()
+    {
+        if (RuntimeManifest is null || string.IsNullOrWhiteSpace(RuntimeManifest.InstallRoot))
+        {
+            _cachedRuntimeHealth = null;
+            return null;
+        }
+
+        var proxyName = string.IsNullOrWhiteSpace(RuntimeManifest.ProxyFileName)
+            ? "dxgi.dll"
+            : RuntimeManifest.ProxyFileName;
+
+        _cachedRuntimeHealth = RuntimeHealthService.CheckHealth(RuntimeManifest.InstallRoot, proxyName);
+        return _cachedRuntimeHealth;
+    }
+
+    internal void RefreshRuntimeHealth()
+    {
+        _ = GetVerifiedRuntimeHealth();
+        NotifyRuntimeHealthChanged();
+    }
+
+    internal void NotifyRuntimeHealthChanged()
+    {
+        OnPropertyChanged(nameof(IntegrationStatus));
+        OnPropertyChanged(nameof(IsTurboBoostActive));
+        OnPropertyChanged(nameof(HasActiveRuntimeFg));
+        OnPropertyChanged(nameof(HasRuntimeBoostOrFg));
+        OnPropertyChanged(nameof(HasFrameGenBadge));
+        OnPropertyChanged(nameof(HasNativeDlssGOnly));
+        OnPropertyChanged(nameof(FrameGenBadgeText));
+        OnPropertyChanged(nameof(FrameGenBadgeForeground));
+        OnPropertyChanged(nameof(FrameGenBadgeBackground));
+        OnPropertyChanged(nameof(FrameGenBadgeBorder));
+        OnPropertyChanged(nameof(FrameGenDotColor));
+    }
+
+    private bool HasOperationalRuntime()
+    {
+        if (RuntimeManifest is null)
+            return false;
+
+        var health = _cachedRuntimeHealth ?? GetVerifiedRuntimeHealth();
+        return health?.IsRuntimeOperational == true;
+    }
 
     [Ignore]
-    public string DlssGenerationText => DlssVersionHelper.FormatGeneration(CurrentDLSS?.DisplayVersion);
+    public bool HasAnyDlss => CurrentDLSS is not null || HasStreamlineDlss;
 
     [Ignore]
-    public string DlssVersionLabel => DlssVersionHelper.FormatVersionLabel(CurrentDLSS?.DisplayVersion);
+    public string IntegrationStatus
+    {
+        get
+        {
+            if (RuntimeManifest is not null)
+            {
+                if (!HasOperationalRuntime())
+                {
+                    return "Runtime incomplete - Restore recommended";
+                }
+
+                return HasAnyDlss
+                    ? (CurrentDLSS is null && HasStreamlineDlss ? "Runtime ready - Streamline DLSS active" : "Runtime ready - DLSS detected")
+                    : "Runtime installed - DLSS not detected";
+            }
+
+            if (CurrentDLSS is not null)
+            {
+                return "DLSS detected - runtime not installed";
+            }
+
+            if (HasStreamlineDlss)
+            {
+                return "Streamline DLSS (NGX OTA) - runtime not installed";
+            }
+
+            return "No runtime configured";
+        }
+    }
 
     [Ignore]
-    public string DlssBadgeText => DlssVersionHelper.FormatBadge(CurrentDLSS?.DisplayVersion);
+    public string DlssGenerationText
+    {
+        get
+        {
+            if (CurrentDLSS is not null)
+            {
+                return DlssVersionHelper.FormatGeneration(CurrentDLSS.DisplayVersion);
+            }
+
+            if (HasStreamlineDlss)
+            {
+                return string.IsNullOrWhiteSpace(StreamlineDlssVersion)
+                    ? "Streamline DLSS"
+                    : DlssVersionHelper.FormatGeneration(StreamlineDlssVersion);
+            }
+
+            return DlssVersionHelper.FormatGeneration(null);
+        }
+    }
+
+    [Ignore]
+    public string DlssVersionLabel
+    {
+        get
+        {
+            if (CurrentDLSS is not null)
+            {
+                return DlssVersionHelper.FormatVersionLabel(CurrentDLSS.DisplayVersion);
+            }
+
+            if (HasStreamlineDlss)
+            {
+                return string.IsNullOrWhiteSpace(StreamlineDlssVersion)
+                    ? "Streamline DLSS (NGX OTA)"
+                    : $"{DlssVersionHelper.FormatVersionLabel(StreamlineDlssVersion)} (OTA)";
+            }
+
+            return DlssVersionHelper.FormatVersionLabel(null);
+        }
+    }
+
+    [Ignore]
+    public string DlssBadgeText
+    {
+        get
+        {
+            if (CurrentDLSS is not null)
+            {
+                return DlssVersionHelper.FormatBadge(CurrentDLSS.DisplayVersion);
+            }
+
+            if (HasStreamlineDlss)
+            {
+                return string.IsNullOrWhiteSpace(StreamlineDlssVersion)
+                    ? "SL DLSS (OTA)"
+                    : $"{DlssVersionHelper.FormatBadge(StreamlineDlssVersion)} (OTA)";
+            }
+
+            return DlssVersionHelper.FormatBadge(null);
+        }
+    }
 
     [Ignore]
     public bool IsTurboBoostActive
     {
         get
         {
-            if (RuntimeManifest is null)
+            if (!HasOperationalRuntime())
                 return false;
 
             if (RuntimeProfile?.Options?.TryGetPropertyValue("Preset", out var node) == true &&
@@ -188,36 +381,36 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
 
     [Ignore]
     public bool HasActiveRuntimeFg =>
-        RuntimeManifest is not null &&
+        HasOperationalRuntime() &&
         (RuntimeProfile is null || !string.Equals(RuntimeProfile.FrameGenerationEnabled, "false", StringComparison.OrdinalIgnoreCase));
 
     [Ignore]
-    public bool HasRuntimeBoostOrFg => DlssVersionHelper.ComputeHasRuntimeBoostOrFg(RuntimeManifest is not null, IsTurboBoostActive, HasActiveRuntimeFg);
+    public bool HasRuntimeBoostOrFg => DlssVersionHelper.ComputeHasRuntimeBoostOrFg(HasOperationalRuntime(), IsTurboBoostActive, HasActiveRuntimeFg);
 
     [Ignore]
-    public bool HasFrameGenBadge => HasRuntimeBoostOrFg || CurrentDLSS_G is not null;
+    public bool HasFrameGenBadge => HasRuntimeBoostOrFg || CurrentDLSS_G is not null || HasStreamlineDlssG;
 
     [Ignore]
-    public bool HasNativeDlssGOnly => DlssVersionHelper.ComputeHasNativeDlssGOnly(HasRuntimeBoostOrFg, CurrentDLSS_G is not null);
+    public bool HasNativeDlssGOnly => DlssVersionHelper.ComputeHasNativeDlssGOnly(HasRuntimeBoostOrFg, CurrentDLSS_G is not null || HasStreamlineDlssG);
 
     [Ignore]
     public string FrameGenBadgeText => DlssVersionHelper.FormatFrameGenBadge(
-        RuntimeManifest is not null,
+        HasOperationalRuntime(),
         IsTurboBoostActive,
         HasActiveRuntimeFg,
-        CurrentDLSS_G is not null);
+        CurrentDLSS_G is not null || HasStreamlineDlssG);
 
     [Ignore]
-    public string FrameGenBadgeForeground => RuntimeManifest is not null ? "#E6FCEE" : "#E0F2FE";
+    public string FrameGenBadgeForeground => HasRuntimeBoostOrFg ? "#E6FCEE" : "#E0F2FE";
 
     [Ignore]
-    public string FrameGenBadgeBackground => RuntimeManifest is not null ? "#DD153720" : "#DD0F2942";
+    public string FrameGenBadgeBackground => HasRuntimeBoostOrFg ? "#DD153720" : "#DD0F2942";
 
     [Ignore]
-    public string FrameGenBadgeBorder => RuntimeManifest is not null ? "#6034C759" : "#6038BDF8";
+    public string FrameGenBadgeBorder => HasRuntimeBoostOrFg ? "#6034C759" : "#6038BDF8";
 
     [Ignore]
-    public string FrameGenDotColor => RuntimeManifest is not null ? "#34C759" : "#38BDF8";
+    public string FrameGenDotColor => HasRuntimeBoostOrFg ? "#34C759" : "#38BDF8";
 
     [Ignore]
     public string DlssArchitectureSummary
@@ -232,6 +425,13 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
                 return "DLSS 3.5 (Super Resolution + Ray Reconstruction)";
             if (CurrentDLSS is not null)
                 return $"{DlssGenerationText} (Super Resolution)";
+            if (HasStreamlineDlss)
+            {
+                var features = new List<string> { "Super Resolution" };
+                if (HasStreamlineDlssG) features.Add("Frame Generation");
+                if (HasStreamlineDlssD) features.Add("Ray Reconstruction");
+                return $"Streamline DirectSR / NGX OTA ({string.Join(" + ", features)})";
+            }
             return "No DLSS Detected";
         }
     }
@@ -257,6 +457,7 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
             {
                 RuntimeProfile = profile;
                 RuntimeManifest = manifest;
+                RefreshRuntimeHealth();
                 return Task.CompletedTask;
             }).ConfigureAwait(false);
         }
@@ -275,7 +476,11 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
         }
 
         await RuntimeIntegrationProfileStore.SaveAsync(profile).ConfigureAwait(false);
-        App.CurrentApp.RunOnUIThread(() => RuntimeProfile = profile);
+        App.CurrentApp.RunOnUIThread(() =>
+        {
+            RuntimeProfile = profile;
+            RefreshRuntimeHealth();
+        });
     }
 
     internal async Task SaveRuntimeManifestAsync(RuntimeInstallManifest manifest)
@@ -287,13 +492,21 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
         }
 
         await RuntimeInstallManifestStore.SaveAsync(manifest).ConfigureAwait(false);
-        App.CurrentApp.RunOnUIThread(() => RuntimeManifest = manifest);
+        App.CurrentApp.RunOnUIThread(() =>
+        {
+            RuntimeManifest = manifest;
+            RefreshRuntimeHealth();
+        });
     }
 
     internal async Task RemoveRuntimeProfileAsync()
     {
         await RuntimeIntegrationProfileStore.DeleteAsync(ID).ConfigureAwait(false);
-        App.CurrentApp.RunOnUIThread(() => RuntimeProfile = null);
+        App.CurrentApp.RunOnUIThread(() =>
+        {
+            RuntimeProfile = null;
+            RefreshRuntimeHealth();
+        });
     }
 
     [Ignore]
@@ -308,6 +521,8 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
     [NotifyPropertyChangedFor(nameof(DlssGenerationText))]
     [NotifyPropertyChangedFor(nameof(DlssVersionLabel))]
     [NotifyPropertyChangedFor(nameof(DlssBadgeText))]
+    [NotifyPropertyChangedFor(nameof(DlssArchitectureSummary))]
+    [NotifyPropertyChangedFor(nameof(HasAnyDlss))]
     public partial GameAsset? CurrentDLSS { get; set; } = null;
 
     [ObservableProperty]
@@ -319,6 +534,7 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
     [NotifyPropertyChangedFor(nameof(FrameGenBadgeText))]
     [NotifyPropertyChangedFor(nameof(HasFrameGenBadge))]
     [NotifyPropertyChangedFor(nameof(HasNativeDlssGOnly))]
+    [NotifyPropertyChangedFor(nameof(DlssArchitectureSummary))]
     public partial GameAsset? CurrentDLSS_G { get; set; } = null;
 
     [ObservableProperty]
@@ -327,6 +543,7 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
 
     [ObservableProperty]
     [Ignore]
+    [NotifyPropertyChangedFor(nameof(DlssArchitectureSummary))]
     public partial GameAsset? CurrentDLSS_D { get; set; } = null;
 
     [ObservableProperty]
@@ -511,25 +728,14 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
                     Logger.Verbose($"Skipping updating cover for {Title}");
                 }
 
-                var enumerationOptions = new EnumerationOptions();
-                enumerationOptions.RecurseSubdirectories = true;
-                enumerationOptions.AttributesToSkip |= FileAttributes.ReparsePoint;
-
                 var oldGameAssets = GameAssets.ToList();
                 GameAssets.Clear();
                 using (await Database.Instance.Mutex.LockAsync())
                 {
                     await Database.Instance.Connection.ExecuteAsync("DELETE FROM game_asset WHERE id = ?", ID).ConfigureAwait(false);
                 }
-                // TODO: See if changing these to filter specific files, or getting very *.dll and looking for our specific ones is faster
-                var dllPaths = Directory.GetFiles(InstallPath, "*.dll", enumerationOptions);
 
-                /*
-                var dlssDllPaths = Directory.GetFiles(InstallPath, "nvngx_dlss.dll", enumerationOptions);
-                var dlssgDllPaths = Directory.GetFiles(InstallPath, "nvngx_dlssg.dll", enumerationOptions);
-                var dlssdDllPaths = Directory.GetFiles(InstallPath, "nvngx_dlssd.dll", enumerationOptions);
-                var xessDllPaths = Directory.GetFiles(InstallPath, "libxess.dll", enumerationOptions);
-                */
+                var discovery = UpscalerDiscoveryService.Discover(InstallPath);
 
                 var dllHistory = new List<GameHistory>();
                 var unknownGameAssets = new List<GameAsset>();
@@ -537,6 +743,11 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
                 void ProcessGame_ProcessGameAsset(GameAsset gameAsset)
                 {
                     gameAsset.LoadVersionAndHash();
+
+                    if (!IsSwappableAssetType(gameAsset.AssetType))
+                    {
+                        return;
+                    }
 
                     var oldGameAsset = oldGameAssets.FirstOrDefault(x => x.Path.Equals(gameAsset.Path, StringComparison.OrdinalIgnoreCase));
 
@@ -605,130 +816,44 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
                     }
 
                     LoadBackupForGameAsset(gameAsset);
-
                 }
 
-                foreach (var dllPath in dllPaths)
+                foreach (var discoveredFile in discovery.Files)
                 {
-                    var dllName = Path.GetFileName(dllPath);
+                    var assetType = MapKindToGameAssetType(discoveredFile.Kind);
+                    if (assetType == GameAssetType.Unknown)
+                    {
+                        continue;
+                    }
 
-                    // NOTE: DLL type
-                    // The case of these files should never change, right?
-                    if (dllName == "nvngx_dlss.dll")
+                    var gameAsset = new GameAsset()
                     {
-                        var gameAsset = new GameAsset()
-                        {
-                            Id = ID,
-                            AssetType = GameAssetType.DLSS,
-                            Path = dllPath,
-                        };
-                        ProcessGame_ProcessGameAsset(gameAsset);
-                        GameAssets.Add(gameAsset);
-                    }
-                    else if (dllName == "nvngx_dlssg.dll")
-                    {
-                        var gameAsset = new GameAsset()
-                        {
-                            Id = ID,
-                            AssetType = GameAssetType.DLSS_G,
-                            Path = dllPath,
-                        };
-                        ProcessGame_ProcessGameAsset(gameAsset);
-                        GameAssets.Add(gameAsset);
-                    }
-                    else if (dllName == "nvngx_dlssd.dll")
-                    {
-                        var gameAsset = new GameAsset()
-                        {
-                            Id = ID,
-                            AssetType = GameAssetType.DLSS_D,
-                            Path = dllPath,
-                        };
-                        ProcessGame_ProcessGameAsset(gameAsset);
-                        GameAssets.Add(gameAsset);
-                    }
-                    else if (dllName == "amd_fidelityfx_dx12.dll")
-                    {
-                        var gameAsset = new GameAsset()
-                        {
-                            Id = ID,
-                            AssetType = GameAssetType.FSR_31_DX12,
-                            Path = dllPath,
-                        };
-                        ProcessGame_ProcessGameAsset(gameAsset);
-                        GameAssets.Add(gameAsset);
-                    }
-                    else if (dllName == "amd_fidelityfx_vk.dll")
-                    {
-                        var gameAsset = new GameAsset()
-                        {
-                            Id = ID,
-                            AssetType = GameAssetType.FSR_31_VK,
-                            Path = dllPath,
-                        };
-                        ProcessGame_ProcessGameAsset(gameAsset);
-                        GameAssets.Add(gameAsset);
-                    }
-                    else if (dllName == "libxess.dll")
-                    {
-                        var gameAsset = new GameAsset()
-                        {
-                            Id = ID,
-                            AssetType = GameAssetType.XeSS,
-                            Path = dllPath,
-                        };
-                        ProcessGame_ProcessGameAsset(gameAsset);
-                        GameAssets.Add(gameAsset);
-                    }
-                    else if (dllName == "libxess_dx11.dll")
-                    {
-                        var gameAsset = new GameAsset()
-                        {
-                            Id = ID,
-                            AssetType = GameAssetType.XeSS_DX11,
-                            Path = dllPath,
-                        };
-                        ProcessGame_ProcessGameAsset(gameAsset);
-                        GameAssets.Add(gameAsset);
-                    }
-                    else if (dllName == "libxell.dll")
-                    {
-                        var gameAsset = new GameAsset()
-                        {
-                            Id = ID,
-                            AssetType = GameAssetType.XeLL,
-                            Path = dllPath,
-                        };
-                        ProcessGame_ProcessGameAsset(gameAsset);
-                        GameAssets.Add(gameAsset);
-                    }
-                    else if (dllName == "libxess_fg.dll")
-                    {
-                        var gameAsset = new GameAsset()
-                        {
-                            Id = ID,
-                            AssetType = GameAssetType.XeSS_FG,
-                            Path = dllPath,
-                        };
-                        ProcessGame_ProcessGameAsset(gameAsset);
-                        GameAssets.Add(gameAsset);
-                    }
+                        Id = ID,
+                        AssetType = assetType,
+                        Path = discoveredFile.FullPath,
+                    };
+                    ProcessGame_ProcessGameAsset(gameAsset);
+                    GameAssets.Add(gameAsset);
                 }
 
                 App.CurrentApp.RunOnUIThread(() =>
                 {
-                    UpdateCurrentDLLsFromGameAssets();
+                    UpdateCurrentDLLsFromGameAssets(discovery);
+                    RefreshRuntimeHealth();
                 });
 
                 if (GameAssets.Any())
                 {
-                    newHasSwappableItems = true;
+                    newHasSwappableItems = GameAssets.Any(x => IsSwappableAssetType(x.AssetType)) || discovery.HasAnyDlssCapability;
 
                     //App.CurrentApp.Database.ExecuteAsync
                     //savePoint is not valid, and should be the result of a call to SaveTransactionPoint.
                     using (await Database.Instance.Mutex.LockAsync())
                     {
-                        await Database.Instance.Connection.InsertAllAsync(dllHistory, false).ConfigureAwait(false);
+                        if (dllHistory.Count > 0)
+                        {
+                            await Database.Instance.Connection.InsertAllAsync(dllHistory, false).ConfigureAwait(false);
+                        }
                         await Database.Instance.Connection.InsertAllAsync(GameAssets, false).ConfigureAwait(false);
                     }
 
@@ -736,6 +861,10 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
                     {
                         GameManager.Instance.AddUnknownGameAssets(GameLibrary, Title, unknownGameAssets);
                     }
+                }
+                else if (discovery.HasAnyDlssCapability)
+                {
+                    newHasSwappableItems = true;
                 }
 
                 if (coverImageTask is not null)
@@ -823,6 +952,85 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
 
     protected abstract Task UpdateCacheImageAsync();
 
+    internal static bool IsSwappableAssetType(GameAssetType assetType) => assetType switch
+    {
+        GameAssetType.DLSS => true,
+        GameAssetType.DLSS_G => true,
+        GameAssetType.DLSS_D => true,
+        GameAssetType.FSR_31_DX12 => true,
+        GameAssetType.FSR_31_VK => true,
+        GameAssetType.XeSS => true,
+        GameAssetType.XeSS_FG => true,
+        GameAssetType.XeSS_DX11 => true,
+        GameAssetType.XeLL => true,
+        _ => false
+    };
+
+    private static bool IsStreamlineAssetType(GameAssetType assetType) => assetType is
+        GameAssetType.Streamline_Interposer
+        or GameAssetType.Streamline_DirectSR
+        or GameAssetType.Streamline_DLSS
+        or GameAssetType.Streamline_DLSS_G
+        or GameAssetType.Streamline_DLSS_D
+        or GameAssetType.Streamline_Common
+        or GameAssetType.Streamline_Reflex
+        or GameAssetType.Streamline_PCL
+        or GameAssetType.Streamline_NIS
+        or GameAssetType.Streamline_DeepDVC
+        or GameAssetType.Streamline_NvPerf;
+
+    internal static bool TryMapAssetTypeToSwapSlot(GameAssetType assetType, out UpscalerSwapSlot slot)
+    {
+        switch (assetType)
+        {
+            case GameAssetType.DLSS: slot = UpscalerSwapSlot.Dlss; return true;
+            case GameAssetType.DLSS_G: slot = UpscalerSwapSlot.DlssG; return true;
+            case GameAssetType.DLSS_D: slot = UpscalerSwapSlot.DlssD; return true;
+            case GameAssetType.FSR_31_DX12: slot = UpscalerSwapSlot.Fsr31Dx12; return true;
+            case GameAssetType.FSR_31_VK: slot = UpscalerSwapSlot.Fsr31Vk; return true;
+            case GameAssetType.XeSS: slot = UpscalerSwapSlot.XeSs; return true;
+            case GameAssetType.XeSS_FG: slot = UpscalerSwapSlot.XeSsFg; return true;
+            case GameAssetType.XeLL: slot = UpscalerSwapSlot.XeLl; return true;
+            case GameAssetType.XeSS_DX11: slot = UpscalerSwapSlot.XeSsDx11; return true;
+            default: slot = default; return false;
+        }
+    }
+
+    private static GameAssetType MapKindToGameAssetType(UpscalerAssetKind kind) => kind switch
+    {
+        UpscalerAssetKind.NgxDlss => GameAssetType.DLSS,
+        UpscalerAssetKind.NgxDlssG => GameAssetType.DLSS_G,
+        UpscalerAssetKind.NgxDlssD => GameAssetType.DLSS_D,
+        UpscalerAssetKind.NgxDlssNr => GameAssetType.DLSS_NR,
+        UpscalerAssetKind.StreamlineInterposer => GameAssetType.Streamline_Interposer,
+        UpscalerAssetKind.StreamlineDirectSR => GameAssetType.Streamline_DirectSR,
+        UpscalerAssetKind.StreamlineDlss => GameAssetType.Streamline_DLSS,
+        UpscalerAssetKind.StreamlineDlssG => GameAssetType.Streamline_DLSS_G,
+        UpscalerAssetKind.StreamlineDlssD => GameAssetType.Streamline_DLSS_D,
+        UpscalerAssetKind.StreamlineCommon => GameAssetType.Streamline_Common,
+        UpscalerAssetKind.StreamlineReflex => GameAssetType.Streamline_Reflex,
+        UpscalerAssetKind.StreamlinePcl => GameAssetType.Streamline_PCL,
+        UpscalerAssetKind.StreamlineNis => GameAssetType.Streamline_NIS,
+        UpscalerAssetKind.StreamlineDeepDvc => GameAssetType.Streamline_DeepDVC,
+        UpscalerAssetKind.StreamlineNvPerf => GameAssetType.Streamline_NvPerf,
+        UpscalerAssetKind.Fsr31Dx12 => GameAssetType.FSR_31_DX12,
+        UpscalerAssetKind.Fsr31Vk => GameAssetType.FSR_31_VK,
+        UpscalerAssetKind.FidelityFxSdk2LoaderDx12 => GameAssetType.FidelityFX_SDK2_Loader_DX12,
+        UpscalerAssetKind.FidelityFxSdk2UpscalerDx12 => GameAssetType.FidelityFX_SDK2_Upscaler_DX12,
+        UpscalerAssetKind.FidelityFxSdk2FrameGenerationDx12 => GameAssetType.FidelityFX_SDK2_FrameGeneration_DX12,
+        UpscalerAssetKind.FidelityFxSdk2DenoiserDx12 => GameAssetType.FidelityFX_SDK2_Denoiser_DX12,
+        UpscalerAssetKind.FidelityFxSdk2RadianceCacheDx12 => GameAssetType.FidelityFX_SDK2_RadianceCache_DX12,
+        UpscalerAssetKind.FidelityFxSdk2UpscalerVk => GameAssetType.FidelityFX_SDK2_Upscaler_VK,
+        UpscalerAssetKind.FidelityFxSdk2FrameGenerationVk => GameAssetType.FidelityFX_SDK2_FrameGeneration_VK,
+        UpscalerAssetKind.FidelityFxSdk2LoaderVk => GameAssetType.FidelityFX_SDK2_Loader_VK,
+        UpscalerAssetKind.FidelityFxSdk2Other => GameAssetType.FidelityFX_SDK2_Other,
+        UpscalerAssetKind.XeSS => GameAssetType.XeSS,
+        UpscalerAssetKind.XeSSDx11 => GameAssetType.XeSS_DX11,
+        UpscalerAssetKind.XeSSFg => GameAssetType.XeSS_FG,
+        UpscalerAssetKind.XeLL => GameAssetType.XeLL,
+        _ => GameAssetType.Unknown
+    };
+
     internal async Task<(bool Success, string Message, bool PromptToRelaunchAsAdmin)> ResetDllAsync(GameAssetType gameAssetType)
     {
         var backupRecordType = DLLManager.Instance.GetAssetBackupType(gameAssetType);
@@ -830,16 +1038,85 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
 
         if (existingBackupRecords.Count == 0)
         {
-            Logger.Info("No backup records found.");
-            return (false, "Unable to reset to default. Please repair your game manually.", false);
+            var existingRecords = this.GameAssets.Where(x => x.AssetType == gameAssetType).ToList();
+            var originallyAbsentRecords = existingRecords
+                .Where(x => DeployedDllMarkerStore.IsOriginallyAbsent(ID, x.Path))
+                .ToList();
+
+            if (originallyAbsentRecords.Count == 0)
+            {
+                Logger.Info("No backup records found.");
+                return (false, "Unable to reset to default. Please repair your game manually.", false);
+            }
+
+            var resetHistory = new List<GameHistory>();
+            foreach (var deployedRecord in originallyAbsentRecords)
+            {
+                try
+                {
+                    if (File.Exists(deployedRecord.Path))
+                    {
+                        File.Delete(deployedRecord.Path);
+                    }
+                }
+                catch (UnauthorizedAccessException err)
+                {
+                    Logger.Error(err);
+                    if (App.CurrentApp.IsAdminUser() is false)
+                    {
+                        return (false, "Unable to reset to default. Running XTR Unlocker as administrator may fix this.", true);
+                    }
+                    else
+                    {
+                        return (false, "Unable to reset to default. Please repair your game manually.", false);
+                    }
+                }
+                catch (Exception err)
+                {
+                    Logger.Error(err);
+                    return (false, "Unable to reset to default. Please repair your game manually.", false);
+                }
+
+                DeployedDllMarkerStore.RemoveMarker(ID, deployedRecord.Path);
+                GameAssets.Remove(deployedRecord);
+
+                resetHistory.Add(new GameHistory()
+                {
+                    GameId = ID,
+                    EventType = GameHistoryEventType.DLLReset,
+                    EventTime = DateTime.Now,
+                    AssetType = gameAssetType,
+                    AssetPath = deployedRecord.Path,
+                    AssetVersion = "Removed deployed DLL",
+                });
+            }
+
+            var preinspectedNgxOta = GameAssets.Any(x => IsStreamlineAssetType(x.AssetType))
+                ? UpscalerDiscoveryService.InspectNgxOtaStore()
+                : null;
+
+            await App.CurrentApp.RunOnUIThreadAsync(() =>
+            {
+                UpdateCurrentDLLsFromGameAssets(preinspectedNgxOta: preinspectedNgxOta);
+                return Task.CompletedTask;
+            }).ConfigureAwait(false);
+
+            using (await Database.Instance.Mutex.LockAsync())
+            {
+                await Database.Instance.Connection.InsertAllAsync(resetHistory, false);
+                await Database.Instance.Connection.ExecuteAsync("DELETE FROM game_asset WHERE id = ?", ID).ConfigureAwait(false);
+                await Database.Instance.Connection.InsertAllAsync(GameAssets, false).ConfigureAwait(false);
+            }
+
+            return (true, string.Empty, false);
         }
         else
         {
             var dllHistory = new List<GameHistory>();
             foreach (var existingBackupRecord in existingBackupRecords)
             {
-                var primaryRecordName = existingBackupRecord.Path.Replace(".dlsss", string.Empty);
-                var existingRecords = this.GameAssets.Where(x => x.AssetType == gameAssetType && x.Path.Equals(primaryRecordName)).ToList();
+                var primaryRecordName = existingBackupRecord.Path.Replace(".dlsss", string.Empty, StringComparison.OrdinalIgnoreCase);
+                var existingRecords = this.GameAssets.Where(x => x.AssetType == gameAssetType && x.Path.Equals(primaryRecordName, StringComparison.OrdinalIgnoreCase)).ToList();
 
                 if (existingRecords.Count != 1)
                 {
@@ -914,7 +1191,7 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
     /// <summary>
     /// Attempts to update a DLSS dll in a given game.
     /// </summary>
-    /// <param name="dlssRecord"></param>
+    /// <param name="dllRecord"></param>
     /// <returns>Tuple containing a boolean of Success, if this is false there will be an error message in the Message response.</returns>
     internal async Task<(bool Success, string Message, bool PromptToRelaunchAsAdmin)> UpdateDllAsync(DLLRecord dllRecord)
     {
@@ -933,14 +1210,10 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
             return (false, "Downloaded dll not found.", false);
         }
 
-        var existingRecords = this.GameAssets.Where(x => x.AssetType == dllRecord.AssetType).ToList();
-        if (existingRecords.Count == 0)
+        if (!IsSwappableAssetType(dllRecord.AssetType) || !TryMapAssetTypeToSwapSlot(dllRecord.AssetType, out var swapSlot))
         {
-            return (false, "Unable to swap dll as there were no dll records to update.", false);
+            return (false, "Unsupported DLL asset type for swapping.", false);
         }
-
-        var backupRecordType = DLLManager.Instance.GetAssetBackupType(dllRecord.AssetType);
-        var existingBackupRecords = this.GameAssets.Where(x => x.AssetType == backupRecordType).ToList();
 
         var versionInfo = FileVersionInfo.GetVersionInfo(dllRecord.LocalRecord.ExpectedPath);
         var dllVersion = versionInfo.GetFormattedFileVersion();
@@ -949,7 +1222,6 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
         {
             return (false, "Unable to swap dll because dll hash was invalid.", false);
         }
-
 
         // Validate new DLL
         if (Settings.Instance.AllowUntrusted == false)
@@ -961,37 +1233,44 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
             }
         }
 
+        var existingRecords = this.GameAssets.Where(x => x.AssetType == dllRecord.AssetType).ToList();
+        var backupRecordType = DLLManager.Instance.GetAssetBackupType(dllRecord.AssetType);
+        var existingBackupRecords = this.GameAssets.Where(x => x.AssetType == backupRecordType).ToList();
+
         var newGameAssets = new List<GameAsset>();
+        var dllHistory = new List<GameHistory>();
 
-        if (existingBackupRecords.Count == 0)
+        if (existingRecords.Count == 0)
         {
-            // Backup old dlls if no backup exists.
-            foreach (var existingRecord in existingRecords)
-            {
-                var dllPath = Path.GetDirectoryName(existingRecord.Path);
-                if (string.IsNullOrEmpty(dllPath))
-                {
-                    Logger.Error("dllPath was null or empty.");
-                    return (false, "Unable to swap dll. Please check your error log for more information.", false);
-                }
+            var resolution = SwapTargetResolver.ResolveTargetForMissingAsset(
+                swapSlot,
+                InstallPath,
+                GameAssets.Select(x => x.Path).ToList(),
+                RuntimeManifest is not null,
+                RuntimeManifest?.InstallRoot);
 
-                // Ensure we don't do anything if the target exists.
-                var backupDllPath = $"{existingRecord.Path}.dlsss";
-                if (File.Exists(backupDllPath) == false)
+            if (!resolution.CanSwap)
+            {
+                return (false, resolution.Reason, false);
+            }
+
+            if (resolution.TargetAlreadyExistsOnDisk)
+            {
+                var backupDllPath = $"{resolution.TargetPath}.dlsss";
+                if (File.Exists(backupDllPath) == false && !DeployedDllMarkerStore.IsOriginallyAbsent(ID, resolution.TargetPath))
                 {
                     try
                     {
-                        File.Copy(existingRecord.Path, backupDllPath);
+                        File.Copy(resolution.TargetPath, backupDllPath);
 
-                        var backupGameAsset = new GameAsset()
+                        var existingOnDiskAsset = new GameAsset()
                         {
                             Id = ID,
                             AssetType = backupRecordType,
                             Path = backupDllPath,
-                            Version = existingRecord.Version,
-                            Hash = existingRecord.Hash,
                         };
-                        newGameAssets.Add(backupGameAsset);
+                        existingOnDiskAsset.LoadVersionAndHash();
+                        newGameAssets.Add(existingOnDiskAsset);
                     }
                     catch (UnauthorizedAccessException err)
                     {
@@ -999,7 +1278,6 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
                         if (App.CurrentApp.IsAdminUser() is false)
                         {
                             return (false, "Unable to swap dll as we are unable to write to the target directory. Running XTR Unlocker as administrator may fix this.", true);
-
                         }
                         else
                         {
@@ -1012,27 +1290,42 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
                         return (false, "Unable to swap dll. Please check your error log for more information.", false);
                     }
                 }
+                else if (File.Exists(backupDllPath) && existingBackupRecords.Count == 0)
+                {
+                    var existingBackupAsset = new GameAsset()
+                    {
+                        Id = ID,
+                        AssetType = backupRecordType,
+                        Path = backupDllPath,
+                    };
+                    existingBackupAsset.LoadVersionAndHash();
+                    newGameAssets.Add(existingBackupAsset);
+                }
             }
-        }
 
-        var dllHistory = new List<GameHistory>();
-
-        foreach (var existingRecord in existingRecords)
-        {
             try
             {
-                // Copy the DLL
-                File.Copy(dllRecord.LocalRecord.ExpectedPath, existingRecord.Path, true);
+                var targetDir = Path.GetDirectoryName(resolution.TargetPath);
+                if (!string.IsNullOrEmpty(targetDir))
+                {
+                    Directory.CreateDirectory(targetDir);
+                }
+
+                File.Copy(dllRecord.LocalRecord.ExpectedPath, resolution.TargetPath, true);
+
+                if (!resolution.TargetAlreadyExistsOnDisk)
+                {
+                    DeployedDllMarkerStore.MarkOriginallyAbsent(ID, resolution.TargetPath);
+                }
 
                 var newGameAsset = new GameAsset()
                 {
                     Id = ID,
                     AssetType = dllRecord.AssetType,
-                    Path = existingRecord.Path,
+                    Path = resolution.TargetPath,
                     Version = dllVersion,
                     Hash = dllRecord.MD5Hash,
                 };
-                // No need to call LoadVersionAndHash, the data is already here.
                 newGameAssets.Add(newGameAsset);
 
                 dllHistory.Add(new GameHistory()
@@ -1041,7 +1334,7 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
                     EventType = GameHistoryEventType.DLLSwapped,
                     EventTime = DateTime.Now,
                     AssetType = dllRecord.AssetType,
-                    AssetPath = existingRecord.Path,
+                    AssetPath = resolution.TargetPath,
                     AssetVersion = dllRecord.DisplayName,
                 });
             }
@@ -1054,7 +1347,7 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
                 }
                 else
                 {
-                    return (false, "Unable to DLSS dll as we are unable to write to the target directory.", false);
+                    return (false, "Unable to swap dll as we are unable to write to the target directory.", false);
                 }
             }
             catch (IOException err) when (err.HResult == -2147024864)
@@ -1066,6 +1359,116 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
             {
                 Logger.Error(err);
                 return (false, "Unable to swap dll. Please check your error log for more information.", false);
+            }
+        }
+        else
+        {
+            if (existingBackupRecords.Count == 0)
+            {
+                // Backup old dlls if no backup exists and the DLL wasn't originally absent on disk.
+                foreach (var existingRecord in existingRecords)
+                {
+                    if (DeployedDllMarkerStore.IsOriginallyAbsent(ID, existingRecord.Path))
+                    {
+                        continue;
+                    }
+
+                    var dllPath = Path.GetDirectoryName(existingRecord.Path);
+                    if (string.IsNullOrEmpty(dllPath))
+                    {
+                        Logger.Error("dllPath was null or empty.");
+                        return (false, "Unable to swap dll. Please check your error log for more information.", false);
+                    }
+
+                    // Ensure we don't do anything if the target exists.
+                    var backupDllPath = $"{existingRecord.Path}.dlsss";
+                    if (File.Exists(backupDllPath) == false)
+                    {
+                        try
+                        {
+                            File.Copy(existingRecord.Path, backupDllPath);
+
+                            var backupGameAsset = new GameAsset()
+                            {
+                                Id = ID,
+                                AssetType = backupRecordType,
+                                Path = backupDllPath,
+                                Version = existingRecord.Version,
+                                Hash = existingRecord.Hash,
+                            };
+                            newGameAssets.Add(backupGameAsset);
+                        }
+                        catch (UnauthorizedAccessException err)
+                        {
+                            Logger.Error(err);
+                            if (App.CurrentApp.IsAdminUser() is false)
+                            {
+                                return (false, "Unable to swap dll as we are unable to write to the target directory. Running XTR Unlocker as administrator may fix this.", true);
+                            }
+                            else
+                            {
+                                return (false, "Unable to swap dll as we are unable to write to the target directory.", false);
+                            }
+                        }
+                        catch (Exception err)
+                        {
+                            Logger.Error(err);
+                            return (false, "Unable to swap dll. Please check your error log for more information.", false);
+                        }
+                    }
+                }
+            }
+
+            foreach (var existingRecord in existingRecords)
+            {
+                try
+                {
+                    // Copy the DLL
+                    File.Copy(dllRecord.LocalRecord.ExpectedPath, existingRecord.Path, true);
+
+                    var newGameAsset = new GameAsset()
+                    {
+                        Id = ID,
+                        AssetType = dllRecord.AssetType,
+                        Path = existingRecord.Path,
+                        Version = dllVersion,
+                        Hash = dllRecord.MD5Hash,
+                    };
+                    // No need to call LoadVersionAndHash, the data is already here.
+                    newGameAssets.Add(newGameAsset);
+
+                    dllHistory.Add(new GameHistory()
+                    {
+                        GameId = ID,
+                        EventType = GameHistoryEventType.DLLSwapped,
+                        EventTime = DateTime.Now,
+                        AssetType = dllRecord.AssetType,
+                        AssetPath = existingRecord.Path,
+                        AssetVersion = dllRecord.DisplayName,
+                    });
+                }
+                catch (UnauthorizedAccessException err)
+                {
+                    Logger.Error(err);
+                    if (App.CurrentApp.IsAdminUser() is false)
+                    {
+                        return (false, "Unable to swap dll as we are unable to write to the target directory. Running XTR Unlocker as administrator may fix this.", true);
+                    }
+                    else
+                    {
+                        return (false, "Unable to DLSS dll as we are unable to write to the target directory.", false);
+                    }
+                }
+                catch (IOException err) when (err.HResult == -2147024864)
+                {
+                    Logger.Error(err);
+                    return (false, "Unable to swap dll. It appears to be in use by another program. Is your game currently running?", false);
+                }
+                catch (Exception err)
+                {
+                    Logger.Error(err);
+                    return (false, "Unable to swap dll. Please check your error log for more information.", false);
+                }
             }
         }
 
@@ -1081,6 +1484,15 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
         if (firstNewGameAsset is not null)
         {
             UpdateCurrentAsset(firstNewGameAsset, dllRecord.AssetType);
+        }
+
+        if (!HasSwappableItems)
+        {
+            await App.CurrentApp.RunOnUIThreadAsync(async () =>
+            {
+                HasSwappableItems = true;
+                await SaveToDatabaseAsync().ConfigureAwait(false);
+            }).ConfigureAwait(false);
         }
 
         // Update game assets list by deleting and re-adding.
@@ -1384,6 +1796,9 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
                 }
             }
 
+            // Delete deployed DLL markers.
+            DeployedDllMarkerStore.DeleteGameMarkers(ID);
+
             // Delete the game itself.
             using (await Database.Instance.Mutex.LockAsync())
             {
@@ -1573,6 +1988,60 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
             didChange = true;
         }
 
+        if (HasStreamlineStack != game.HasStreamlineStack)
+        {
+            HasStreamlineStack = game.HasStreamlineStack;
+            didChange = true;
+        }
+
+        if (HasStreamlineDlss != game.HasStreamlineDlss)
+        {
+            HasStreamlineDlss = game.HasStreamlineDlss;
+            didChange = true;
+        }
+
+        if (HasStreamlineDlssG != game.HasStreamlineDlssG)
+        {
+            HasStreamlineDlssG = game.HasStreamlineDlssG;
+            didChange = true;
+        }
+
+        if (HasStreamlineDlssD != game.HasStreamlineDlssD)
+        {
+            HasStreamlineDlssD = game.HasStreamlineDlssD;
+            didChange = true;
+        }
+
+        if (StreamlineDlssVersion != game.StreamlineDlssVersion)
+        {
+            StreamlineDlssVersion = game.StreamlineDlssVersion;
+            didChange = true;
+        }
+
+        if (StreamlineDlssGVersion != game.StreamlineDlssGVersion)
+        {
+            StreamlineDlssGVersion = game.StreamlineDlssGVersion;
+            didChange = true;
+        }
+
+        if (StreamlineDlssDVersion != game.StreamlineDlssDVersion)
+        {
+            StreamlineDlssDVersion = game.StreamlineDlssDVersion;
+            didChange = true;
+        }
+
+        if (StreamlineSdkVersion != game.StreamlineSdkVersion)
+        {
+            StreamlineSdkVersion = game.StreamlineSdkVersion;
+            didChange = true;
+        }
+
+        if (HasFidelityFxSdk2 != game.HasFidelityFxSdk2)
+        {
+            HasFidelityFxSdk2 = game.HasFidelityFxSdk2;
+            didChange = true;
+        }
+
         // We don't copy across the following properties as it is assume this object has the latest revisions:
         // - Notes
         // - IsFavourite
@@ -1582,7 +2051,26 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
 
     public abstract bool UpdateFromGame(Game game);
 
-    void UpdateCurrentDLLsFromGameAssets()
+    private bool IsRootAsset(GameAsset asset)
+    {
+        if (string.IsNullOrWhiteSpace(InstallPath) || string.IsNullOrWhiteSpace(asset.Path))
+        {
+            return false;
+        }
+
+        var dir = Path.GetDirectoryName(asset.Path);
+        if (string.IsNullOrEmpty(dir))
+        {
+            return false;
+        }
+
+        return string.Equals(
+            Path.TrimEndingDirectorySeparator(dir),
+            Path.TrimEndingDirectorySeparator(InstallPath),
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    void UpdateCurrentDLLsFromGameAssets(UpscalerDiscoveryResult? discovery = null, NgxOtaModelStoreInfo? preinspectedNgxOta = null)
     {
         CurrentDLSS = null;
         CurrentDLSS_G = null;
@@ -1605,44 +2093,70 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
         MultipleXeSSDX11Found = GameAssets.Count(x => x.AssetType == GameAssetType.XeSS_DX11) > 1;
         MultipleXeLLFound = GameAssets.Count(x => x.AssetType == GameAssetType.XeLL) > 1;
 
-        // NOTE: DLL type
-        foreach (var gameAsset in GameAssets)
+        CurrentDLSS = GameAssets.Where(x => x.AssetType == GameAssetType.DLSS).OrderByDescending(IsRootAsset).FirstOrDefault();
+        CurrentDLSS_G = GameAssets.Where(x => x.AssetType == GameAssetType.DLSS_G).OrderByDescending(IsRootAsset).FirstOrDefault();
+        CurrentDLSS_D = GameAssets.Where(x => x.AssetType == GameAssetType.DLSS_D).OrderByDescending(IsRootAsset).FirstOrDefault();
+        CurrentFSR_31_DX12 = GameAssets.Where(x => x.AssetType == GameAssetType.FSR_31_DX12).OrderByDescending(IsRootAsset).FirstOrDefault();
+        CurrentFSR_31_VK = GameAssets.Where(x => x.AssetType == GameAssetType.FSR_31_VK).OrderByDescending(IsRootAsset).FirstOrDefault();
+        CurrentXeSS = GameAssets.Where(x => x.AssetType == GameAssetType.XeSS).OrderByDescending(IsRootAsset).FirstOrDefault();
+        CurrentXeSS_FG = GameAssets.Where(x => x.AssetType == GameAssetType.XeSS_FG).OrderByDescending(IsRootAsset).FirstOrDefault();
+        CurrentXeSS_DX11 = GameAssets.Where(x => x.AssetType == GameAssetType.XeSS_DX11).OrderByDescending(IsRootAsset).FirstOrDefault();
+        CurrentXeLL = GameAssets.Where(x => x.AssetType == GameAssetType.XeLL).OrderByDescending(IsRootAsset).FirstOrDefault();
+
+        if (discovery is not null)
         {
-            if (gameAsset.AssetType == GameAssetType.DLSS)
+            HasStreamlineStack = discovery.StreamlineStackDetected;
+            HasStreamlineDlss = discovery.HasStreamlineNgxOtaDlss;
+            HasStreamlineDlssG = discovery.HasStreamlineNgxOtaDlssG;
+            HasStreamlineDlssD = discovery.HasStreamlineNgxOtaDlssD;
+            StreamlineDlssVersion = discovery.HasStreamlineNgxOtaDlss ? discovery.NgxOta.DlssVersion : null;
+            StreamlineDlssGVersion = discovery.HasStreamlineNgxOtaDlssG ? discovery.NgxOta.DlssGVersion : null;
+            StreamlineDlssDVersion = discovery.HasStreamlineNgxOtaDlssD ? discovery.NgxOta.DlssDVersion : null;
+            StreamlineSdkVersion = discovery.StreamlineInterposer.FirstOrDefault()?.FileVersion
+                ?? discovery.StreamlineDirectSr.FirstOrDefault()?.FileVersion;
+            HasFidelityFxSdk2 = discovery.FidelityFxSdk2Files.Count > 0;
+        }
+        else
+        {
+            var hasInterposer = GameAssets.Any(x => x.AssetType == GameAssetType.Streamline_Interposer);
+            var hasDirectSr = GameAssets.Any(x => x.AssetType == GameAssetType.Streamline_DirectSR);
+            var hasSlDlss = GameAssets.Any(x => x.AssetType == GameAssetType.Streamline_DLSS);
+            var hasSlDlssG = GameAssets.Any(x => x.AssetType == GameAssetType.Streamline_DLSS_G);
+            var hasSlDlssD = GameAssets.Any(x => x.AssetType == GameAssetType.Streamline_DLSS_D);
+
+            HasStreamlineStack = GameAssets.Any(x => IsStreamlineAssetType(x.AssetType));
+
+            HasFidelityFxSdk2 = GameAssets.Any(x => x.AssetType is GameAssetType.FidelityFX_SDK2_Loader_DX12
+                or GameAssetType.FidelityFX_SDK2_Upscaler_DX12
+                or GameAssetType.FidelityFX_SDK2_FrameGeneration_DX12
+                or GameAssetType.FidelityFX_SDK2_Denoiser_DX12
+                or GameAssetType.FidelityFX_SDK2_RadianceCache_DX12
+                or GameAssetType.FidelityFX_SDK2_Upscaler_VK
+                or GameAssetType.FidelityFX_SDK2_FrameGeneration_VK
+                or GameAssetType.FidelityFX_SDK2_Loader_VK
+                or GameAssetType.FidelityFX_SDK2_Other);
+
+            if (HasStreamlineStack)
             {
-                CurrentDLSS = gameAsset;
+                var ngxOta = preinspectedNgxOta ?? UpscalerDiscoveryService.InspectNgxOtaStore();
+                HasStreamlineDlss = CurrentDLSS is null && (hasSlDlss || (hasInterposer && hasDirectSr));
+                HasStreamlineDlssG = CurrentDLSS_G is null && (hasSlDlssG || (hasInterposer && hasDirectSr && (ngxOta.HasDlssGModel || ngxOta.HasStreamlineDlssGOta)));
+                HasStreamlineDlssD = CurrentDLSS_D is null && hasSlDlssD;
+                StreamlineDlssVersion = HasStreamlineDlss ? ngxOta.DlssVersion : null;
+                StreamlineDlssGVersion = HasStreamlineDlssG ? ngxOta.DlssGVersion : null;
+                StreamlineDlssDVersion = HasStreamlineDlssD ? ngxOta.DlssDVersion : null;
+                StreamlineSdkVersion = GameAssets.FirstOrDefault(x => x.AssetType == GameAssetType.Streamline_Interposer)?.Version
+                    ?? GameAssets.FirstOrDefault(x => x.AssetType == GameAssetType.Streamline_DirectSR)?.Version;
             }
-            else if (gameAsset.AssetType == GameAssetType.DLSS_G)
+            else
             {
-                CurrentDLSS_G = gameAsset;
-            }
-            else if (gameAsset.AssetType == GameAssetType.DLSS_D)
-            {
-                CurrentDLSS_D = gameAsset;
-            }
-            else if (gameAsset.AssetType == GameAssetType.FSR_31_DX12)
-            {
-                CurrentFSR_31_DX12 = gameAsset;
-            }
-            else if (gameAsset.AssetType == GameAssetType.FSR_31_VK)
-            {
-                CurrentFSR_31_VK = gameAsset;
-            }
-            else if (gameAsset.AssetType == GameAssetType.XeSS)
-            {
-                CurrentXeSS = gameAsset;
-            }
-            else if (gameAsset.AssetType == GameAssetType.XeSS_FG)
-            {
-                CurrentXeSS_FG = gameAsset;
-            }
-            else if (gameAsset.AssetType == GameAssetType.XeSS_DX11)
-            {
-                CurrentXeSS_DX11 = gameAsset;
-            }
-            else if (gameAsset.AssetType == GameAssetType.XeLL)
-            {
-                CurrentXeLL = gameAsset;
+                HasStreamlineDlss = false;
+                HasStreamlineDlssG = false;
+                HasStreamlineDlssD = false;
+                StreamlineDlssVersion = null;
+                StreamlineDlssGVersion = null;
+                StreamlineDlssDVersion = null;
+                StreamlineSdkVersion = null;
             }
         }
     }
@@ -1669,7 +2183,14 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
             }
         }
 
-        UpdateCurrentDLLsFromGameAssets();
+        var preinspectedNgxOta = GameAssets.Any(x => IsStreamlineAssetType(x.AssetType))
+            ? UpscalerDiscoveryService.InspectNgxOtaStore()
+            : null;
+
+        App.CurrentApp.RunOnUIThread(() =>
+        {
+            UpdateCurrentDLLsFromGameAssets(preinspectedNgxOta: preinspectedNgxOta);
+        });
 
         // TODO: Add auto reload by storing last full reload time on game
 
@@ -1690,6 +2211,11 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
                 var unknownGameAssets = new List<GameAsset>();
                 foreach (var gameAsset in GameAssets)
                 {
+                    if (!IsSwappableAssetType(gameAsset.AssetType))
+                    {
+                        continue;
+                    }
+
                     if (DLLManager.Instance.IsInKnownGameAsset(gameAsset, this) == false)
                     {
                         unknownGameAssets.Add(gameAsset);
@@ -1710,6 +2236,14 @@ public abstract partial class Game : ObservableObject, IComparable<Game>, IEquat
                         NeedsProcessing = true;
                         break;
                     }
+                }
+            }
+
+            if (NeedsProcessing == false && !string.IsNullOrWhiteSpace(InstallPath) && Directory.Exists(InstallPath))
+            {
+                if (UpscalerDiscoveryService.HasUncachedUpscalerFiles(InstallPath, GameAssets.Select(x => x.Path)))
+                {
+                    NeedsProcessing = true;
                 }
             }
         }

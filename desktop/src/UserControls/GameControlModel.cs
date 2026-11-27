@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -11,6 +11,7 @@ using Windows.System;
 using DLSS_Swapper.Helpers;
 using DLSS_Swapper.Data.Runtime;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -40,17 +41,22 @@ public partial class GameControlModel : ObservableObject
     [ObservableProperty]
     public partial PresetOption? SelectedDlssGPreset { get; set; }
 
-    public bool CanSelectDlssPreset { get; private set; }
+    [ObservableProperty]
+    public partial bool CanSelectDlssPreset { get; set; }
 
-    public bool CanSelectDlssDPreset { get; private set; }
+    [ObservableProperty]
+    public partial bool CanSelectDlssDPreset { get; set; }
 
-    public bool CanSelectDlssGPreset { get; private set; }
+    [ObservableProperty]
+    public partial bool CanSelectDlssGPreset { get; set; }
 
-    public List<PresetOption> DlssPresetOptions { get; } = new List<PresetOption>();
+    public ObservableCollection<PresetOption> DlssPresetOptions { get; } = new ObservableCollection<PresetOption>();
 
-    public List<PresetOption> DlssDPresetOptions { get; } = new List<PresetOption>();
+    public ObservableCollection<PresetOption> DlssDPresetOptions { get; } = new ObservableCollection<PresetOption>();
 
-    public List<PresetOption> DlssGPresetOptions { get; } = new List<PresetOption>();
+    public ObservableCollection<PresetOption> DlssGPresetOptions { get; } = new ObservableCollection<PresetOption>();
+
+    private bool _isLoadingPresets;
 
     PresetOption? _previousDlssPreset;
     PresetOption? _previousDlssDPreset;
@@ -93,14 +99,6 @@ public partial class GameControlModel : ObservableObject
         "Preset M (DLSS 4.5 FP8 Optical Transformer)"
     };
 
-    public IReadOnlyList<string> AvailableOverlayPositions { get; } = new[]
-    {
-        "Top Left",
-        "Top Right",
-        "Bottom Left",
-        "Bottom Right"
-    };
-
     public IReadOnlyList<string> AvailableFramerateLimits { get; } = new[]
     {
         "Off (Unlimited)",
@@ -117,7 +115,8 @@ public partial class GameControlModel : ObservableObject
     public partial string SelectedRuntimeProxy { get; set; } = "dxgi.dll";
 
     [ObservableProperty]
-    public partial string ActiveFrameGenMode { get; set; } = "Universal FG Bridge (FSR 3.1)";
+    [NotifyPropertyChangedFor(nameof(FrameGenerationStatusText))]
+    public partial string ActiveFrameGenMode { get; set; } = "Not Active (Runtime Not Installed)";
     [ObservableProperty]
     public partial bool AntiGhostingShieldEnabled { get; set; } = true;
 
@@ -125,15 +124,6 @@ public partial class GameControlModel : ObservableObject
     {
         if (_isLoadingSettings) return;
         ApplyAntiGhostingSetting(value);
-    }
-
-    [ObservableProperty]
-    public partial bool InGameHudOverlayEnabled { get; set; } = true;
-
-    partial void OnInGameHudOverlayEnabledChanged(bool value)
-    {
-        if (_isLoadingSettings) return;
-        ApplyHudOverlaySetting(value);
     }
 
     [ObservableProperty]
@@ -175,15 +165,6 @@ public partial class GameControlModel : ObservableObject
     }
 
     [ObservableProperty]
-    public partial string SelectedOverlayPosition { get; set; } = "Top Left";
-
-    partial void OnSelectedOverlayPositionChanged(string value)
-    {
-        if (_isLoadingSettings) return;
-        ApplyOverlayPositionSetting(value);
-    }
-
-    [ObservableProperty]
     public partial string SelectedFramerateLimit { get; set; } = "Off (Unlimited)";
 
     [ObservableProperty]
@@ -199,17 +180,58 @@ public partial class GameControlModel : ObservableObject
         ? string.Join(" | ", components)
         : "Engine components not recorded";
 
-    public string RuntimeStatusText => Game.RuntimeManifest is not null
-        ? "Restore available"
-        : "Ready";
+    public string RuntimeStatusText
+    {
+        get
+        {
+            if (Game.RuntimeManifest is null)
+                return "Ready";
+
+            var health = GetCurrentRuntimeHealth();
+            return health?.IsRuntimeOperational == true ? "Restore available" : "Incomplete";
+        }
+    }
 
     public string DlssEngineSummaryText => $"Game engine using {Game.DlssGenerationText}";
 
-    public string FrameGenerationStatusText => Game.CurrentDLSS_G is not null
-        ? "Native DLSS-G detected"
-        : Game.RuntimeManifest is not null
-            ? "Frame generation bridge active"
-            : "Available via runtime";
+    public string FrameGenerationStatusText
+    {
+        get
+        {
+            var hasNativeOrStreamlineFg = Game.CurrentDLSS_G is not null || Game.HasStreamlineDlssG;
+            var health = GetCurrentRuntimeHealth();
+            if (Game.RuntimeManifest is not null)
+            {
+                if (health is null || !health.ProxyFilePresent || !health.IniFilePresent || health.State == RuntimeHealthState.ErrorDetected)
+                {
+                    return hasNativeOrStreamlineFg
+                        ? "Native DLSS-G detected (runtime incomplete)"
+                        : "Runtime incomplete - bridge inactive";
+                }
+
+                if (ActiveFrameGenMode.Contains("Upscaling Only", StringComparison.OrdinalIgnoreCase))
+                    return "Frame generation disabled (upscaling only)";
+
+                if (ActiveFrameGenMode.Contains("Native DLSS 3", StringComparison.OrdinalIgnoreCase))
+                {
+                    return health.State == RuntimeHealthState.HealthyActive
+                        ? "Native DLSS-G active"
+                        : "Native DLSS-G passthrough ready";
+                }
+
+                return health.State switch
+                {
+                    RuntimeHealthState.HealthyActive => "Frame generation bridge active",
+                    RuntimeHealthState.ProxyBypassed => "Proxy present - FG hook not yet confirmed",
+                    _ => "Bridge installed - launch game to activate"
+                };
+            }
+
+            return hasNativeOrStreamlineFg
+                ? "Native DLSS-G detected"
+                : "Available via runtime";
+        }
+    }
 
     public string PrimaryActionText => Game.RuntimeManifest is not null
         ? "Restore original files"
@@ -219,17 +241,74 @@ public partial class GameControlModel : ObservableObject
     {
         get
         {
-            if (Game.RuntimeManifest is null)
-                return "Ready for deployment";
-
-            var health = RuntimeHealthService.CheckHealth(Game.RuntimeManifest.InstallRoot, Game.RuntimeManifest.ProxyFileName ?? SelectedRuntimeProxy);
-            return health.Summary;
+            var health = GetCurrentRuntimeHealth();
+            return health?.Summary ?? "Ready for deployment";
         }
     }
 
-    public string PrimaryActionExplanationText => Game.RuntimeManifest is not null
-        ? RuntimeHealthSummaryText
-        : "Installs the latest compatible DLSS runtime and verified configuration.";
+    public string PrimaryActionExplanationText
+    {
+        get
+        {
+            var recommendedProxy = ResolveRecommendedProxy(Game);
+            if (Game.RuntimeManifest is null)
+            {
+                return string.Equals(recommendedProxy, "version.dll", StringComparison.OrdinalIgnoreCase)
+                    ? $"Installs the latest compatible DLSS runtime using {recommendedProxy} (recommended for {Game.Title})."
+                    : "Installs the latest compatible DLSS runtime and verified configuration.";
+            }
+
+            var health = GetCurrentRuntimeHealth();
+            if (health is null || !health.IsRuntimeOperational)
+            {
+                var baseMessage = "Tracked runtime files are missing or damaged. Click Restore Original Game Files to clean up stale state.";
+                if (!string.Equals(Game.RuntimeManifest.ProxyFileName, recommendedProxy, StringComparison.OrdinalIgnoreCase))
+                {
+                    return $"{baseMessage} Recommended proxy for this title: {recommendedProxy}.";
+                }
+                return baseMessage;
+            }
+
+            return health.State switch
+            {
+                RuntimeHealthState.InstalledNotYetLaunched => "Runtime is installed and ready. Launch the game to verify hooks, or restore original files anytime.",
+                RuntimeHealthState.ProxyBypassed => "Proxy is present on disk, but OptiScaler interception was not confirmed in the last log.",
+                _ => "Runtime verified active. Use Restore Original Game Files to revert cleanly."
+            };
+        }
+    }
+
+    private string ResolveRecommendedProxy(Game game)
+    {
+        var compat = CompatibilityDatabase.LookupGame(game.Title) ?? CompatibilityDatabase.LookupGame(game.ID);
+        var candidate = compat?.RecommendedProxy;
+        if (string.IsNullOrWhiteSpace(candidate) && DeploymentPlanner.IsForzaOrVirtualTextureTitle(game.Title))
+        {
+            candidate = "version.dll";
+        }
+
+        if (!string.IsNullOrWhiteSpace(candidate) &&
+            RuntimeProxyNames.Contains(candidate, StringComparer.OrdinalIgnoreCase))
+        {
+            return RuntimeProxyNames.First(p => string.Equals(p, candidate, StringComparison.OrdinalIgnoreCase));
+        }
+
+        return "dxgi.dll";
+    }
+
+    private RuntimeHealthReport? GetCurrentRuntimeHealth()
+    {
+        if (Game.RuntimeManifest is null || string.IsNullOrWhiteSpace(Game.RuntimeManifest.InstallRoot))
+        {
+            return null;
+        }
+
+        var proxyName = string.IsNullOrWhiteSpace(Game.RuntimeManifest.ProxyFileName)
+            ? SelectedRuntimeProxy
+            : Game.RuntimeManifest.ProxyFileName;
+
+        return RuntimeHealthService.CheckHealth(Game.RuntimeManifest.InstallRoot, proxyName);
+    }
 
     public GameControlModel(GameControl gameControl, Game game) : base()
     {
@@ -243,106 +322,108 @@ public partial class GameControlModel : ObservableObject
         }
         else
         {
-            var compat = CompatibilityDatabase.LookupGame(game.Title) ?? CompatibilityDatabase.LookupGame(game.ID);
-            if (compat != null && RuntimeProxyNames.Contains(compat.RecommendedProxy, StringComparer.OrdinalIgnoreCase))
-            {
-                SelectedRuntimeProxy = compat.RecommendedProxy;
-            }
+            SelectedRuntimeProxy = ResolveRecommendedProxy(game);
         }
 
         InitializeDeployedSettings();
+        RefreshDlssPresetSupport();
+    }
 
-
-        // Make sure NVAPIHelper is supported and the game has DLSS.
-        if (NVAPIHelper.Instance.IsSupported && game.CurrentDLSS is not null)
+    private void RefreshDlssPresetSupport()
+    {
+        _isLoadingPresets = true;
+        try
         {
-            // Try load the DriverSettingProfile for the given game. If it is not found the game is not supported.
+            CanSelectDlssPreset = false;
+            CanSelectDlssDPreset = false;
+            CanSelectDlssGPreset = false;
+            DlssPresetOptions.Clear();
+            DlssDPresetOptions.Clear();
+            DlssGPresetOptions.Clear();
 
-            var gameProfile = NVAPIHelper.Instance.FindGameProfile(game);
-            if (gameProfile is not null)
+            var hasDlss = Game.CurrentDLSS is not null || Game.HasStreamlineDlss;
+            var hasDlssD = Game.CurrentDLSS_D is not null || Game.HasStreamlineDlssD;
+            var hasDlssG = Game.CurrentDLSS_G is not null || Game.HasStreamlineDlssG;
+
+            if (NVAPIHelper.Instance.IsSupported && hasDlss)
             {
-                var gameDLSSPresetResult = NVAPIHelper.Instance.GetGameDLSSPreset(game);
-                if (gameDLSSPresetResult.Success)
+                var gameProfile = NVAPIHelper.Instance.FindGameProfile(Game);
+                if (gameProfile is not null)
                 {
-                    CanSelectDlssPreset = true;
-                    game.DlssPreset = gameDLSSPresetResult.Result;
-                    DlssPresetOptions.AddRange(NVAPIHelper.Instance.DlssPresetOptions);
-                    if (game.DlssPreset is null)
+                    var gameDLSSPresetResult = NVAPIHelper.Instance.GetGameDLSSPreset(Game);
+                    if (gameDLSSPresetResult.Success)
                     {
-                        // If it was never set, ensure it goes to default.
-                        SelectedDlssPreset = DlssPresetOptions.FirstOrDefault(x => x.Value == 0);
-                    }
-                    else
-                    {
-                        SelectedDlssPreset = DlssPresetOptions.FirstOrDefault(x => x.Value == game.DlssPreset);
-                    }
-
-
-                    if (Game.CurrentDLSS_D is not null)
-                    {
-                        var gameDLSSDPresetResult = NVAPIHelper.Instance.GetGameDLSSDPreset(game);
-                        if (gameDLSSDPresetResult.Success)
+                        CanSelectDlssPreset = true;
+                        Game.DlssPreset = gameDLSSPresetResult.Result;
+                        foreach (var opt in NVAPIHelper.Instance.DlssPresetOptions)
                         {
-                            CanSelectDlssDPreset = true;
+                            DlssPresetOptions.Add(opt);
+                        }
+                        SelectedDlssPreset = Game.DlssPreset is null
+                            ? DlssPresetOptions.FirstOrDefault(x => x.Value == 0)
+                            : DlssPresetOptions.FirstOrDefault(x => x.Value == Game.DlssPreset);
 
-                            game.DlssDPreset = gameDLSSDPresetResult.Result;
-                            DlssDPresetOptions.AddRange(NVAPIHelper.Instance.DlssDPresetOptions);
-                            if (game.DlssDPreset is null)
+                        if (hasDlssD)
+                        {
+                            var gameDLSSDPresetResult = NVAPIHelper.Instance.GetGameDLSSDPreset(Game);
+                            if (gameDLSSDPresetResult.Success)
                             {
-                                // If it was never set, ensure it goes to default.
-                                SelectedDlssDPreset = DlssDPresetOptions.FirstOrDefault(x => x.Value == 0);
-                            }
-                            else
-                            {
-                                SelectedDlssDPreset = DlssDPresetOptions.FirstOrDefault(x => x.Value == game.DlssDPreset);
+                                CanSelectDlssDPreset = true;
+                                Game.DlssDPreset = gameDLSSDPresetResult.Result;
+                                foreach (var opt in NVAPIHelper.Instance.DlssDPresetOptions)
+                                {
+                                    DlssDPresetOptions.Add(opt);
+                                }
+                                SelectedDlssDPreset = Game.DlssDPreset is null
+                                    ? DlssDPresetOptions.FirstOrDefault(x => x.Value == 0)
+                                    : DlssDPresetOptions.FirstOrDefault(x => x.Value == Game.DlssDPreset);
                             }
                         }
-                    }
 
-
-                    if (Game.CurrentDLSS_G is not null)
-                    {
-                        var gameDLSSGPresetResult = NVAPIHelper.Instance.GetGameDLSSGPreset(game);
-                        if (gameDLSSGPresetResult.Success)
+                        if (hasDlssG)
                         {
-                            CanSelectDlssGPreset = true;
-
-                            game.DlssGPreset = gameDLSSGPresetResult.Result;
-                            DlssGPresetOptions.AddRange(NVAPIHelper.Instance.DlssGPresetOptions);
-                            if (game.DlssGPreset is null)
+                            var gameDLSSGPresetResult = NVAPIHelper.Instance.GetGameDLSSGPreset(Game);
+                            if (gameDLSSGPresetResult.Success)
                             {
-                                // If it was never set, ensure it goes to default.
-                                SelectedDlssGPreset = DlssGPresetOptions.FirstOrDefault(x => x.Value == 0);
-                            }
-                            else
-                            {
-                                SelectedDlssGPreset = DlssGPresetOptions.FirstOrDefault(x => x.Value == game.DlssGPreset);
+                                CanSelectDlssGPreset = true;
+                                Game.DlssGPreset = gameDLSSGPresetResult.Result;
+                                foreach (var opt in NVAPIHelper.Instance.DlssGPresetOptions)
+                                {
+                                    DlssGPresetOptions.Add(opt);
+                                }
+                                SelectedDlssGPreset = Game.DlssGPreset is null
+                                    ? DlssGPresetOptions.FirstOrDefault(x => x.Value == 0)
+                                    : DlssGPresetOptions.FirstOrDefault(x => x.Value == Game.DlssGPreset);
                             }
                         }
                     }
                 }
             }
-        }
 
-        if (CanSelectDlssPreset == false)
-        {
-            var disabledPresetOption = new PresetOption(ResourceHelper.GetString("General_NotSupported"), 0);
-            DlssPresetOptions.Add(disabledPresetOption);
-            SelectedDlssPreset = disabledPresetOption;
-        }
+            if (CanSelectDlssPreset == false)
+            {
+                var disabledPresetOption = new PresetOption(ResourceHelper.GetString("General_NotSupported"), 0);
+                DlssPresetOptions.Add(disabledPresetOption);
+                SelectedDlssPreset = disabledPresetOption;
+            }
 
-        if (CanSelectDlssDPreset == false)
-        {
-            var disabledPresetOption = new PresetOption(ResourceHelper.GetString("General_NotSupported"), 0);
-            DlssDPresetOptions.Add(disabledPresetOption);
-            SelectedDlssDPreset = disabledPresetOption;
-        }
+            if (CanSelectDlssDPreset == false)
+            {
+                var disabledPresetOption = new PresetOption(ResourceHelper.GetString("General_NotSupported"), 0);
+                DlssDPresetOptions.Add(disabledPresetOption);
+                SelectedDlssDPreset = disabledPresetOption;
+            }
 
-        if (CanSelectDlssGPreset == false)
+            if (CanSelectDlssGPreset == false)
+            {
+                var disabledPresetOption = new PresetOption(ResourceHelper.GetString("General_NotSupported"), 0);
+                DlssGPresetOptions.Add(disabledPresetOption);
+                SelectedDlssGPreset = disabledPresetOption;
+            }
+        }
+        finally
         {
-            var disabledPresetOption = new PresetOption(ResourceHelper.GetString("General_NotSupported"), 0);
-            DlssGPresetOptions.Add(disabledPresetOption);
-            SelectedDlssGPreset = disabledPresetOption;
+            _isLoadingPresets = false;
         }
     }
 
@@ -365,6 +446,11 @@ public partial class GameControlModel : ObservableObject
     protected override void OnPropertyChanged(PropertyChangedEventArgs e)
     {
         base.OnPropertyChanged(e);
+
+        if (_isLoadingPresets)
+        {
+            return;
+        }
 
         if (e.PropertyName == nameof(SelectedDlssPreset))
         {
@@ -469,7 +555,7 @@ public partial class GameControlModel : ObservableObject
             var iniPath = GetDeployedIniPath();
             if (iniPath is null || !File.Exists(iniPath))
             {
-                var success = await DeployPresetAsync(RuntimeIntegrationPreset.TurboBoost, "⚡ Activate XTR Turbo Boost");
+                var success = await DeployPresetAsync(RuntimeIntegrationPreset.TurboBoost, "âš¡ Activate XTR Turbo Boost");
                 if (!success)
                     return;
 
@@ -519,7 +605,7 @@ public partial class GameControlModel : ObservableObject
 
             InitializeDeployedSettings();
             RefreshDiagnostics();
-            await ShowRuntimeDialogAsync("⚡ XTR Turbo Boost Activated", "Engine optimizations successfully applied:\n\n• DLSS Neural Model: Hardware-Tiered (Preset K/M)\n• Texture Filtering: 16x Anisotropic + Mipmap LOD Bias (-0.5)\n• Low-Latency Mutex Frame Pacing\n• AI Edge Sharpening: RCAS 35%\n• In-Game Real-Time Telemetry: Active");
+            await ShowRuntimeDialogAsync("âš¡ XTR Turbo Boost Activated", "Engine optimizations successfully applied:\n\nâ€¢ DLSS Neural Model: Hardware-Tiered (Preset K/M)\nâ€¢ Texture Filtering: 16x Anisotropic + Mipmap LOD Bias (-0.5)\nâ€¢ Low-Latency Mutex Frame Pacing\nâ€¢ AI Edge Sharpening: RCAS 35%\nâ€¢ In-Game Real-Time Telemetry: Active");
         }
         catch (Exception ex)
         {
@@ -534,7 +620,7 @@ public partial class GameControlModel : ObservableObject
     Task QuickSwapDlss40Async() => QuickSwapDlssCoreAsync("310.2", "310.1", "310.0");
 
     [RelayCommand]
-    Task QuickSwapDlss37Async() => QuickSwapDlssCoreAsync("3.7");
+    Task QuickSwapDlss37Async() => QuickSwapDlssCoreAsync("310.", "3.8", "3.7");
 
     [RelayCommand]
     Task QuickSwapDlss35Async() => QuickSwapDlssCoreAsync("3.5");
@@ -549,8 +635,20 @@ public partial class GameControlModel : ObservableObject
     {
         try
         {
+            if (DlssVersionHelper.IsDlss1xVersion(Game.CurrentDLSS?.Version) &&
+                !targetPrefixes.Any(p => p.TrimStart('v', 'V').StartsWith("1.", StringComparison.OrdinalIgnoreCase)))
+            {
+                await ShowRuntimeDialogAsync(
+                    "Incompatible DLSS Generation",
+                    "This game uses DLSS 1.x which cannot be swapped with DLSS 2/3/4 DLLs.");
+                return;
+            }
+
             var match = DLLManager.Instance.DLSSRecords
-                .Where(r => targetPrefixes.Any(p => r.Version.StartsWith(p, StringComparison.OrdinalIgnoreCase)) && r.LocalRecord?.IsDownloaded == true)
+                .Where(r =>
+                    (Settings.Instance.AllowDebugDlls || !r.IsDevFile) &&
+                    DlssVersionHelper.MatchesAnyVersionPrefix(r.Version, targetPrefixes) &&
+                    r.LocalRecord?.IsDownloaded == true)
                 .OrderByDescending(r => r.VersionNumber)
                 .FirstOrDefault();
 
@@ -559,18 +657,22 @@ public partial class GameControlModel : ObservableObject
                 var updateResult = await Game.UpdateDllAsync(match);
                 if (updateResult.Success)
                 {
-                    OnPropertyChanged(nameof(RuntimeHealthSummaryText));
-                    OnPropertyChanged(nameof(PrimaryActionExplanationText));
-                    await ShowRuntimeDialogAsync("DLSS Swapped", $"Swapped game to DLSS {match.Version} successfully.");
+                    RefreshDiagnostics();
+                    RefreshDlssPresetSupport();
+                    await ShowRuntimeDialogAsync("DLSS Swapped", $"Swapped game to DLSS {match.DisplayName} successfully.");
                     return;
                 }
+
+                await ShowRuntimeDialogAsync("DLSS Swap Failed", updateResult.Message);
+                return;
             }
 
             await ChangeRecordAsync(GameAssetType.DLSS);
         }
         catch (Exception ex)
         {
-            Logger.Error(ex, "Failed to quick swap DLSS to {Target}", string.Join(",", targetPrefixes));
+            Logger.Error(ex, $"Failed to quick swap DLSS to {string.Join(",", targetPrefixes)}");
+            await ShowRuntimeDialogAsync("DLSS Swap Failed", ex.Message);
         }
     }
 
@@ -578,9 +680,23 @@ public partial class GameControlModel : ObservableObject
     {
         try
         {
+            var health = GetCurrentRuntimeHealth();
             var iniPath = GetDeployedIniPath();
-            if (iniPath is null || !File.Exists(iniPath))
+            if (iniPath is null || !File.Exists(iniPath) || (Game.RuntimeManifest is not null && health is { IsRuntimeOperational: false }))
+            {
+                _isLoadingSettings = true;
+                IsTurboBoostActive = false;
+                AntiGhostingShieldEnabled = false;
+                StreamlineSpoofingEnabled = false;
+                ActiveFrameGenMode = Game.RuntimeManifest is not null
+                    ? "Runtime Incomplete (Inactive)"
+                    : (Game.CurrentDLSS_G is not null || Game.HasStreamlineDlssG)
+                        ? "Native DLSS 3 Hardware FG"
+                        : "Not Active (Runtime Not Installed)";
+                _isLoadingSettings = false;
+                RefreshDiagnostics();
                 return;
+            }
 
             var content = File.ReadAllText(iniPath);
             _isLoadingSettings = true;
@@ -589,12 +705,6 @@ public partial class GameControlModel : ObservableObject
             if (!string.IsNullOrEmpty(hudFix))
             {
                 AntiGhostingShieldEnabled = !string.Equals(hudFix, "false", StringComparison.OrdinalIgnoreCase);
-            }
-
-            var showFps = RuntimeConfigService.ReadIniValue(content, "Menu", "ShowFps");
-            if (!string.IsNullOrEmpty(showFps))
-            {
-                InGameHudOverlayEnabled = string.Equals(showFps, "true", StringComparison.OrdinalIgnoreCase);
             }
 
             var shortcutKey = RuntimeConfigService.ReadIniValue(content, "Menu", "ShortcutKey");
@@ -610,10 +720,19 @@ public partial class GameControlModel : ObservableObject
             }
 
             var fgOutput = RuntimeConfigService.ReadIniValue(content, "FrameGen", "FGOutput");
+            var fgInput = RuntimeConfigService.ReadIniValue(content, "FrameGen", "FGInput");
             var fgEnabled = RuntimeConfigService.ReadIniValue(content, "FrameGen", "Enabled");
             if (string.Equals(fgEnabled, "false", StringComparison.OrdinalIgnoreCase))
             {
-                ActiveFrameGenMode = "Upscaling Only (No FG)";
+                if (string.Equals(fgOutput, "nofg", StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(fgInput, "nofg", StringComparison.OrdinalIgnoreCase))
+                {
+                    ActiveFrameGenMode = "Native DLSS 3 Hardware FG";
+                }
+                else
+                {
+                    ActiveFrameGenMode = "Upscaling Only (No FG)";
+                }
             }
             else if (string.Equals(fgOutput, "nofg", StringComparison.OrdinalIgnoreCase) || string.Equals(fgOutput, "dlssg", StringComparison.OrdinalIgnoreCase))
             {
@@ -661,16 +780,6 @@ public partial class GameControlModel : ObservableObject
                 SharpnessPercentage = Math.Round(Math.Clamp(sharpnessVal * 100.0, 0.0, 100.0));
             }
 
-            // Read Overlay Position
-            var posStr = RuntimeConfigService.ReadIniValue(content, "Menu", "FpsOverlayPos");
-            SelectedOverlayPosition = posStr switch
-            {
-                "1" => "Top Right",
-                "2" => "Bottom Left",
-                "3" => "Bottom Right",
-                _ => "Top Left"
-            };
-
             // Read Framerate Limit
             var limitStr = RuntimeConfigService.ReadIniValue(content, "Framerate", "FramerateLimit");
             if (double.TryParse(limitStr, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var limitVal) && limitVal > 0)
@@ -682,11 +791,14 @@ public partial class GameControlModel : ObservableObject
                 SelectedFramerateLimit = "Off (Unlimited)";
             }
 
-            // Read Turbo Boost state
+            // Read Turbo Boost state (respect ForzaTech profiles that intentionally omit AnisotropyOverride)
             var aniso = RuntimeConfigService.ReadIniValue(content, "Anisotropy", "AnisotropyOverride");
             var renderPreset = RuntimeConfigService.ReadIniValue(content, "DLSS", "RenderPresetForAll");
-            IsTurboBoostActive = string.Equals(aniso, "16", StringComparison.OrdinalIgnoreCase) &&
-                                 string.Equals(renderPreset, "5", StringComparison.OrdinalIgnoreCase);
+            var isProfileTurbo = Game.RuntimeProfile?.Options?.TryGetPropertyValue("Preset", out var existingPresetNode) == true &&
+                                 string.Equals(existingPresetNode?.ToString(), "TurboBoost", StringComparison.OrdinalIgnoreCase);
+            IsTurboBoostActive = isProfileTurbo ||
+                                 (string.Equals(aniso, "16", StringComparison.OrdinalIgnoreCase) &&
+                                  string.Equals(renderPreset, "5", StringComparison.OrdinalIgnoreCase));
 
             if (Game.RuntimeProfile?.Options is { } options)
             {
@@ -842,27 +954,6 @@ public partial class GameControlModel : ObservableObject
         UpdateOptiScalerConfigSettings(settings);
     }
 
-    private void ApplyHudOverlaySetting(bool enabled)
-    {
-        if (enabled)
-        {
-            UpdateOptiScalerConfigSettings(new[]
-            {
-                ("Menu", "ShowFps", "true"),
-                ("Menu", "FpsOverlayType", "2"),
-                ("Menu", "OverlayMenu", "true"),
-                ("Menu", "FpsShortcutKey", "0x21"),
-                ("Menu", "FpsCycleShortcutKey", "0x22"),
-                ("Menu", "FGShortcutKey", "0x23"),
-                ("Menu", "FpsOverlayHorizontal", "true")
-            });
-        }
-        else
-        {
-            UpdateOptiScalerConfigSetting("Menu", "ShowFps", "false");
-        }
-    }
-
     private void ApplyDevMenuSetting(bool enabled)
     {
         UpdateOptiScalerConfigSetting("Menu", "ShortcutKey", enabled ? "0x2D" : "-1");
@@ -902,18 +993,6 @@ public partial class GameControlModel : ObservableObject
             ("Sharpness", "OverrideSharpness", "true"),
             ("Sharpness", "Sharpness", sharpnessVal)
         });
-    }
-
-    private void ApplyOverlayPositionSetting(string position)
-    {
-        var posVal = position switch
-        {
-            "Top Right" => "1",
-            "Bottom Left" => "2",
-            "Bottom Right" => "3",
-            _ => "0"
-        };
-        UpdateOptiScalerConfigSetting("Menu", "FpsOverlayPos", posVal);
     }
 
     private void ApplyFramerateLimitSetting(string limit)
@@ -979,10 +1058,15 @@ public partial class GameControlModel : ObservableObject
     [RelayCommand]
     void RefreshDiagnostics()
     {
+        Game.RefreshRuntimeHealth();
         OnPropertyChanged(nameof(RuntimeHealthSummaryText));
         OnPropertyChanged(nameof(PrimaryActionExplanationText));
         OnPropertyChanged(nameof(FrameGenerationStatusText));
         OnPropertyChanged(nameof(RuntimeStatusText));
+        OnPropertyChanged(nameof(ActiveFrameGenMode));
+        OnPropertyChanged(nameof(IsTurboBoostActive));
+        OnPropertyChanged(nameof(DlssEngineSummaryText));
+        OnPropertyChanged(nameof(RuntimeComponentsText));
     }
 
     private async Task<bool> DeployPresetAsync(RuntimeIntegrationPreset preset, string dialogTitle)
@@ -1188,12 +1272,15 @@ public partial class GameControlModel : ObservableObject
             _isLoadingSettings = true;
             IsTurboBoostActive = false;
             AntiGhostingShieldEnabled = false;
-            InGameHudOverlayEnabled = false;
             StreamlineSpoofingEnabled = false;
             SelectedEngineNeuralPreset = "Default (Game Engine Default)";
-            ActiveFrameGenMode = "Upscaling Only (No FG)";
+            SelectedRuntimeProxy = ResolveRecommendedProxy(Game);
+            ActiveFrameGenMode = (Game.CurrentDLSS_G is not null || Game.HasStreamlineDlssG)
+                ? "Native DLSS 3 Hardware FG"
+                : "Not Active (Runtime Not Installed)";
             _isLoadingSettings = false;
 
+            Game.RefreshRuntimeHealth();
             RefreshDiagnostics();
             await ShowRuntimeDialogAsync("Runtime restored", "XTR removed its runtime files and restored the originals it had backed up.");
         }
@@ -1448,8 +1535,17 @@ public partial class GameControlModel : ObservableObject
         if (gameControlWeakReference.TryGetTarget(out var control))
         {
             _reloadGameTaskCompletionSource = new TaskCompletionSource();
+            var tcs = _reloadGameTaskCompletionSource;
 
-            Game.PropertyChanged += Game_PropertyChanged;
+            void OnReloadPropertyChanged(object? s, PropertyChangedEventArgs args)
+            {
+                if (args.PropertyName == nameof(Game.Processing) && Game.Processing)
+                {
+                    tcs.TrySetResult();
+                }
+            }
+
+            Game.PropertyChanged += OnReloadPropertyChanged;
             Game.NeedsProcessing = true;
             Game.ProcessGame(forceNeedsProcessing: true);
 
@@ -1468,7 +1564,7 @@ public partial class GameControlModel : ObservableObject
 
             await Task.WhenAny(dialogTask, _reloadGameTaskCompletionSource.Task);
 
-            Game.PropertyChanged -= Game_PropertyChanged;
+            Game.PropertyChanged -= OnReloadPropertyChanged;
 
 
             if (dialogTask.IsCompleted)
@@ -1504,20 +1600,48 @@ public partial class GameControlModel : ObservableObject
 
     private void Game_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(Game.RuntimeManifest))
+        if (e.PropertyName is nameof(Game.RuntimeManifest) or nameof(Game.RuntimeProfile))
         {
+            InitializeDeployedSettings();
             OnPropertyChanged(nameof(RuntimeComponentsText));
             OnPropertyChanged(nameof(RuntimeStatusText));
             OnPropertyChanged(nameof(FrameGenerationStatusText));
             OnPropertyChanged(nameof(PrimaryActionText));
             OnPropertyChanged(nameof(PrimaryActionExplanationText));
+            OnPropertyChanged(nameof(RuntimeHealthSummaryText));
+            OnPropertyChanged(nameof(IsTurboBoostActive));
+        }
+
+        if (e.PropertyName is nameof(Game.CurrentDLSS) or nameof(Game.HasStreamlineDlss))
+        {
+            OnPropertyChanged(nameof(DlssEngineSummaryText));
+            OnPropertyChanged(nameof(RuntimeHealthSummaryText));
+            OnPropertyChanged(nameof(PrimaryActionExplanationText));
+            RefreshDlssPresetSupport();
+        }
+
+        if (e.PropertyName is nameof(Game.CurrentDLSS_D) or nameof(Game.HasStreamlineDlssD))
+        {
+            RefreshDlssPresetSupport();
+        }
+
+        if (e.PropertyName is nameof(Game.CurrentDLSS_G) or nameof(Game.HasStreamlineDlssG))
+        {
+            if (Game.RuntimeManifest is null)
+            {
+                ActiveFrameGenMode = (Game.CurrentDLSS_G is not null || Game.HasStreamlineDlssG)
+                    ? "Native DLSS 3 Hardware FG"
+                    : "Not Active (Runtime Not Installed)";
+            }
+            OnPropertyChanged(nameof(FrameGenerationStatusText));
+            RefreshDlssPresetSupport();
         }
 
         if (e.PropertyName == nameof(Game.Processing))
         {
             if (Game.Processing == true)
             {
-                _reloadGameTaskCompletionSource?.SetResult();
+                _reloadGameTaskCompletionSource?.TrySetResult();
             }
         }
     }

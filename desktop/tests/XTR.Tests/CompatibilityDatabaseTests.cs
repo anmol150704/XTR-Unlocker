@@ -112,4 +112,12 @@ public sealed class CompatibilityDatabaseTests
         Assert.AreEqual("version.dll", record.RecommendedProxy, "Forza Horizon 5 requires version.dll proxy.");
         Assert.AreEqual("DX12", record.RecommendedApi);
     }
+
+    [TestMethod]
+    public void LookupGame_ForzaHorizon6SteamSubstring_StillReturnsVersionDll()
+    {
+        var record = CompatibilityDatabase.LookupGame("Forza Horizon 6 (Steam)");
+        Assert.IsNotNull(record);
+        Assert.AreEqual("version.dll", record.RecommendedProxy);
+    }
 }

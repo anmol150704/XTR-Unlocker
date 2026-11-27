@@ -590,87 +590,141 @@ internal static class RuntimeInstallService
             throw new InvalidOperationException("The game's install folder changed since the runtime was installed. Refresh the game library before restoring.");
 
         var backupRoot = Storage.GetRuntimeBackupsPath(gameId);
+        var plannedActions = new List<RestoreFilePlan>(manifest.Files.Count);
+
         foreach (var entry in manifest.Files)
         {
             cancellationToken.ThrowIfCancellationRequested();
             EnsureNoReparsePoints(root, entry.RelativePath);
             var installedPath = ResolveBeneath(root, entry.RelativePath);
-            if (!File.Exists(installedPath) ||
-                (!string.Equals(
-                     await HashFileAsync(installedPath, cancellationToken).ConfigureAwait(false),
-                     entry.InstalledSha256,
-                     StringComparison.OrdinalIgnoreCase) &&
-                 !string.Equals(entry.RelativePath, "OptiScaler.ini", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new InvalidOperationException($"XTR found a changed or missing game file ({entry.RelativePath}) and stopped without restoring. The file may have been changed by the game, another mod, or you.");
-            }
+            var installedExists = File.Exists(installedPath);
 
-            if (entry.OriginalBackupPath is not null)
+            string? backupPath = entry.OriginalBackupPath is not null
+                ? ResolveBeneath(backupRoot, entry.OriginalBackupPath)
+                : null;
+            var backupExists = backupPath is not null && File.Exists(backupPath);
+
+            if (entry.OriginalBackupPath is not null && backupExists)
             {
-                var backupPath = ResolveBeneath(backupRoot, entry.OriginalBackupPath);
-                if (!File.Exists(backupPath) || !string.Equals(
-                        await HashFileAsync(backupPath, cancellationToken).ConfigureAwait(false),
+                if (!string.Equals(
+                        await HashFileAsync(backupPath!, cancellationToken).ConfigureAwait(false),
                         entry.OriginalSha256,
                         StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new InvalidDataException($"XTR's backup for {entry.RelativePath} is missing or damaged. No files were restored.");
+                    throw new InvalidDataException($"XTR's backup for {entry.RelativePath} is damaged. No files were restored.");
                 }
             }
+
+            string? installedSha256 = (installedExists && entry.OriginalBackupPath is null)
+                ? await HashFileAsync(installedPath, cancellationToken).ConfigureAwait(false)
+                : null;
+
+            plannedActions.Add(RuntimeRestorePlanner.PlanEntry(
+                entry,
+                installedPath,
+                installedExists,
+                installedSha256,
+                backupPath,
+                backupExists));
         }
 
-        var rollbackPaths = new Dictionary<RuntimeOwnedFile, string>();
-        var restoreCommitted = new List<RuntimeOwnedFile>();
+        var restoreCommitted = new List<(RestoreFilePlan Plan, string? RollbackPath)>();
         var preserveRollbackPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         try
         {
-            foreach (var entry in manifest.Files)
+            foreach (var plan in plannedActions)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var installedPath = ResolveBeneath(root, entry.RelativePath);
-                var rollbackPath = installedPath + $".{Guid.NewGuid():N}.xtrrollback";
-                if (entry.OriginalBackupPath is not null)
+                switch (plan.Action)
                 {
-                    var backupPath = ResolveBeneath(backupRoot, entry.OriginalBackupPath);
-                    var temporaryPath = installedPath + $".{Guid.NewGuid():N}.xtrtmp";
-                    try
+                    case RestoreFileActionKind.SkipMissing:
+                    case RestoreFileActionKind.PreserveExternalFile:
+                        continue;
+
+                    case RestoreFileActionKind.RestoreFromBackupViaCopy:
                     {
-                        File.Copy(backupPath, temporaryPath, overwrite: false);
-                        File.Replace(temporaryPath, installedPath, rollbackPath, ignoreMetadataErrors: true);
-                        rollbackPaths.Add(entry, rollbackPath);
-                        restoreCommitted.Add(entry);
+                        var parentDir = Path.GetDirectoryName(plan.InstalledPath);
+                        if (!string.IsNullOrEmpty(parentDir))
+                            Directory.CreateDirectory(parentDir);
+
+                        File.Copy(plan.BackupPath!, plan.InstalledPath, overwrite: true);
+                        restoreCommitted.Add((plan, null));
+                        break;
                     }
-                    finally
+
+                    case RestoreFileActionKind.RestoreFromBackupViaReplace:
                     {
-                        TryDeleteFile(temporaryPath);
+                        var rollbackPath = plan.InstalledPath + $".{Guid.NewGuid():N}.xtrrollback";
+                        var temporaryPath = plan.InstalledPath + $".{Guid.NewGuid():N}.xtrtmp";
+                        try
+                        {
+                            File.Copy(plan.BackupPath!, temporaryPath, overwrite: false);
+                            File.Replace(temporaryPath, plan.InstalledPath, rollbackPath, ignoreMetadataErrors: true);
+                            restoreCommitted.Add((plan, rollbackPath));
+                        }
+                        finally
+                        {
+                            TryDeleteFile(temporaryPath);
+                        }
+                        break;
                     }
-                }
-                else
-                {
-                    File.Move(installedPath, rollbackPath);
-                    rollbackPaths.Add(entry, rollbackPath);
-                    restoreCommitted.Add(entry);
+
+                    case RestoreFileActionKind.DeleteXtrFile:
+                    {
+                        var rollbackPath = plan.InstalledPath + $".{Guid.NewGuid():N}.xtrrollback";
+                        File.Move(plan.InstalledPath, rollbackPath);
+                        restoreCommitted.Add((plan, rollbackPath));
+                        break;
+                    }
                 }
             }
 
+            // Clean up runtime-generated log file if present and not a reparse point.
+            try
+            {
+                EnsureNoReparsePoints(root, "OptiScaler.log");
+                TryDeleteFile(ResolveBeneath(root, "OptiScaler.log"));
+            }
+            catch
+            {
+                // Ignore non-fatal log cleanup failures.
+            }
+
             await RuntimeInstallManifestStore.DeleteAsync(gameId, cancellationToken).ConfigureAwait(false);
+            await RuntimeIntegrationProfileStore.DeleteAsync(gameId, cancellationToken).ConfigureAwait(false);
         }
         catch
         {
-            foreach (var entry in restoreCommitted.AsEnumerable().Reverse())
+            foreach (var (plan, rollbackPath) in restoreCommitted.AsEnumerable().Reverse())
             {
-                var rollbackPath = rollbackPaths[entry];
                 try
                 {
-                    var installedPath = ResolveBeneath(root, entry.RelativePath);
-                    if (entry.OriginalBackupPath is null)
-                        File.Move(rollbackPath, installedPath);
-                    else
-                        File.Replace(rollbackPath, installedPath, null, ignoreMetadataErrors: true);
+                    switch (plan.Action)
+                    {
+                        case RestoreFileActionKind.RestoreFromBackupViaCopy:
+                            TryDeleteFile(plan.InstalledPath);
+                            break;
+
+                        case RestoreFileActionKind.RestoreFromBackupViaReplace:
+                            if (rollbackPath is not null)
+                                File.Replace(rollbackPath, plan.InstalledPath, null, ignoreMetadataErrors: true);
+                            break;
+
+                        case RestoreFileActionKind.DeleteXtrFile:
+                            if (rollbackPath is not null)
+                            {
+                                var parentDir = Path.GetDirectoryName(plan.InstalledPath);
+                                if (!string.IsNullOrEmpty(parentDir))
+                                    Directory.CreateDirectory(parentDir);
+                                File.Move(rollbackPath, plan.InstalledPath);
+                            }
+                            break;
+                    }
                 }
                 catch
                 {
-                    // Keep the original restore error; the rollback file remains beside the game file.
-                    preserveRollbackPaths.Add(rollbackPath);
+                    if (rollbackPath is not null)
+                        preserveRollbackPaths.Add(rollbackPath);
                 }
             }
 
@@ -678,14 +732,41 @@ internal static class RuntimeInstallService
         }
         finally
         {
-            foreach (var rollbackPath in rollbackPaths.Values)
+            foreach (var (_, rollbackPath) in restoreCommitted)
             {
-                if (!preserveRollbackPaths.Contains(rollbackPath))
+                if (rollbackPath is not null && !preserveRollbackPaths.Contains(rollbackPath))
                     TryDeleteFile(rollbackPath);
             }
         }
 
+        // Clean up empty directories created during deployment (deepest first) after rollback files are removed.
+        foreach (var candidateDir in RuntimeRestorePlanner.GetCandidateCleanupDirectories(root, manifest.Files.Select(f => f.RelativePath)))
+        {
+            try
+            {
+                if (Directory.Exists(candidateDir) &&
+                    (File.GetAttributes(candidateDir) & FileAttributes.ReparsePoint) == 0 &&
+                    !Directory.EnumerateFileSystemEntries(candidateDir).Any())
+                {
+                    Directory.Delete(candidateDir, recursive: false);
+                }
+            }
+            catch
+            {
+                // Ignore directory cleanup failures.
+            }
+        }
+
         DeleteManifestBackupSessions(manifest, backupRoot);
+        try
+        {
+            if (Directory.Exists(backupRoot) && !Directory.EnumerateFileSystemEntries(backupRoot).Any())
+                Directory.Delete(backupRoot, recursive: false);
+        }
+        catch
+        {
+            // Ignore backup root cleanup failures.
+        }
     }
 
     private static List<(string SourcePath, string RelativePath)> EnumeratePackageFiles(string packageRoot, string proxyName)

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <usercontrols:FakeContentDialog
     x:Class="DLSS_Swapper.UserControls.GameControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -215,7 +215,7 @@
                             </Border>
                         </Grid>
 
-                        <!-- ⚡ 1-CLICK XTR TURBO BOOST HERO CARD -->
+                        <!-- âš¡ 1-CLICK XTR TURBO BOOST HERO CARD -->
                         <Border Grid.Row="1" Padding="14,12" CornerRadius="16" Background="#162B20" BorderBrush="#34C759" BorderThickness="1">
                             <Grid ColumnSpacing="12">
                                 <Grid.ColumnDefinitions>
@@ -423,24 +423,6 @@
                                     </Grid>
                                 </Border>
 
-                                <!-- In-Game HUD Overlay Toggle -->
-                                <Border Padding="12,10" CornerRadius="12" Background="{ThemeResource XtrElevatedBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1">
-                                    <Grid ColumnSpacing="12">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <StackPanel Spacing="2">
-                                            <StackPanel Orientation="Horizontal" Spacing="7">
-                                                <FontIcon Style="{StaticResource SagoeFluentIconsFontIcon}" Glyph="&#xE9D9;" FontSize="13" Foreground="{ThemeResource XtrAccentBrush}" VerticalAlignment="Center" />
-                                                <TextBlock Text="In-Game FPS &amp; Frame Gen Overlay [Page Up]" FontSize="12.5" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
-                                            </StackPanel>
-                                            <TextBlock Text="Shows real-time frame rates and generated frame interpolation delta." FontSize="11" Foreground="{ThemeResource XtrSecondaryTextBrush}" TextWrapping="Wrap" />
-                                        </StackPanel>
-                                        <ToggleSwitch Grid.Column="1" IsOn="{x:Bind ViewModel.InGameHudOverlayEnabled, Mode=TwoWay}" OnContent="" OffContent="" VerticalAlignment="Center" />
-                                    </Grid>
-                                </Border>
-
                                 <!-- Streamline Spoofing Toggle -->
                                 <Border Padding="12,10" CornerRadius="12" Background="{ThemeResource XtrElevatedBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1">
                                     <Grid ColumnSpacing="12">
@@ -505,41 +487,22 @@
                                             <Slider Minimum="0" Maximum="100" StepFrequency="5" Value="{x:Bind ViewModel.SharpnessPercentage, Mode=TwoWay}" />
                                         </StackPanel>
 
-                                        <!-- Overlay Position & Framerate Limiter Grid -->
-                                        <Grid ColumnSpacing="10">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="*" />
-                                            </Grid.ColumnDefinitions>
-
-                                            <!-- Overlay Position -->
-                                            <StackPanel Grid.Column="0" Spacing="4">
-                                                <TextBlock Text="HUD Overlay Position" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
-                                                <ComboBox
-                                                    ItemsSource="{x:Bind ViewModel.AvailableOverlayPositions}"
-                                                    SelectedItem="{x:Bind ViewModel.SelectedOverlayPosition, Mode=TwoWay}"
-                                                    HorizontalAlignment="Stretch"
-                                                    CornerRadius="10" />
-                                            </StackPanel>
-
-                                            <!-- Framerate Limiter -->
-                                            <StackPanel Grid.Column="1" Spacing="4">
-                                                <TextBlock Text="Reflex Framerate Cap" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
-                                                <ComboBox
-                                                    ItemsSource="{x:Bind ViewModel.AvailableFramerateLimits}"
-                                                    SelectedItem="{x:Bind ViewModel.SelectedFramerateLimit, Mode=TwoWay}"
-                                                    HorizontalAlignment="Stretch"
-                                                    CornerRadius="10" />
-                                            </StackPanel>
-                                        </Grid>
+                                        <!-- Reflex Framerate Limiter -->
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="Reflex Framerate Cap" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
+                                            <ComboBox
+                                                ItemsSource="{x:Bind ViewModel.AvailableFramerateLimits}"
+                                                SelectedItem="{x:Bind ViewModel.SelectedFramerateLimit, Mode=TwoWay}"
+                                                HorizontalAlignment="Stretch"
+                                                CornerRadius="10" />
+                                        </StackPanel>
                                     </StackPanel>
                                 </Border>
 
                                 <Border Background="{ThemeResource XtrElevatedBrush}" BorderBrush="{ThemeResource XtrGlassBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="14,10">
                                     <StackPanel Spacing="6">
-                                        <TextBlock Text="IN-GAME OVERLAY HOTKEYS" FontSize="10" FontWeight="Bold" CharacterSpacing="60" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
+                                        <TextBlock Text="IN-GAME ENGINE HOTKEYS" FontSize="10" FontWeight="Bold" CharacterSpacing="60" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
                                         <TextBlock Text="[Insert] key - Toggle in-game XTR Engine developer panel" FontSize="11.5" Foreground="{ThemeResource XtrTextBrush}" />
-                                        <TextBlock Text="[Page Up] key - Toggle real-time FPS &amp; Frame Generation HUD" FontSize="11.5" Foreground="{ThemeResource XtrTextBrush}" />
                                         <TextBlock Text="[End] key - Toggle Frame Generation on / off dynamically" FontSize="11.5" Foreground="{ThemeResource XtrTextBrush}" />
                                     </StackPanel>
                                 </Border>

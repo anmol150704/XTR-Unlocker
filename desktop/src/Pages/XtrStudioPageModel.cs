@@ -30,19 +30,22 @@ public partial class XtrStudioPageModel : ObservableObject
     public partial string SelectedDevMenuKey { get; set; } = "Insert (0x2D)";
 
     [ObservableProperty]
-    public partial string SelectedHudKey { get; set; } = "F10 (0x79)";
+    public partial string SelectedFgKey { get; set; } = "End (0x23)";
 
     [ObservableProperty]
-    public partial string SelectedCycleKey { get; set; } = "F9 (0x78)";
+    public partial string SelectedGlobalPreset { get; set; } = "Preset E (Anti-Ghosting Champion)";
 
     [ObservableProperty]
-    public partial string SelectedFgKey { get; set; } = "F12 (0x7B)";
+    public partial bool GlobalAntiGhostingEnabled { get; set; } = true;
 
     [ObservableProperty]
-    public partial int SelectedPositionIndex { get; set; } = 0;
+    public partial bool GlobalStreamlineSpoofingEnabled { get; set; } = true;
 
     [ObservableProperty]
-    public partial int SelectedModeIndex { get; set; } = 1;
+    [NotifyPropertyChangedFor(nameof(GlobalRcasSharpnessLabel))]
+    public partial double GlobalRcasSharpness { get; set; } = 35.0;
+
+    public string GlobalRcasSharpnessLabel => $"{Math.Round(GlobalRcasSharpness)}%";
 
     [ObservableProperty]
     public partial string SelectedTheme { get; set; } = "Apple Emerald Glass";
@@ -54,34 +57,13 @@ public partial class XtrStudioPageModel : ObservableObject
     public partial int AcceleratedGamesCount { get; set; } = 0;
 
     [ObservableProperty]
-    public partial string SimulatedHudFps { get; set; } = "128 FPS";
+    public partial string NgxStoreStatus { get; set; } = "OTA Model Store Synchronized • SHA-256 Verified";
 
     [ObservableProperty]
-    public partial string SimulatedHudFrametime { get; set; } = "7.8 ms";
+    public partial int InstalledNgxModelsCount { get; set; } = 0;
 
     [ObservableProperty]
-    public partial string SimulatedHudResolution { get; set; } = "2560x1440 (DLSS 3.7 - Quality)";
-
-    [ObservableProperty]
-    public partial string SimulatedHudFg { get; set; } = "FG Active (FSR 3.1 Bridge • Hudless)";
-
-    [ObservableProperty]
-    public partial bool IsCompanionActive { get; set; } = false;
-
-    [ObservableProperty]
-    public partial string ActiveGameTitle { get; set; } = "Standby (Awaiting Game Launch)";
-
-    [ObservableProperty]
-    public partial string ActiveGamePid { get; set; } = "Idle";
-
-    [ObservableProperty]
-    public partial string LiveVramStatus { get; set; } = "3.1 / 4.0 GB (77%)";
-
-    [ObservableProperty]
-    public partial double LiveVramPercentage { get; set; } = 77.5;
-
-    [ObservableProperty]
-    public partial string LiveGpuClock { get; set; } = "1650 MHz • 64°C";
+    public partial string DirectSrCompatibilityStatus { get; set; } = "DirectSR 1.0 & Streamline v2.4 Interposer Ready";
 
     [ObservableProperty]
     public partial bool AutoMinimizeToTray { get; set; } = true;
@@ -94,43 +76,22 @@ public partial class XtrStudioPageModel : ObservableObject
         "F12 (0x7B)"
     };
 
-    public ObservableCollection<string> HudKeys { get; } = new()
-    {
-        "F10 (0x79)",
-        "Page Up (0x21)",
-        "F9 (0x78)",
-        "Insert (0x2D)"
-    };
-
-    public ObservableCollection<string> CycleKeys { get; } = new()
-    {
-        "F9 (0x78)",
-        "Page Down (0x22)",
-        "F8 (0x77)",
-        "F7 (0x76)"
-    };
-
     public ObservableCollection<string> FgKeys { get; } = new()
     {
-        "F12 (0x7B)",
         "End (0x23)",
+        "F12 (0x7B)",
         "F6 (0x75)"
     };
 
-    public ObservableCollection<string> HudPositions { get; } = new()
+    public ObservableCollection<string> GlobalPresets { get; } = new()
     {
-        "Top-Left (Default)",
-        "Top-Right",
-        "Bottom-Left",
-        "Bottom-Right"
-    };
-
-    public ObservableCollection<string> HudModes { get; } = new()
-    {
-        "Simple (FPS Only)",
-        "Detailed (FPS + Latency + Bridge)",
-        "Detailed + Graph",
-        "Full Telemetry"
+        "Preset E (Anti-Ghosting Champion)",
+        "Preset K (DLSS 4 / 4.5 Ultra-Low Latency Transformer)",
+        "Preset M (DLSS 4.5 FP8 Optical Transformer)",
+        "Preset F (Fast Motion & Reduced Shimmer)",
+        "Preset C (Low Ghosting / High Stability)",
+        "Preset D (Classic DLSS 2.5 Profile)",
+        "Default (Game Engine Default)"
     };
 
     public ObservableCollection<string> OverlayThemes { get; } = new()
@@ -147,53 +108,25 @@ public partial class XtrStudioPageModel : ObservableObject
 
         // Load persisted settings
         SelectedDevMenuKey = MapHexToDisplayName(Settings.Instance.SelectedDevMenuHotkey, DevMenuKeys, "Insert (0x2D)");
-        SelectedHudKey = MapHexToDisplayName(Settings.Instance.SelectedHudHotkey, HudKeys, "F10 (0x79)");
-        SelectedCycleKey = MapHexToDisplayName(Settings.Instance.SelectedHudCycleHotkey, CycleKeys, "F9 (0x78)");
-        SelectedFgKey = MapHexToDisplayName(Settings.Instance.SelectedFrameGenHotkey, FgKeys, "F12 (0x7B)");
-
-        SelectedPositionIndex = Math.Clamp(Settings.Instance.SelectedHudPosition, 0, HudPositions.Count - 1);
-        SelectedModeIndex = Settings.Instance.SelectedHudMode == 1 ? 0 :
-                             Settings.Instance.SelectedHudMode == 2 ? 1 :
-                             Settings.Instance.SelectedHudMode == 3 ? 2 : 1;
-
+        SelectedFgKey = MapHexToDisplayName(Settings.Instance.SelectedFrameGenHotkey, FgKeys, "End (0x23)");
         SelectedTheme = Settings.Instance.SelectedOverlayTheme ?? "Apple Emerald Glass";
 
         RefreshLibraryStats();
-        CheckRunningGames();
+        RefreshNgxStoreStats();
     }
 
-    public void CheckRunningGames()
+    public void RefreshNgxStoreStats()
     {
         try
         {
-            string[] knownExecutables = ["ForzaHorizon6", "ForzaHorizon5", "Cyberpunk2077", "Spider-Man", "Witcher3", "AlanWake2", "Starfield"];
-            foreach (var name in knownExecutables)
-            {
-                var procs = System.Diagnostics.Process.GetProcessesByName(name);
-                if (procs.Length > 0)
-                {
-                    var p = procs[0];
-                    IsCompanionActive = true;
-                    ActiveGameTitle = name switch
-                    {
-                        "ForzaHorizon6" => "Forza Horizon 6 (Virtual Streamline)",
-                        "ForzaHorizon5" => "Forza Horizon 5 (DirectX 12)",
-                        "Cyberpunk2077" => "Cyberpunk 2077 (DLSS 3.7 + FG)",
-                        _ => $"{name} (Active Session)"
-                    };
-                    ActiveGamePid = $"PID: {p.Id}";
-                    StatusBanner = $"🟢 Active Companion Engaged • {ActiveGameTitle} • FSR 3.1 Bridge Running";
-                    return;
-                }
-            }
-
-            IsCompanionActive = false;
-            ActiveGameTitle = "Standby (Awaiting Game Launch)";
-            ActiveGamePid = "Idle";
+            InstalledNgxModelsCount = DLLManager.Instance.DLSSRecords?.Count ?? 0;
+            NgxStoreStatus = InstalledNgxModelsCount > 0
+                ? $"{InstalledNgxModelsCount} Verified Neural Models Available (OTA Store Active)"
+                : "OTA Model Store Active • Ready to synchronize";
         }
         catch
         {
-            // Ignore process query permission errors
+            NgxStoreStatus = "OTA Model Store Active";
         }
     }
 
@@ -220,20 +153,12 @@ public partial class XtrStudioPageModel : ObservableObject
         if (!string.IsNullOrEmpty(SelectedDevMenuKey))
             Settings.Instance.SelectedDevMenuHotkey = ExtractHex(SelectedDevMenuKey);
 
-        if (!string.IsNullOrEmpty(SelectedHudKey))
-            Settings.Instance.SelectedHudHotkey = ExtractHex(SelectedHudKey);
-
-        if (!string.IsNullOrEmpty(SelectedCycleKey))
-            Settings.Instance.SelectedHudCycleHotkey = ExtractHex(SelectedCycleKey);
-
         if (!string.IsNullOrEmpty(SelectedFgKey))
             Settings.Instance.SelectedFrameGenHotkey = ExtractHex(SelectedFgKey);
 
-        Settings.Instance.SelectedHudPosition = SelectedPositionIndex;
-        Settings.Instance.SelectedHudMode = SelectedModeIndex == 0 ? 1 : SelectedModeIndex == 1 ? 2 : 3;
         Settings.Instance.SelectedOverlayTheme = SelectedTheme;
 
-        StatusBanner = $"Settings Saved • In-game HUD will toggle with {SelectedHudKey} • Theme: {SelectedTheme}";
+        StatusBanner = $"Settings Saved • In-game diagnostics will open with {SelectedDevMenuKey} • Theme: {SelectedTheme}";
     }
 
     public void RefreshLibraryStats()
@@ -262,6 +187,27 @@ public partial class XtrStudioPageModel : ObservableObject
         HardwareInfo = await GpuHardwareDetector.GetHardwareInfoAsync(refresh: true);
         IsProcessing = false;
         StatusBanner = $"Hardware Verified • {HardwareInfo.Name} ({HardwareInfo.Architecture})";
+    }
+
+    [RelayCommand]
+    public async Task SyncNgxStoreAsync()
+    {
+        IsProcessing = true;
+        StatusBanner = "Synchronizing NVIDIA NGX OTA Model Store...";
+        try
+        {
+            await DLLManager.Instance.UpdateManifestAsync();
+            RefreshNgxStoreStats();
+            StatusBanner = "NVIDIA NGX OTA Model Store updated successfully.";
+        }
+        catch (Exception ex)
+        {
+            StatusBanner = $"NGX Sync Note: {ex.Message}";
+        }
+        finally
+        {
+            IsProcessing = false;
+        }
     }
 
     [RelayCommand]

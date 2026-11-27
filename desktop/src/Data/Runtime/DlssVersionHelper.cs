@@ -96,4 +96,39 @@ public static class DlssVersionHelper
     {
         return !hasRuntimeBoostOrFg && hasNativeDlssG;
     }
+
+    public static bool MatchesAnyVersionPrefix(string? version, params string[] prefixes)
+    {
+        if (string.IsNullOrWhiteSpace(version) || prefixes is null || prefixes.Length == 0)
+        {
+            return false;
+        }
+
+        var normalized = version.Trim().TrimStart('v', 'V');
+        foreach (var prefix in prefixes)
+        {
+            if (string.IsNullOrWhiteSpace(prefix))
+            {
+                continue;
+            }
+
+            var normalizedPrefix = prefix.Trim().TrimStart('v', 'V');
+            if (normalized.StartsWith(normalizedPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static bool IsDlss1xVersion(string? version)
+    {
+        if (string.IsNullOrWhiteSpace(version))
+        {
+            return false;
+        }
+
+        return version.Trim().TrimStart('v', 'V').StartsWith("1.", StringComparison.OrdinalIgnoreCase);
+    }
 }

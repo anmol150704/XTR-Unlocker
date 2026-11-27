@@ -59,9 +59,8 @@ if (-not $SkipTests) {
 
 $bundledRuntime = Join-Path $desktopOutput "Runtime/OptiScaler"
 if (-not (Test-Path (Join-Path $bundledRuntime "OptiScaler.dll")) -or
-    -not (Test-Path (Join-Path $bundledRuntime "OptiScaler.ini")) -or
-    -not (Test-Path (Join-Path $bundledRuntime "plugins/xtr_hud.asi"))) {
-    throw "The bundled OptiScaler runtime or xtr_hud.asi was not copied beside the XTR application."
+    -not (Test-Path (Join-Path $bundledRuntime "OptiScaler.ini"))) {
+    throw "The bundled OptiScaler runtime was not copied beside the XTR application."
 }
 
 Write-Host "XTR Unlocker and its bundled OptiScaler runtime were verified in $desktopOutput"
@@ -93,7 +92,7 @@ if ($BuildInstaller -or ($PackageZip -and $Configuration -eq "Release")) {
         $sfxConfigContent = @'
 ;!@Install@!UTF-8!
 Title="XTR Unlocker Setup"
-BeginPrompt="Install XTR Unlocker (DLSS & Frame Generation Unlocker with In-Game Apple Glass HUD)?"
+BeginPrompt="Install XTR Unlocker (DLSS & Frame Generation Unlocker)?"
 RunProgram="XTR Unlocker.exe"
 ;!@InstallEnd@!
 '@

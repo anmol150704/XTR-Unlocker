@@ -1,4 +1,4 @@
-﻿{
+{
     "schemaVersion":  3,
     "id":  "optiscaler-0.9.5-xtr",
     "displayName":  "OptiScaler 0.9.5 Production Bundle",
@@ -102,10 +102,10 @@
                            "sizeBytes":  25379632
                        },
                        {
-                           "path":  "OptiScaler.ini",
-                           "sha256":  "30e5eb6f6a5e64862ca27e3251781c76f2f21af9ded73c9fd5b6fa0802574265",
-                           "sizeBytes":  47412
-                       },
+                            "path":  "OptiScaler.ini",
+                            "sha256":  "b189be0da6c6fa282514d58e739882967b224854745d5fa495c63a734dbd987b",
+                            "sizeBytes":  46308
+                        },
                        {
                            "path":  "D3D12_Optiscaler/D3D12Core.dll",
                            "sha256":  "07d286c306f8117321422affd9e6388c12d0fb4be1c7fc689d9e899324feeb24",
@@ -130,11 +130,6 @@
                            "path":  "Licenses/XeSS_LICENSE.txt",
                            "sha256":  "784be42c39a4a4d03cf85d88e15e59d75828fca773ce45b8dbfffbd7eaf208df",
                            "sizeBytes":  4194
-                       },
-                       {
-                           "path":  "plugins/xtr_hud.asi",
-                           "sha256":  "f4b62b2fbc8a88ce0b0e2062bd26c46ac6e1bb65d6cc93cd1a38f1831e1f909e",
-                           "sizeBytes":  348160
                        }
                    ],
     "licenses":  [

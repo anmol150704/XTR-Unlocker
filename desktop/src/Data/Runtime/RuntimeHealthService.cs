@@ -17,6 +17,10 @@ public sealed class RuntimeHealthReport
 {
     public RuntimeHealthState State { get; set; } = RuntimeHealthState.InstalledNotYetLaunched;
     public bool ProxyFilePresent { get; set; }
+    public bool IniFilePresent { get; set; }
+    public string? ExpectedProxyFileName { get; set; }
+    public string? DetectedAlternateProxyFileName { get; set; }
+    public bool IsRuntimeOperational => ProxyFilePresent && IniFilePresent && State != RuntimeHealthState.ErrorDetected;
     public bool ProxyHookConfirmed { get; set; }
     public bool StreamlineHookConfirmed { get; set; }
     public bool SwapchainHookConfirmed { get; set; }
@@ -26,7 +30,7 @@ public sealed class RuntimeHealthReport
     public string? ActiveApi { get; set; }
     public string? ActiveUpscaler { get; set; }
     public string? ActiveFrameGen { get; set; }
-    public string InGameOverlayGuide { get; set; } = "[Insert] In-Game Menu - [Page Up] FPS & FG Overlay";
+    public string InGameOverlayGuide { get; set; } = "Press [Insert] for in-game OptiScaler menu; press [End] for Frame Generation toggle.";
     public string Summary { get; set; } = "Runtime installed; waiting for first launch.";
     public List<string> Details { get; set; } = new();
     public string? LogPath { get; set; }
@@ -35,11 +39,43 @@ public sealed class RuntimeHealthReport
 
 public static class RuntimeHealthService
 {
+    private static readonly string[] ProxyNames =
+    [
+        "dxgi.dll", "version.dll", "winmm.dll", "d3d12.dll", "dbghelp.dll", "winhttp.dll", "wininet.dll"
+    ];
+
+    public static string? FindAlternateOptiScalerProxy(string gameRoot, string expectedProxyName)
+    {
+        if (string.IsNullOrWhiteSpace(gameRoot) || !Directory.Exists(gameRoot))
+        {
+            return null;
+        }
+
+        foreach (var candidate in ProxyNames)
+        {
+            if (string.Equals(candidate, expectedProxyName, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var candidatePath = Path.Combine(gameRoot, candidate);
+            if (File.Exists(candidatePath) && RuntimeRestorePlanner.IsXtrExclusiveFile(candidate, candidatePath))
+            {
+                return candidate;
+            }
+        }
+
+        return null;
+    }
+
     public static RuntimeHealthReport CheckHealth(string gameRoot, string proxyName = "dxgi.dll")
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(gameRoot);
 
-        var report = new RuntimeHealthReport();
+        var report = new RuntimeHealthReport
+        {
+            ExpectedProxyFileName = proxyName
+        };
 
         if (!Directory.Exists(gameRoot))
         {
@@ -50,12 +86,27 @@ public static class RuntimeHealthService
 
         var proxyPath = Path.Combine(gameRoot, proxyName);
         report.ProxyFilePresent = File.Exists(proxyPath);
+        report.IniFilePresent = File.Exists(Path.Combine(gameRoot, "OptiScaler.ini"));
 
         if (!report.ProxyFilePresent)
         {
             report.State = RuntimeHealthState.ErrorDetected;
-            report.Summary = $"Proxy DLL ({proxyName}) is missing from game folder.";
+            report.Summary = report.IniFilePresent
+                ? $"Proxy DLL ({proxyName}) is missing from game folder."
+                : $"Proxy DLL ({proxyName}) is missing from game folder. OptiScaler.ini is also missing.";
             report.Details.Add($"Expected proxy file {proxyName} was not found in {gameRoot}.");
+
+            if (!report.IniFilePresent)
+            {
+                report.Details.Add("OptiScaler.ini is missing from game folder.");
+            }
+
+            report.DetectedAlternateProxyFileName = FindAlternateOptiScalerProxy(gameRoot, proxyName);
+            if (!string.IsNullOrEmpty(report.DetectedAlternateProxyFileName))
+            {
+                report.Details.Add($"Detected OptiScaler proxy under alternate name: {report.DetectedAlternateProxyFileName}.");
+            }
+
             return report;
         }
 
@@ -65,6 +116,10 @@ public static class RuntimeHealthService
             report.State = RuntimeHealthState.InstalledNotYetLaunched;
             report.Summary = "Files installed - Launch the game to initialize runtime.";
             report.Details.Add($"Proxy {proxyName} is present on disk. OptiScaler has not generated OptiScaler.log yet.");
+            if (!report.IniFilePresent)
+            {
+                report.Details.Add("OptiScaler.ini is missing from game folder.");
+            }
             return report;
         }
 
@@ -160,7 +215,13 @@ public static class RuntimeHealthService
             if (errors.Count > 0)
             {
                 report.State = RuntimeHealthState.ErrorDetected;
-                report.Summary = "Error reported by runtime engine.";
+                report.Summary = report.IniFilePresent
+                    ? "Error reported by runtime engine."
+                    : "Error reported by runtime engine. OptiScaler.ini is missing from game folder.";
+                if (!report.IniFilePresent)
+                {
+                    report.Details.Add("OptiScaler.ini is missing from game folder.");
+                }
                 report.Details.AddRange(errors.Take(5));
             }
             else if (report.ProxyHookConfirmed)
@@ -168,7 +229,15 @@ public static class RuntimeHealthService
                 report.State = RuntimeHealthState.HealthyActive;
                 var upscalerStr = report.ActiveUpscaler ?? "DLSS / Upscaler";
                 var fgStr = report.FrameGenerationActive ? $" + {report.ActiveFrameGen}" : string.Empty;
-                report.Summary = $"Active - {upscalerStr}{fgStr} ({report.ActiveApi ?? "DirectX"}).";
+                if (!report.IniFilePresent)
+                {
+                    report.Summary = $"Incomplete - OptiScaler.ini is missing from game folder. (Last active log: {upscalerStr}{fgStr} ({report.ActiveApi ?? "DirectX"})).";
+                    report.Details.Add("OptiScaler.ini is missing from game folder.");
+                }
+                else
+                {
+                    report.Summary = $"Active - {upscalerStr}{fgStr} ({report.ActiveApi ?? "DirectX"}).";
+                }
                 report.Details.Add($"Proxy {proxyName} successfully hooked by game process.");
                 if (report.StreamlineHookConfirmed)
                     report.Details.Add("Engine Streamline DLSS-G tags successfully intercepted.");
@@ -179,8 +248,14 @@ public static class RuntimeHealthService
             else
             {
                 report.State = RuntimeHealthState.ProxyBypassed;
-                report.Summary = "Proxy present but hook not yet confirmed.";
+                report.Summary = report.IniFilePresent
+                    ? "Proxy present but hook not yet confirmed."
+                    : "Proxy present but hook not yet confirmed. OptiScaler.ini is missing from game folder.";
                 report.Details.Add("Log file was present but does not show active interception calls.");
+                if (!report.IniFilePresent)
+                {
+                    report.Details.Add("OptiScaler.ini is missing from game folder.");
+                }
             }
         }
         catch (Exception ex)

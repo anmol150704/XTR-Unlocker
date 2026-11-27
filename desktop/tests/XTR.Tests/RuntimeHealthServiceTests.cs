@@ -130,4 +130,111 @@ public sealed class RuntimeHealthServiceTests
                 Directory.Delete(tempDir, recursive: true);
         }
     }
+
+    [TestMethod]
+    public void CheckHealth_ProxyMissingAndIniMissing_ReportsBothAndNotOperational()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"xtr_health_both_missing_{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(tempDir);
+            var report = RuntimeHealthService.CheckHealth(tempDir, "dxgi.dll");
+
+            Assert.AreEqual(RuntimeHealthState.ErrorDetected, report.State);
+            Assert.IsFalse(report.ProxyFilePresent);
+            Assert.IsFalse(report.IniFilePresent);
+            Assert.IsFalse(report.IsRuntimeOperational);
+            Assert.AreEqual("dxgi.dll", report.ExpectedProxyFileName);
+            Assert.IsTrue(report.Summary.Contains("OptiScaler.ini", StringComparison.OrdinalIgnoreCase));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void CheckHealth_ProxyPresentWithoutIni_SetsIniFilePresentFalseAndNotOperational()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"xtr_health_no_ini_{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(tempDir);
+            File.WriteAllText(Path.Combine(tempDir, "dxgi.dll"), "DUMMY_PROXY");
+
+            var report = RuntimeHealthService.CheckHealth(tempDir, "dxgi.dll");
+
+            Assert.AreEqual(RuntimeHealthState.InstalledNotYetLaunched, report.State);
+            Assert.IsTrue(report.ProxyFilePresent);
+            Assert.IsFalse(report.IniFilePresent);
+            Assert.IsFalse(report.IsRuntimeOperational);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void CheckHealth_ProxyAndIniPresent_WithoutLog_SetsIsRuntimeOperationalTrue()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"xtr_health_op_{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(tempDir);
+            File.WriteAllText(Path.Combine(tempDir, "dxgi.dll"), "DUMMY_PROXY");
+            File.WriteAllText(Path.Combine(tempDir, "OptiScaler.ini"), "[Menu]\nOverlayMenu=true\n");
+
+            var report = RuntimeHealthService.CheckHealth(tempDir, "dxgi.dll");
+
+            Assert.AreEqual(RuntimeHealthState.InstalledNotYetLaunched, report.State);
+            Assert.IsTrue(report.ProxyFilePresent);
+            Assert.IsTrue(report.IniFilePresent);
+            Assert.IsTrue(report.IsRuntimeOperational);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void CheckHealth_AlternateProxyPresent_DetectsOptiScalerUnderVersionDll()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"xtr_health_alt_{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(tempDir);
+            var current = AppContext.BaseDirectory;
+            string? optiDll = null;
+            while (!string.IsNullOrEmpty(current))
+            {
+                var candidate = Path.Combine(current, "desktop", "src", "Runtime", "OptiScaler", "OptiScaler.dll");
+                if (File.Exists(candidate))
+                {
+                    optiDll = candidate;
+                    break;
+                }
+                current = Directory.GetParent(current)?.FullName;
+            }
+            Assert.IsNotNull(optiDll, "Could not locate bundled OptiScaler.dll.");
+
+            File.Copy(optiDll, Path.Combine(tempDir, "version.dll"), overwrite: true);
+            File.WriteAllText(Path.Combine(tempDir, "OptiScaler.ini"), "[Menu]\nOverlayMenu=true\n");
+
+            var report = RuntimeHealthService.CheckHealth(tempDir, "dxgi.dll");
+
+            Assert.IsFalse(report.ProxyFilePresent);
+            Assert.AreEqual("version.dll", report.DetectedAlternateProxyFileName);
+            Assert.IsFalse(report.IsRuntimeOperational);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, recursive: true);
+        }
+    }
 }

@@ -9,7 +9,11 @@
     Title="XTR Unlocker"
     mc:Ignorable="d">
 
-    <Grid x:Name="RootGrid" MinWidth="760" Background="{ThemeResource XtrBackgroundBrush}">
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid x:Name="RootGrid" MinWidth="760">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
@@ -18,7 +22,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Apple macOS Style Sleek Glass TitleBar -->
+        <!-- Windows 11 Fluent 2 Mica / Obsidian Header -->
         <Grid x:Name="AppTitleBar" Grid.Row="0" Padding="16,0,16,0" Background="{ThemeResource XtrSidebarBrush}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -37,7 +41,7 @@
                            Foreground="{ThemeResource XtrTextBrush}" />
             </StackPanel>
 
-            <!-- Apple Liquid Engine Status Pill -->
+            <!-- Engine Ready Status Pill -->
             <Border Grid.Column="2"
                     VerticalAlignment="Center"
                     Padding="10,3"
@@ -47,7 +51,7 @@
                     BorderThickness="1">
                 <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                     <Ellipse Width="6" Height="6" Fill="{ThemeResource XtrSuccessBrush}" VerticalAlignment="Center" />
-                    <TextBlock Text="XTR ENGINE - FG READY"
+                    <TextBlock Text="XTR ENGINE • READY"
                                FontSize="9.5"
                                FontWeight="Bold"
                                FontFamily="{StaticResource XtrDisplayFontFamily}"
@@ -66,12 +70,12 @@
                              IsPaneToggleButtonVisible="False"
                              IsBackButtonVisible="Collapsed"
                              IsSettingsVisible="True"
-                             OpenPaneLength="246"
+                             OpenPaneLength="250"
                              CompactPaneLength="64"
                              SelectionFollowsFocus="Disabled"
                              ItemInvoked="MainNavigationView_ItemInvoked"
                              Loaded="MainNavigationView_Loaded"
-                             Background="{ThemeResource XtrBackgroundBrush}">
+                             Background="Transparent">
 
             <muxc:NavigationView.PaneHeader>
                 <Grid Padding="18,22,14,20">
@@ -83,14 +87,14 @@
                         <Image Margin="8" Source="Assets/icon_256.png" Stretch="Uniform" />
                     </Border>
                     <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Spacing="2">
-                        <TextBlock Text="XTR STUDIO" FontSize="14" FontWeight="Bold" CharacterSpacing="20" Foreground="{ThemeResource XtrTextBrush}" />
+                        <TextBlock Text="XTR UNLOCKER" FontSize="14" FontWeight="Bold" CharacterSpacing="20" Foreground="{ThemeResource XtrTextBrush}" />
                         <TextBlock Text="NATIVE ENGINE 2.4" FontSize="9.5" CharacterSpacing="100" FontWeight="Bold" Foreground="{ThemeResource XtrAccentBrush}" />
                     </StackPanel>
                 </Grid>
             </muxc:NavigationView.PaneHeader>
 
             <muxc:NavigationView.PaneFooter>
-                <!-- Apple Liquid Engine Status Footer Card -->
+                <!-- Native Engine Status Footer Card -->
                 <Border Margin="14,0,14,16"
                         Padding="14,12"
                         CornerRadius="14"
@@ -107,21 +111,21 @@
                         </Border>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
                             <TextBlock Text="Engine Online" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource XtrTextBrush}" />
-                            <TextBlock Text="Hardware FG / FSR 3.1" FontSize="10" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
+                            <TextBlock Text="DirectSR / FSR 3.1 / XeSS" FontSize="10" Foreground="{ThemeResource XtrSecondaryTextBrush}" />
                         </StackPanel>
                     </Grid>
                 </Border>
             </muxc:NavigationView.PaneFooter>
 
             <muxc:NavigationView.MenuItems>
-                                <muxc:NavigationViewItem Content="XTR Studio Hub" Tag="{x:Bind pages:XtrStudioPage.PageTag}">
-                    <muxc:NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE945;" />
-                    </muxc:NavigationViewItem.Icon>
-                </muxc:NavigationViewItem>
-                <muxc:NavigationViewItem Content="Game Library" Tag="{x:Bind pages:GameGridPage.PageTag}">
+                <muxc:NavigationViewItem Content="Games Library" Tag="{x:Bind pages:GameGridPage.PageTag}">
                     <muxc:NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE7FC;" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Content="XTR Studio (Engine Hub)" Tag="{x:Bind pages:XtrStudioPage.PageTag}">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE945;" />
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
                 <muxc:NavigationViewItem Content="Runtime DLLs" Tag="{x:Bind pages:LibraryPage.PageTag}">

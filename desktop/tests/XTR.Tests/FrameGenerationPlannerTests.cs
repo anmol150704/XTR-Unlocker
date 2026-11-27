@@ -76,23 +76,10 @@ public sealed class FrameGenerationPlannerTests
             Assert.IsNotNull(spoofing);
             Assert.AreEqual("true", spoofing.Value);
 
-            // Verify in-game detection overlay is enabled
-            var showFps = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Menu" && m.Key == "ShowFps");
-            Assert.IsNotNull(showFps);
-            Assert.AreEqual("true", showFps.Value);
-
             // Verify XTR Menu shortcut keys & Apple Liquid theming
             var shortcutKey = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Menu" && m.Key == "ShortcutKey");
             Assert.IsNotNull(shortcutKey);
             Assert.AreEqual("0x2D", shortcutKey.Value);
-
-            var fpsKey = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Menu" && m.Key == "FpsShortcutKey");
-            Assert.IsNotNull(fpsKey);
-            Assert.AreEqual("0x79", fpsKey.Value);
-
-            var fpsCycleKey = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Menu" && m.Key == "FpsCycleShortcutKey");
-            Assert.IsNotNull(fpsCycleKey);
-            Assert.AreEqual("0x78", fpsCycleKey.Value);
 
             var fgKey = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Menu" && m.Key == "FGShortcutKey");
             Assert.IsNotNull(fgKey);
@@ -276,10 +263,6 @@ public sealed class FrameGenerationPlannerTests
             var shortcutKey = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Menu" && m.Key == "ShortcutKey");
             Assert.IsNotNull(shortcutKey);
             Assert.AreEqual("0x2D", shortcutKey.Value);
-
-            var fpsKey = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Menu" && m.Key == "FpsShortcutKey");
-            Assert.IsNotNull(fpsKey);
-            Assert.AreEqual("0x79", fpsKey.Value);
 
             var fgKey = plan.PlannedConfigModifications.FirstOrDefault(m => m.Section == "Menu" && m.Key == "FGShortcutKey");
             Assert.IsNotNull(fgKey);
@@ -491,10 +474,8 @@ public sealed class FrameGenerationPlannerTests
             Assert.AreEqual("-0.5", RuntimeConfigService.ReadIniValue(iniContent, "Mipmap", "MipmapBiasOverride"));
             Assert.AreEqual("0.35", RuntimeConfigService.ReadIniValue(iniContent, "Sharpness", "Sharpness"));
             Assert.AreEqual("0x2D", RuntimeConfigService.ReadIniValue(iniContent, "Menu", "ShortcutKey"));
-            Assert.AreEqual("0x79", RuntimeConfigService.ReadIniValue(iniContent, "Menu", "FpsShortcutKey"));
-            Assert.AreEqual("0x78", RuntimeConfigService.ReadIniValue(iniContent, "Menu", "FpsCycleShortcutKey"));
             Assert.AreEqual("0x7B", RuntimeConfigService.ReadIniValue(iniContent, "Menu", "FGShortcutKey"));
-            Assert.AreEqual("true", RuntimeConfigService.ReadIniValue(iniContent, "Menu", "ShowFps"));
+            Assert.AreEqual("false", RuntimeConfigService.ReadIniValue(iniContent, "Menu", "ShowFps"));
             Assert.AreEqual("true", RuntimeConfigService.ReadIniValue(iniContent, "Menu", "DisableSplash"));
 
             await RuntimeInstallService.RestoreAsync(gameId, tempDir);

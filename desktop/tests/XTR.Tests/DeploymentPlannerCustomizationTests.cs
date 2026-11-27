@@ -32,7 +32,7 @@ public class DeploymentPlannerCustomizationTests
     }
 
     [TestMethod]
-    public async Task CreatePlan_AppliesCustomHudHotkeyFromOverrides()
+    public async Task CreatePlan_AppliesCustomDevAndFgHotkeyFromOverrides()
     {
         var tempDir = Path.Combine(Path.GetTempPath(), $"xtr_test_{Guid.NewGuid():N}");
         try
@@ -44,7 +44,7 @@ public class DeploymentPlannerCustomizationTests
             var pack = await RuntimePack.LoadFromDirectoryAsync(GetBundledPackagePath());
             Assert.IsNotNull(pack);
 
-            DeploymentPlanner.OverrideHudHotkey = "0x79";
+            DeploymentPlanner.OverrideFrameGenHotkey = "0x7B";
             DeploymentPlanner.OverrideDevHotkey = "0x7A";
 
             var plan = await DeploymentPlanner.CreatePlanAsync(
@@ -54,9 +54,9 @@ public class DeploymentPlannerCustomizationTests
                 pack,
                 RuntimeIntegrationPreset.TurboBoost);
 
-            var hudKeyEntry = plan.PlannedConfigModifications.FirstOrDefault(m => m.Key == "FpsShortcutKey");
-            Assert.IsNotNull(hudKeyEntry);
-            Assert.AreEqual("0x79", hudKeyEntry.Value);
+            var fgKeyEntry = plan.PlannedConfigModifications.FirstOrDefault(m => m.Key == "FGShortcutKey");
+            Assert.IsNotNull(fgKeyEntry);
+            Assert.AreEqual("0x7B", fgKeyEntry.Value);
 
             var devKeyEntry = plan.PlannedConfigModifications.FirstOrDefault(m => m.Key == "ShortcutKey");
             Assert.IsNotNull(devKeyEntry);
@@ -64,7 +64,7 @@ public class DeploymentPlannerCustomizationTests
         }
         finally
         {
-            DeploymentPlanner.OverrideHudHotkey = null;
+            DeploymentPlanner.OverrideFrameGenHotkey = null;
             DeploymentPlanner.OverrideDevHotkey = null;
             if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true);
         }

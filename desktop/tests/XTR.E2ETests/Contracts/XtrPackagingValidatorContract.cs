@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text.Json;
 
@@ -23,7 +24,18 @@ public sealed class XtrRuntimeManifest
 
 public static class XtrPackagingValidatorContract
 {
-    public const int ExpectedPinnedFileCount = 19;
+    /// <summary>
+    /// R2 target contract: 18 pinned runtime &amp; license files (plugins/xtr_hud.asi removed).
+    /// </summary>
+    public const int ExpectedPinnedFileCount = 18;
+
+    private static readonly HashSet<string> AllowedNonPinnedRelativeFiles = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "xtr-runtime.json",
+        "setup_windows.bat",
+        "setup_linux.sh",
+        "!! README_EXTRACT ALL FILES TO GAME FOLDER !!.txt"
+    };
 
     public static XtrRuntimeManifest LoadManifest(string jsonPath)
     {
@@ -46,16 +58,21 @@ public static class XtrPackagingValidatorContract
     public static string ComputeSha256Hex(string filePath)
     {
         using var stream = File.OpenRead(filePath);
-        using var sha256 = SHA256.Create();
-        byte[] hash = sha256.ComputeHash(stream);
+        byte[] hash = SHA256.HashData(stream);
         return Convert.ToHexStringLower(hash);
     }
 
     public static bool VerifyRuntimeFilesIntegrity(string bundleDirectory, XtrRuntimeManifest manifest, out List<string> errors)
     {
         errors = [];
+
         foreach (var record in manifest.FileHashes)
         {
+            if (record.Path.Contains("xtr_hud.asi", StringComparison.OrdinalIgnoreCase))
+            {
+                errors.Add($"Deprecated HUD plugin still pinned in manifest: {record.Path}");
+            }
+
             string fullPath = Path.Combine(bundleDirectory, record.Path.Replace('/', Path.DirectorySeparatorChar));
             if (!File.Exists(fullPath))
             {
@@ -64,11 +81,7 @@ public static class XtrPackagingValidatorContract
             }
 
             var fileInfo = new FileInfo(fullPath);
-            bool isTextFile = record.Path.EndsWith(".ini", StringComparison.OrdinalIgnoreCase) ||
-                              record.Path.EndsWith(".txt", StringComparison.OrdinalIgnoreCase) ||
-                              record.Path.EndsWith(".md", StringComparison.OrdinalIgnoreCase);
-
-            if (fileInfo.Length != record.SizeBytes && (!isTextFile || Math.Abs(fileInfo.Length - record.SizeBytes) > 4))
+            if (fileInfo.Length != record.SizeBytes)
             {
                 errors.Add($"Size mismatch for {record.Path}: expected {record.SizeBytes}, got {fileInfo.Length}");
             }
@@ -81,5 +94,28 @@ public static class XtrPackagingValidatorContract
         }
 
         return errors.Count == 0;
+    }
+
+    public static List<string> FindUntrackedRuntimeFiles(string bundleDirectory, XtrRuntimeManifest manifest)
+    {
+        var pinned = manifest.FileHashes
+            .Select(h => h.Path.Replace('\\', '/'))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var untracked = new List<string>();
+        foreach (var file in Directory.EnumerateFiles(bundleDirectory, "*", SearchOption.AllDirectories))
+        {
+            var rel = Path.GetRelativePath(bundleDirectory, file).Replace('\\', '/');
+            if (rel.StartsWith(".git/", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (AllowedNonPinnedRelativeFiles.Contains(rel))
+                continue;
+
+            if (!pinned.Contains(rel))
+                untracked.Add(rel);
+        }
+
+        return untracked;
     }
 }

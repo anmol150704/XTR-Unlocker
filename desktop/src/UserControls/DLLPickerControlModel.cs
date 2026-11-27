@@ -9,6 +9,7 @@ using AsyncAwaitBestPractices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DLSS_Swapper.Data;
+using DLSS_Swapper.Data.Runtime;
 using DLSS_Swapper.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -25,6 +26,8 @@ public partial class DLLPickerControlModel : ObservableObject
 
     public Game Game { get; private set; }
     public GameAssetType GameAssetType { get; private set; }
+
+    private readonly SwapTargetResolution? _missingAssetResolution;
 
     public List<DLLRecord> DLLRecords { get; private set; }
 
@@ -168,9 +171,29 @@ public partial class DLLPickerControlModel : ObservableObject
                     DLLRecords.RemoveAll(x => x.Version.StartsWith("1.") == true);
                 }
             }
+            else if (Game.HasStreamlineDlss)
+            {
+                DLLRecords.RemoveAll(x => x.Version.StartsWith("1.") == true);
+            }
         }
 
         AnyDLLsVisible = DLLRecords.Count > 0;
+
+        if (Game.GameAssets.All(x => x.AssetType != GameAssetType) &&
+            Game.TryMapAssetTypeToSwapSlot(GameAssetType, out var swapSlot))
+        {
+            _missingAssetResolution = SwapTargetResolver.ResolveTargetForMissingAsset(
+                swapSlot,
+                Game.InstallPath,
+                Game.GameAssets.Select(x => x.Path).ToList(),
+                Game.RuntimeManifest is not null,
+                Game.RuntimeManifest?.InstallRoot);
+
+            if (!_missingAssetResolution.CanSwap)
+            {
+                ShowTempInfoBar(string.Empty, _missingAssetResolution.Reason, duration: 8.0, severity: InfoBarSeverity.Warning);
+            }
+        }
 
         ResetSelection();
     }
@@ -181,13 +204,12 @@ public partial class DLLPickerControlModel : ObservableObject
 
         if (e.PropertyName == nameof(SelectedDLLRecord))
         {
-            if (SelectedDLLRecord is null)
+            if (SelectedDLLRecord is null || SelectedDLLRecord.LocalRecord is null)
             {
                 CanSwap = false;
             }
-            else if (SelectedDLLRecord.LocalRecord is null)
+            else if (_missingAssetResolution is { CanSwap: false })
             {
-                // This should never happen
                 CanSwap = false;
             }
             else
@@ -209,6 +231,12 @@ public partial class DLLPickerControlModel : ObservableObject
     {
         if (SelectedDLLRecord?.LocalRecord is null)
         {
+            return;
+        }
+
+        if (_missingAssetResolution is { CanSwap: false })
+        {
+            ShowTempInfoBar(ResourceHelper.GetString("General_Error"), _missingAssetResolution.Reason, severity: InfoBarSeverity.Error);
             return;
         }
 

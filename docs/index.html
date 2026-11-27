@@ -1,754 +1,2259 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>XTR Unlocker — Unified Frame Generation & Telemetry Studio</title>
-    <meta name="description" content="Ultra-low overhead native Windows gaming engine and studio application. DLSS/FSR/XeSS upscaler switching, multi-backend Frame Generation enabling, and active in-game companion telemetry.">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2310b981'><path d='M13 10V3L4 14h7v7l9-11h-7z'/></svg>">
-    <style>
-        :root {
-            --bg: #090d16;
-            --surface: #0f172a;
-            --surface-elevated: #1e293b;
-            --border: rgba(255, 255, 255, 0.08);
-            --border-hover: rgba(16, 185, 129, 0.4);
-            --emerald: #10b981;
-            --emerald-glow: rgba(16, 185, 129, 0.2);
-            --cyan: #06b6d4;
-            --cyan-glow: rgba(6, 182, 212, 0.2);
-            --violet: #8b5cf6;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --radius-sm: 6px;
-            --radius-md: 10px;
-            --radius-lg: 16px;
-            --radius-full: 9999px;
-            --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
-            --font-mono: "Cascadia Code", "Fira Code", Consolas, monospace;
-        }
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>XTR Unlocker | Unified Upscaler DLL Swapper and Frame Generation Manager</title>
+  <meta name="description" content="WinUI 3 desktop utility on .NET 10 for managing DLSS, FSR, XeSS, Streamline, and OptiScaler 0.9.5 Frame Generation across Windows 10 and Windows 11 x64.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%2322c55e'/%3E%3Cstop offset='100%25' stop-color='%2338bdf8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='3' y='3' width='58' height='58' rx='14' fill='%2308090d' stroke='url(%23g)' stroke-width='3.5'/%3E%3Cpolygon points='14,22 23,22 28,30 19,30' fill='%2322c55e'/%3E%3Cpolygon points='36,34 45,34 50,42 41,42' fill='%2338bdf8'/%3E%3Cpolygon points='36,12 21,32 30,32 25,52 44,30 34,30' fill='url(%23g)' stroke='%23f8fafc' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #08090d;
+      --bg-panel: #0d0f17;
+      --surface: #131622;
+      --surface-raised: #1a1e2e;
+      --border: #252a3e;
+      --border-glass: #2e3550;
+      --text: #f8fafc;
+      --text-secondary: #94a3b8;
+      --emerald: #10b981;
+      --emerald-hover: #34d399;
+      --emerald-text: #34d399;
+      --cta-ink: #042f1a;
+      --cyan: #38bdf8;
+      --indigo: #6366f1;
+      --indigo-light: #818cf8;
+      --success: #22c55e;
+      --success-bg: #052e16;
+      --warning: #f59e0b;
+      --warning-bg: #2e1d05;
+      --danger: #f87171;
+      --danger-bg: #2d0e14;
+      --header-height: 4.5rem;
+      --font-sans: "Segoe UI Variable Text", "Segoe UI Variable", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-display: "Segoe UI Variable Display", "Segoe UI Variable", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: "Cascadia Code", "Consolas", "Courier New", monospace;
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
 
-        body {
-            background-color: var(--bg);
-            color: var(--text-primary);
-            font-family: var(--font);
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 15% 20%, rgba(16, 185, 129, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 85% 80%, rgba(6, 182, 212, 0.06) 0%, transparent 40%);
-        }
+    html {
+      scroll-padding-top: calc(var(--header-height) + 1rem);
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
 
-        a {
-            color: var(--emerald);
-            text-decoration: none;
-            transition: color 0.15s ease;
-        }
-        a:hover {
-            color: var(--cyan);
-        }
+    body {
+      margin: 0;
+      background-color: var(--bg);
+      color: var(--text);
+      min-block-size: 100dvh;
+    }
 
-        .container {
-            max-width: 1120px;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-        }
+    h1, h2, h3, h4, p, ul, ol, dl, dd, pre {
+      margin: 0;
+    }
 
-        /* Nav */
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            background: rgba(9, 13, 22, 0.8);
-            border-bottom: 1px solid var(--border);
-        }
-        .nav-inner {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            height: 4rem;
-        }
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-weight: 700;
-            font-size: 1.15rem;
-            letter-spacing: -0.02em;
-            color: var(--text-primary);
-        }
-        .brand svg {
-            width: 26px;
-            height: 26px;
-            fill: var(--emerald);
-        }
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            list-style: none;
-        }
-        .nav-links a {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-        .nav-links a:hover {
-            color: var(--text-primary);
-        }
-        .btn-nav {
-            background: var(--surface-elevated);
-            border: 1px solid var(--border);
-            padding: 0.45rem 1rem;
-            border-radius: var(--radius-full);
-            color: var(--text-primary);
-            font-weight: 500;
-            font-size: 0.85rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            transition: all 0.15s ease;
-        }
-        .btn-nav:hover {
-            border-color: var(--emerald);
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--emerald);
-        }
+    p, li, dd {
+      max-inline-size: 68ch;
+    }
 
-        /* Hero */
-        .hero {
-            padding: 5rem 0 3.5rem;
-            text-align: center;
-        }
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: rgba(16, 185, 129, 0.12);
-            border: 1px solid rgba(16, 185, 129, 0.25);
-            padding: 0.35rem 0.85rem;
-            border-radius: var(--radius-full);
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--emerald);
-            margin-bottom: 1.5rem;
-            letter-spacing: 0.03em;
-        }
-        .hero-badge .pulse {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--emerald);
-            box-shadow: 0 0 10px var(--emerald);
-            animation: pulse-glow 2s infinite;
-        }
-        @keyframes pulse-glow {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.85); }
-        }
+    a {
+      color: var(--emerald-text);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.2em;
+    }
 
-        h1.hero-title {
-            font-size: 3.25rem;
-            font-weight: 800;
-            letter-spacing: -0.03em;
-            line-height: 1.15;
-            margin-bottom: 1.25rem;
-            background: linear-gradient(135deg, #ffffff 40%, #94a3b8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .hero-desc {
-            font-size: 1.15rem;
-            color: var(--text-secondary);
-            max-width: 680px;
-            margin: 0 auto 2.25rem;
-        }
-        .hero-cta {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-            flex-wrap: wrap;
-            margin-bottom: 3.5rem;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: #ffffff;
-            font-weight: 600;
-            padding: 0.75rem 1.6rem;
-            border-radius: var(--radius-md);
-            border: none;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            box-shadow: 0 4px 18px rgba(16, 185, 129, 0.3);
-            transition: all 0.2s ease;
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 24px rgba(16, 185, 129, 0.45);
-            color: #ffffff;
-        }
-        .btn-secondary {
-            background: var(--surface-elevated);
-            color: var(--text-primary);
-            font-weight: 500;
-            padding: 0.75rem 1.4rem;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.2s ease;
-        }
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.2);
-            color: var(--text-primary);
-        }
+    a:hover {
+      color: var(--cyan);
+    }
 
-        /* Interactive HUD Showcase */
-        .hud-showcase {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 1.75rem;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-            margin-bottom: 5rem;
-            text-align: left;
-        }
-        .hud-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1.25rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 1px solid var(--border);
-        }
-        .hud-title-wrap {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-        }
-        .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-        .dot-red { background: #ef4444; }
-        .dot-yellow { background: #f59e0b; }
-        .dot-green { background: #10b981; }
+    :where(a, button, input, [tabindex="0"], summary):focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 3px;
+    }
 
-        .hud-mode-selector {
-            display: flex;
-            gap: 0.5rem;
-        }
-        .hud-toggle-btn {
-            background: var(--surface-elevated);
-            border: 1px solid var(--border);
-            color: var(--text-secondary);
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 0.35rem 0.75rem;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-        .hud-toggle-btn.active {
-            background: rgba(16, 185, 129, 0.15);
-            border-color: var(--emerald);
-            color: var(--emerald);
-        }
+    .visually-hidden:where(:not(:focus-within, :active)) {
+      position: absolute !important;
+      inset-block-start: 0;
+      inset-inline-start: 0;
+      clip-path: inset(50%) !important;
+      overflow: hidden !important;
+      width: 1px !important;
+      height: 1px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: 0 !important;
+      white-space: nowrap !important;
+    }
 
-        .hud-screen {
-            background: radial-gradient(circle at 50% 50%, #151d2f 0%, #0b0f19 100%);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            height: 220px;
-            position: relative;
-            display: flex;
-            align-items: flex-start;
-            padding: 1.25rem;
-            overflow: hidden;
-        }
-        .game-backdrop {
-            position: absolute;
-            inset: 0;
-            opacity: 0.15;
-            background: repeating-linear-gradient(45deg, rgba(255,255,255,0.02), rgba(255,255,255,0.02) 10px, transparent 10px, transparent 20px);
-        }
-        .in-game-hud {
-            position: relative;
-            z-index: 10;
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-            border-radius: var(--radius-sm);
-            padding: 0.45rem 0.9rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.75rem;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(8px);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .in-game-hud.emerald-style {
-            background: rgba(15, 23, 42, 0.88);
-            border: 1px solid rgba(16, 185, 129, 0.4);
-            color: #e2e8f0;
-        }
-        .in-game-hud.raw-style {
-            background: rgba(0, 0, 0, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #94a3b8;
-        }
-        .hud-badge {
-            background: var(--emerald);
-            color: #042f1a;
-            font-weight: 700;
-            font-size: 0.7rem;
-            padding: 0.15rem 0.45rem;
-            border-radius: 4px;
-            letter-spacing: 0.05em;
-        }
+    .skip-link:focus-visible {
+      position: fixed;
+      inset-block-start: 0.75rem;
+      inset-inline-start: 0.75rem;
+      z-index: 200;
+      padding: 0.625rem 1rem;
+      border-radius: 6px;
+      background: var(--emerald);
+      color: var(--cta-ink);
+      font-weight: 700;
+      text-decoration: none;
+    }
 
-        /* Features Section */
-        .section-title {
-            text-align: center;
-            font-size: 2.1rem;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            margin-bottom: 0.75rem;
-        }
-        .section-subtitle {
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 1rem;
-            max-width: 600px;
-            margin: 0 auto 3rem;
-        }
+    .container {
+      inline-size: min(1160px, 100% - 2rem);
+      margin-inline: auto;
+    }
 
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 5rem;
-        }
-        .feature-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 1.75rem;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-        .feature-card:hover {
-            border-color: var(--border-hover);
-            transform: translateY(-3px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
-        }
-        .feature-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: var(--radius-md);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1.25rem;
-            background: var(--surface-elevated);
-            color: var(--emerald);
-        }
-        .feature-icon.cyan-theme { color: var(--cyan); }
-        .feature-icon.violet-theme { color: var(--violet); }
-        .feature-card h3 {
-            font-size: 1.15rem;
-            font-weight: 600;
-            margin-bottom: 0.6rem;
-            color: var(--text-primary);
-        }
-        .feature-card p {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            line-height: 1.55;
-        }
-        .feature-tag {
-            display: inline-block;
-            font-size: 0.72rem;
-            font-weight: 600;
-            color: var(--emerald);
-            background: rgba(16, 185, 129, 0.1);
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-            margin-top: 1rem;
-            font-family: var(--font-mono);
-        }
+    /* Sticky Responsive Navbar */
+    .site-header {
+      position: sticky;
+      inset-block-start: 0;
+      z-index: 50;
+      container-type: scroll-state;
+      container-name: site-header;
+      background-color: var(--bg-panel);
+      border-block-end: 1px solid var(--border);
+    }
 
-        /* Benchmark Table */
-        .benchmarks-section {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 2.25rem;
-            margin-bottom: 5rem;
-        }
-        .table-wrap {
-            overflow-x: auto;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-            text-align: left;
-        }
-        th {
-            color: var(--text-secondary);
-            font-weight: 600;
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--border);
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.05em;
-        }
-        td {
-            padding: 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-            color: var(--text-primary);
-        }
-        tr:last-child td {
-            border-bottom: none;
-        }
-        .gain-badge {
-            background: rgba(16, 185, 129, 0.15);
-            color: var(--emerald);
-            font-weight: 700;
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-        }
+    .header-bar {
+      min-block-size: var(--header-height);
+      display: flex;
+      align-items: center;
+      background-color: var(--bg-panel);
+    }
 
-        /* Hotkeys Grid */
-        .hotkeys-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1rem;
-            margin-bottom: 5rem;
-        }
-        .hotkey-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 1.25rem;
-            text-align: center;
-        }
-        .key-badge {
-            background: var(--surface-elevated);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 6px;
-            padding: 0.35rem 0.75rem;
-            font-family: var(--font-mono);
-            font-weight: 700;
-            color: var(--emerald);
-            font-size: 0.95rem;
-            display: inline-block;
-            margin-bottom: 0.75rem;
-        }
-        .hotkey-card h4 {
-            font-size: 0.95rem;
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-        .hotkey-card p {
-            color: var(--text-muted);
-            font-size: 0.8rem;
-        }
+    @media (prefers-reduced-motion: no-preference) {
+      .header-bar {
+        transition: background-color 0.2s ease, box-shadow 0.2s ease;
+      }
+    }
 
-        /* Footer */
-        footer {
-            border-top: 1px solid var(--border);
-            padding: 3rem 0;
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-        }
-        footer a {
-            color: var(--text-secondary);
-        }
-        footer a:hover {
-            color: var(--emerald);
-        }
+    @container site-header scroll-state(stuck: top) {
+      .header-bar {
+        background-color: color-mix(in oklab, var(--bg-panel) 92%, black);
+        box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
+      }
+    }
 
-        @media (max-width: 768px) {
-            h1.hero-title { font-size: 2.25rem; }
-            .hero-desc { font-size: 1rem; }
-            .nav-links { display: none; }
+    .site-header.is-stuck .header-bar {
+      box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
+    }
+
+    .header-inner {
+      inline-size: min(1160px, 100% - 2rem);
+      margin-inline: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+    }
+
+    .header-inner > * {
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .site-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--text);
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      text-decoration: none;
+      padding-block: 0.35rem;
+    }
+
+    .site-logo:hover {
+      color: var(--text);
+    }
+
+    .site-logo svg {
+      inline-size: 28px;
+      block-size: 28px;
+      flex-shrink: 0;
+    }
+
+    .site-nav {
+      display: flex;
+      align-items: center;
+    }
+
+    .menu-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-block-size: 40px;
+      padding: 0.45rem 0.9rem;
+      border: 1px solid var(--border-glass);
+      border-radius: 6px;
+      background-color: var(--surface);
+      color: var(--text);
+      font: inherit;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      anchor-name: --menu-button;
+    }
+
+    .menu-button:hover {
+      background-color: var(--surface-raised);
+      border-color: var(--indigo);
+    }
+
+    .menu-button svg {
+      inline-size: 18px;
+      block-size: 18px;
+    }
+
+    .site-menu {
+      position: fixed;
+      inset: auto;
+      inset-block-start: 4.5rem;
+      inset-block-start: anchor(--menu-button bottom);
+      inset-inline-end: 1rem;
+      inline-size: min(82dvw, 21rem);
+      max-inline-size: calc(100dvw - 2rem);
+      block-size: fit-content;
+      max-block-size: calc(100dvh - 5.5rem);
+      margin: 0.5rem 0 0;
+      padding: 0.65rem;
+      list-style: none;
+      overflow: auto;
+      background-color: var(--surface);
+      border: 1px solid var(--border-glass);
+      border-radius: 12px;
+      box-shadow: 0 18px 40px rgb(0 0 0 / 0.55);
+      color: var(--text);
+    }
+
+    @supports not selector(:popover-open) {
+      .site-menu[popover]:not(.\:popover-open) {
+        display: none;
+      }
+    }
+
+    .site-menu[popover]:is(:popover-open, .\:popover-open) {
+      display: grid;
+      gap: 0.25rem;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .site-menu[popover] {
+        opacity: 0;
+        translate: 0 -6px;
+        transition:
+          opacity 0.18s ease-out,
+          translate 0.18s ease-out,
+          display 0.18s,
+          overlay 0.18s;
+        transition-behavior: allow-discrete;
+      }
+
+      .site-menu[popover]:is(:popover-open, .\:popover-open) {
+        opacity: 1;
+        translate: 0 0;
+      }
+
+      @starting-style {
+        .site-menu[popover]:is(:popover-open, .\:popover-open) {
+          opacity: 0;
+          translate: 0 -6px;
         }
-    </style>
+      }
+    }
+
+    .site-menu a {
+      display: inline-flex;
+      align-items: center;
+      inline-size: 100%;
+      min-block-size: 40px;
+      padding: 0.5rem 0.85rem;
+      border-radius: 6px;
+      color: var(--text-secondary);
+      font-size: 0.92rem;
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    .site-menu a:hover {
+      color: var(--text);
+      background-color: var(--surface-raised);
+    }
+
+    .site-menu a.nav-cta {
+      background-color: var(--emerald);
+      color: var(--cta-ink);
+      font-weight: 700;
+      justify-content: center;
+      margin-block-start: 0.25rem;
+    }
+
+    .site-menu a.nav-cta:hover {
+      background-color: var(--emerald-hover);
+      color: var(--cta-ink);
+    }
+
+    .site-header.is-wide .menu-button {
+      display: none;
+    }
+
+    .site-header.is-wide .site-menu {
+      position: static;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      inline-size: auto;
+      max-inline-size: none;
+      block-size: auto;
+      max-block-size: none;
+      overflow: visible;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      opacity: 1;
+      translate: none;
+      transition: none;
+    }
+
+    .site-header.is-wide .site-menu::backdrop {
+      display: none;
+    }
+
+    .site-header.is-wide .site-menu a {
+      inline-size: auto;
+      min-block-size: 36px;
+      padding: 0.45rem 0.8rem;
+    }
+
+    .site-header.is-wide .site-menu a.nav-cta {
+      margin-block-start: 0;
+      margin-inline-start: 0.5rem;
+      padding-inline: 1rem;
+    }
+
+    .site-header.is-measuring *,
+    .site-header.is-measuring *::before,
+    .site-header.is-measuring *::after {
+      transition: none !important;
+    }
+
+    /* Sections & Layout */
+    main {
+      display: block;
+    }
+
+    .section {
+      padding-block: 4rem;
+      border-block-end: 1px solid var(--border);
+    }
+
+    .section-head {
+      display: grid;
+      gap: 0.65rem;
+      margin-block-end: 2rem;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.45rem, 2.5vw, 1.95rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      line-height: 1.25;
+    }
+
+    .section-lead {
+      color: var(--text-secondary);
+      font-size: 0.98rem;
+    }
+
+    /* Hero */
+    .hero {
+      padding-block: 4.5rem 4rem;
+      border-block-end: 1px solid var(--border);
+      background-image: radial-gradient(ellipse 65% 50% at 15% 0%, rgb(16 185 129 / 0.09), transparent 70%);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 2.5rem;
+      align-items: start;
+    }
+
+    .hero-grid > * {
+      min-inline-size: 0;
+    }
+
+    @media (min-width: 920px) {
+      .hero-grid {
+        grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.95fr);
+        gap: 3rem;
+      }
+    }
+
+    .spec-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-block-end: 1.25rem;
+      list-style: none;
+      padding: 0;
+    }
+
+    .spec-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      border: 1px solid var(--border-glass);
+      background-color: var(--surface);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 2.95rem);
+      font-weight: 700;
+      letter-spacing: -0.028em;
+      line-height: 1.14;
+      color: var(--text);
+      max-inline-size: 22ch;
+    }
+
+    .hero-lead {
+      margin-block-start: 1.25rem;
+      color: var(--text-secondary);
+      font-size: 1.05rem;
+      line-height: 1.65;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.85rem;
+      margin-block-start: 1.75rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      min-block-size: 44px;
+      padding: 0.65rem 1.2rem;
+      border-radius: 6px;
+      font: inherit;
+      font-size: 0.94rem;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .btn-primary {
+      background-color: var(--emerald);
+      color: var(--cta-ink);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--emerald-hover);
+      color: var(--cta-ink);
+    }
+
+    .btn-secondary {
+      background-color: var(--surface);
+      border-color: var(--border-glass);
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--surface-raised);
+      border-color: var(--indigo);
+      color: var(--text);
+    }
+
+    .hero-spec-panel {
+      background-color: var(--surface);
+      border: 1px solid var(--border-glass);
+      border-radius: 12px;
+      padding: 1.35rem 1.5rem;
+    }
+
+    .hero-spec-title {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-block-end: 1rem;
+      padding-block-end: 0.75rem;
+      border-block-end: 1px solid var(--border);
+    }
+
+    .spec-dl {
+      display: grid;
+      gap: 0.85rem;
+    }
+
+    .spec-row {
+      display: grid;
+      gap: 0.15rem;
+      padding-block-end: 0.75rem;
+      border-block-end: 1px solid var(--border);
+    }
+
+    .spec-row:last-child {
+      padding-block-end: 0;
+      border-block-end: 0;
+    }
+
+    .spec-row dt {
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+
+    .spec-row dd {
+      color: var(--text);
+      font-size: 0.94rem;
+      font-weight: 600;
+    }
+
+    code, .mono {
+      font-family: var(--font-mono);
+      font-size: 0.88em;
+    }
+
+    code:not(.ini-block code) {
+      overflow-wrap: anywhere;
+    }
+
+    .inline-code {
+      padding: 0.12em 0.4em;
+      border-radius: 4px;
+      background-color: var(--surface-raised);
+      border: 1px solid var(--border);
+      color: var(--cyan);
+      overflow-wrap: anywhere;
+    }
+
+    /* Interactive Tabs (Pipeline Inspector) */
+    .pipeline-tabs {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+    }
+
+    .tablist {
+      display: flex;
+      max-inline-size: 100%;
+      min-inline-size: 0;
+      overflow-x: auto;
+      gap: 0.25rem;
+      border-block-end: 1px solid var(--border);
+      scroll-snap-type: inline proximity;
+    }
+
+    .tablist [role="tab"] {
+      position: relative;
+      flex: none;
+      scroll-snap-align: start;
+      min-block-size: 44px;
+      padding: 0.75rem 1.15rem;
+      border: 0;
+      background: transparent;
+      color: var(--text-secondary);
+      font: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .tablist [role="tab"]:hover {
+      color: var(--text);
+      background-color: var(--surface);
+    }
+
+    .tablist [role="tab"][aria-selected="true"] {
+      color: var(--emerald-text);
+    }
+
+    .tablist [role="tab"][aria-selected="true"]::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0;
+      border-block-end: 3px solid currentColor;
+    }
+
+    .tab-panels {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      min-inline-size: 0;
+      margin-block-start: 1.25rem;
+    }
+
+    .tab-panels > [role="tabpanel"] {
+      grid-area: 1 / 1;
+      min-inline-size: 0;
+    }
+
+    /* Inner wrapper holds box padding/border/bg; panel element itself stays unstyled */
+    .panel-surface {
+      background-color: var(--surface);
+      border: 1px solid var(--border-glass);
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1.5rem;
+      min-inline-size: 0;
+    }
+
+    .panel-columns {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1.5rem;
+      min-inline-size: 0;
+    }
+
+    .panel-columns > * {
+      min-inline-size: 0;
+    }
+
+    @media (min-width: 820px) {
+      .panel-columns {
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+      }
+    }
+
+    .panel-heading {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-block-end: 0.5rem;
+    }
+
+    .panel-summary {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      margin-block-end: 1rem;
+    }
+
+    .bullet-list {
+      padding-inline-start: 1.15rem;
+      display: grid;
+      gap: 0.55rem;
+      color: var(--text-secondary);
+      font-size: 0.92rem;
+    }
+
+    .bullet-list li {
+      min-inline-size: 0;
+    }
+
+    .bullet-list strong {
+      color: var(--text);
+    }
+
+    .ini-block {
+      background-color: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.1rem;
+      max-inline-size: 100%;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+      line-height: 1.55;
+      color: var(--text);
+    }
+
+    .ini-section {
+      color: var(--cyan);
+      font-weight: 700;
+    }
+
+    .ini-comment {
+      color: var(--text-secondary);
+    }
+
+    .pill-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      list-style: none;
+      padding: 0;
+    }
+
+    .dll-pill {
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      background-color: var(--bg);
+      border: 1px solid var(--border-glass);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text);
+    }
+
+    /* Core Capabilities */
+    .cap-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    @media (min-width: 720px) {
+      .cap-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .cap-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    .cap-card {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.35rem;
+      display: grid;
+      gap: 0.65rem;
+      align-content: start;
+    }
+
+    .cap-card h3 {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.35;
+    }
+
+    .cap-card p {
+      color: var(--text-secondary);
+      font-size: 0.91rem;
+      line-height: 1.55;
+    }
+
+    .cap-card .cap-meta {
+      margin-block-start: 0.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--emerald-text);
+    }
+
+    /* Compatibility Matrix & Responsive Tables */
+    .matrix-block + .matrix-block {
+      margin-block-start: 2.75rem;
+    }
+
+    .compat-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-block-end: 1rem;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .filter-btn {
+      min-block-size: 40px;
+      padding: 0.45rem 0.9rem;
+      border-radius: 6px;
+      border: 1px solid var(--border-glass);
+      background-color: var(--surface);
+      color: var(--text-secondary);
+      font: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .filter-btn:hover {
+      color: var(--text);
+      border-color: var(--indigo);
+    }
+
+    .filter-btn[aria-pressed="true"] {
+      background-color: var(--emerald);
+      border-color: var(--emerald);
+      color: var(--cta-ink);
+      font-weight: 700;
+    }
+
+    .search-field {
+      display: grid;
+      gap: 0.3rem;
+      min-inline-size: min(100%, 260px);
+    }
+
+    .search-field label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .search-field input {
+      min-block-size: 40px;
+      padding: 0.45rem 0.75rem;
+      border-radius: 6px;
+      border: 1px solid var(--border-glass);
+      background-color: var(--surface);
+      color: var(--text);
+      font: inherit;
+      font-size: 0.92rem;
+    }
+
+    .compat-count {
+      margin-block-end: 0.75rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .table-wrapper {
+      overflow: auto;
+      max-inline-size: 100%;
+      container-type: inline-size;
+      border: 1px solid var(--border-glass);
+      border-radius: 10px;
+      background-color: var(--surface);
+    }
+
+    .compat-wrapper {
+      max-block-size: min(560px, 75vh);
+    }
+
+    table {
+      inline-size: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      text-align: start;
+      font-size: 0.9rem;
+    }
+
+    caption {
+      padding: 0.9rem 1rem;
+      text-align: start;
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      background-color: var(--bg-panel);
+      border-block-end: 1px solid var(--border);
+    }
+
+    thead {
+      position: sticky;
+      inset-block-start: 0;
+      z-index: 2;
+    }
+
+    thead th {
+      background-color: var(--surface-raised);
+      color: var(--text);
+      font-weight: 700;
+      font-size: 0.82rem;
+      padding: 0.75rem 0.9rem;
+      border-block-end: 1px solid var(--border-glass);
+      white-space: nowrap;
+    }
+
+    tbody th,
+    tbody td {
+      padding: 0.72rem 0.9rem;
+      border-block-end: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    tbody th {
+      position: sticky;
+      inset-inline-start: 0;
+      z-index: 1;
+      background-color: var(--surface);
+      color: var(--text);
+      font-weight: 600;
+      min-inline-size: 11rem;
+    }
+
+    tbody tr:last-child th,
+    tbody tr:last-child td {
+      border-block-end: 0;
+    }
+
+    tbody td {
+      color: var(--text-secondary);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      white-space: nowrap;
+      border: 1px solid currentColor;
+    }
+
+    .status-verified {
+      background-color: var(--success-bg);
+      color: #4ade80;
+    }
+
+    .status-community {
+      background-color: var(--warning-bg);
+      color: #fbbf24;
+    }
+
+    .status-blocked {
+      background-color: var(--danger-bg);
+      color: #fca5a5;
+    }
+
+    .gpu-table {
+      --label-1: "Architecture";
+      --label-2: "Upscalers";
+      --label-3: "FG Output";
+      --label-4: "DLSS Preset";
+      --label-5: "Notes";
+    }
+
+    .compat-table {
+      --label-1: "Title";
+      --label-2: "Status";
+      --label-3: "Proxy";
+      --label-4: "API";
+      --label-5: "Native FG";
+      --label-6: "Notes";
+    }
+
+    @container (width < 600px) {
+      .table-wrapper table,
+      .table-wrapper caption,
+      .table-wrapper thead,
+      .table-wrapper tbody,
+      .table-wrapper tr,
+      .table-wrapper th,
+      .table-wrapper td {
+        display: block;
+      }
+
+      .table-wrapper thead {
+        display: none;
+      }
+
+      .table-wrapper tbody {
+        padding: 0.75rem;
+      }
+
+      .table-wrapper tbody tr {
+        margin-block-end: 0.9rem;
+        border: 1px solid var(--border-glass);
+        border-radius: 8px;
+        background-color: var(--bg-panel);
+        overflow: hidden;
+      }
+
+      .table-wrapper tbody tr[hidden] {
+        display: none;
+      }
+
+      .table-wrapper tbody tr:last-child {
+        margin-block-end: 0;
+      }
+
+      .table-wrapper tbody th {
+        position: sticky;
+        inset-block-start: 0;
+        inset-inline-start: auto;
+        z-index: 2;
+        background-color: var(--surface-raised);
+        border-block-end: 1px solid var(--border-glass);
+        min-inline-size: 0;
+      }
+
+      .table-wrapper tbody td {
+        border-block-end: 1px solid var(--border);
+      }
+
+      .table-wrapper tbody td:last-child {
+        border-block-end: 0;
+      }
+
+      .table-wrapper tbody td:nth-child(2)::before {
+        content: var(--label-2) ": ";
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      .table-wrapper tbody td:nth-child(3)::before {
+        content: var(--label-3) ": ";
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      .table-wrapper tbody td:nth-child(4)::before {
+        content: var(--label-4) ": ";
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      .table-wrapper tbody td:nth-child(5)::before {
+        content: var(--label-5) ": ";
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      .table-wrapper tbody td:nth-child(6)::before {
+        content: var(--label-6) ": ";
+        color: var(--text);
+        font-weight: 600;
+      }
+    }
+
+    .empty-state {
+      padding: 1.5rem;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.94rem;
+    }
+
+    /* Quickstart & Artifacts */
+    .quickstart-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1.5rem;
+    }
+
+    .quickstart-grid > * {
+      min-inline-size: 0;
+    }
+
+    @media (min-width: 860px) {
+      .quickstart-grid {
+        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      }
+    }
+
+    .artifact-list {
+      list-style: none;
+      padding: 0;
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .artifact-card {
+      background-color: var(--surface);
+      border: 1px solid var(--border-glass);
+      border-radius: 10px;
+      padding: 1rem 1.15rem;
+      display: grid;
+      gap: 0.35rem;
+    }
+
+    .artifact-card a {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      font-weight: 700;
+      word-break: break-word;
+    }
+
+    .artifact-card p {
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+    }
+
+    .hotkey-note {
+      margin-block-start: 1rem;
+      padding: 0.9rem 1rem;
+      border-radius: 8px;
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+    }
+
+    .cmd-list {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.75rem;
+      min-inline-size: 0;
+    }
+
+    .cmd-item {
+      background-color: var(--surface);
+      border: 1px solid var(--border-glass);
+      border-radius: 8px;
+      padding: 0.75rem 0.9rem;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.5rem;
+      min-inline-size: 0;
+    }
+
+    .cmd-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .cmd-label {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .copy-btn {
+      min-block-size: 32px;
+      padding: 0.25rem 0.7rem;
+      border-radius: 6px;
+      border: 1px solid var(--border-glass);
+      background-color: var(--surface-raised);
+      color: var(--text);
+      font: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .copy-btn:hover {
+      border-color: var(--emerald);
+      color: var(--emerald-text);
+    }
+
+    .cmd-code {
+      display: block;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--cyan);
+      white-space: pre;
+    }
+
+    /* Footer */
+    .site-footer {
+      padding-block: 3rem;
+      background-color: var(--bg-panel);
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 2rem;
+    }
+
+    @media (min-width: 760px) {
+      .footer-grid {
+        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.3fr);
+      }
+    }
+
+    .footer-meta {
+      display: grid;
+      gap: 0.65rem;
+      align-content: start;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .credits-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 0.5rem 1.25rem;
+      list-style: none;
+      padding: 0;
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+    }
+
+    .credits-list strong {
+      color: var(--text);
+    }
+
+    /* Forced Colors (Windows High Contrast) */
+    @media (forced-colors: active) {
+      :root {
+        --bg: Canvas;
+        --bg-panel: Canvas;
+        --surface: Canvas;
+        --surface-raised: Canvas;
+        --border: CanvasText;
+        --border-glass: CanvasText;
+        --text: CanvasText;
+        --text-secondary: CanvasText;
+        --emerald: Highlight;
+        --emerald-hover: Highlight;
+        --emerald-text: LinkText;
+        --cta-ink: HighlightText;
+        --cyan: LinkText;
+        --indigo: Highlight;
+        --success-bg: Canvas;
+        --warning-bg: Canvas;
+        --danger-bg: Canvas;
+      }
+
+      .site-header,
+      .site-menu,
+      .hero-spec-panel,
+      .panel-surface,
+      .cap-card,
+      .table-wrapper,
+      .artifact-card,
+      .cmd-item,
+      .status-badge {
+        border: 1px solid CanvasText;
+      }
+
+      .btn-primary,
+      .filter-btn[aria-pressed="true"],
+      .site-menu a.nav-cta {
+        border: 1px solid ButtonText;
+        background-color: Highlight;
+        color: HighlightText;
+      }
+
+      .tablist [role="tab"][aria-selected="true"]::after {
+        border-block-end: 3px solid Highlight;
+      }
+    }
+  </style>
 </head>
-<body>
+<body id="top">
+  <a href="#main-content" class="skip-link visually-hidden">Skip to main content</a>
 
-    <!-- Header -->
-    <header>
-        <div class="container nav-inner">
-            <div class="brand">
-                <svg viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                <span>XTR Unlocker</span>
+  <header class="site-header" id="site-header">
+    <div class="header-bar">
+      <div class="header-inner">
+        <a class="site-logo" href="#top">
+          <svg aria-hidden="true" viewBox="0 0 64 64" width="28" height="28">
+            <defs>
+              <linearGradient id="xtr-brand-grad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#22c55e"/>
+                <stop offset="100%" stop-color="#38bdf8"/>
+              </linearGradient>
+            </defs>
+            <rect x="3" y="3" width="58" height="58" rx="14" fill="#08090d" stroke="url(#xtr-brand-grad)" stroke-width="3.5"/>
+            <polygon points="14,22 23,22 28,30 19,30" fill="#22c55e"/>
+            <polygon points="36,34 45,34 50,42 41,42" fill="#38bdf8"/>
+            <polygon points="36,12 21,32 30,32 25,52 44,30 34,30" fill="url(#xtr-brand-grad)" stroke="#f8fafc" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+          <span>XTR Unlocker</span>
+        </a>
+
+        <nav class="site-nav" aria-label="Primary">
+          <button
+            class="menu-button"
+            type="button"
+            popovertarget="site-menu"
+            popovertargetaction="toggle"
+            aria-controls="site-menu"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <line x1="4" y1="7" x2="20" y2="7"/>
+              <line x1="4" y1="12" x2="20" y2="12"/>
+              <line x1="4" y1="17" x2="20" y2="17"/>
+            </svg>
+            <span>Menu</span>
+          </button>
+
+          <ul id="site-menu" class="site-menu" popover="auto">
+            <li><a href="#pipeline">Pipeline</a></li>
+            <li><a href="#capabilities">Capabilities</a></li>
+            <li><a href="#compatibility">Compatibility</a></li>
+            <li><a href="#quickstart">Quickstart</a></li>
+            <li><a class="nav-cta" href="https://github.com/anmol150704/XTR-Unlocker/releases/latest">Releases</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="main-content">
+      <div class="container hero-grid">
+        <div>
+          <ul class="spec-tags" aria-label="Platform requirements">
+            <li class="spec-tag">WinUI 3 + Windows App SDK 1.8</li>
+            <li class="spec-tag">.NET 10 (win-x64)</li>
+            <li class="spec-tag">Windows 10 19041+ / Windows 11</li>
+            <li class="spec-tag">OptiScaler 0.9.5</li>
+          </ul>
+
+          <h1 id="main-content" tabindex="-1" class="hero-title">Unified Upscaler DLL Swapper and Frame Generation Manager</h1>
+
+          <p class="hero-lead">
+            XTR Unlocker discovers installed games across 8 library sources, updates 9 swappable upscaler and frame generation DLLs plus Streamline and FidelityFX SDK 2 components recursively, deploys the SHA-256 verified OptiScaler 0.9.5 runtime with ForzaTech <code class="inline-code">version.dll</code> safeguards, and rolls back changes through a transactional Restore pipeline.
+          </p>
+
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="https://github.com/anmol150704/XTR-Unlocker/releases/latest">Download Installer (XTR-Unlocker-Setup.exe)</a>
+            <a class="btn btn-secondary" href="https://github.com/anmol150704/XTR-Unlocker">Source on GitHub</a>
+          </div>
+        </div>
+
+        <aside class="hero-spec-panel" aria-label="Runtime specification summary">
+          <h2 class="hero-spec-title">Runtime Architecture Summary</h2>
+          <dl class="spec-dl">
+            <div class="spec-row">
+              <dt>Bundled Runtime</dt>
+              <dd>OptiScaler 0.9.5 (18 SHA-256 verified core files)</dd>
             </div>
-            <ul class="nav-links">
-                <li><a href="#features">Architecture</a></li>
-                <li><a href="#benchmarks">Benchmarks</a></li>
-                <li><a href="#controls">In-Game Hotkeys</a></li>
-                <li><a href="https://github.com/anmol150704/XTR-Unlocker/releases" class="btn-nav">
-                    <span>Releases</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l9.2-9.2M17 17V8H8"/></svg>
-                </a></li>
+            <div class="spec-row">
+              <dt>Supported Graphics APIs</dt>
+              <dd>DX11, DX12, Vulkan</dd>
+            </div>
+            <div class="spec-row">
+              <dt>Supported GPU Families</dt>
+              <dd>NVIDIA RTX 20/30/40/50, AMD RDNA, Intel Arc</dd>
+            </div>
+            <div class="spec-row">
+              <dt>Proxy Injection Targets</dt>
+              <dd><code>dxgi.dll</code> default, <code>version.dll</code> ForzaTech, plus 5 fallbacks</dd>
+            </div>
+            <div class="spec-row">
+              <dt>Tracked Game Profiles</dt>
+              <dd>37 titles (28 Verified, 1 Community Tested, 8 Blocked)</dd>
+            </div>
+            <div class="spec-row">
+              <dt>License</dt>
+              <dd>GNU General Public License v3.0 (GPL-3.0)</dd>
+            </div>
+          </dl>
+        </aside>
+      </div>
+    </section>
+
+    <section id="pipeline" class="section" aria-labelledby="pipeline-heading">
+      <div class="container">
+        <div class="section-head">
+          <h2 id="pipeline-heading" class="section-title">Unified Runtime Pipelines</h2>
+          <p class="section-lead">Inspect the exact INI keys, proxy selection logic, and DLL discovery targets generated by <code class="inline-code">DeploymentPlanner</code> and <code class="inline-code">DLLManager</code>.</p>
+        </div>
+
+        <div class="pipeline-tabs">
+          <div class="tablist" role="tablist" focusgroup="tablist nomemory" aria-label="Runtime pipeline profiles">
+            <button type="button" role="tab" id="tab-forzatech" aria-selected="true" focusgroupstart>ForzaTech (Forza Horizon 6 / 5)</button>
+            <button type="button" role="tab" id="tab-fg-bridge" aria-selected="false">Universal FG Bridge</button>
+            <button type="button" role="tab" id="tab-swapper" aria-selected="false">Upscaler DLL Swapper</button>
+          </div>
+
+          <div class="tab-panels">
+            <div role="tabpanel" id="panel-forzatech" aria-labelledby="tab-forzatech" tabindex="0">
+              <div class="panel-surface">
+                <div class="panel-columns">
+                  <div>
+                    <h3 class="panel-heading">ForzaTech Virtual Texture Safeguard</h3>
+                    <p class="panel-summary">
+                      Titles matching Forza or Horizon switch automatically from <code class="inline-code">dxgi.dll</code> to <code class="inline-code">version.dll</code> and enable zero-overhead Streamline passthrough to avoid D3D12 virtual texture pool starvation.
+                    </p>
+                    <ul class="bullet-list">
+                      <li><strong>Proxy selection:</strong> Uses <code class="inline-code">version.dll</code> instead of <code class="inline-code">dxgi.dll</code> for Forza Horizon 6 and Forza Horizon 5.</li>
+                      <li><strong>Streamline &amp; NGX-OTA discovery:</strong> Recursively locates <code class="inline-code">sl.interposer.dll</code>, <code class="inline-code">sl.directsr.dll</code>, and <code class="inline-code">sl.dlss*.dll</code> across engine subdirectories without confusing Streamline plugins with <code class="inline-code">nvngx_dlss.dll</code>.</li>
+                      <li><strong>Texture pool protection:</strong> Skips <code class="inline-code">[Anisotropy]</code> and <code class="inline-code">[Mipmap]</code> overrides in TurboBoost so ForzaTech virtual streaming heaps remain untouched.</li>
+                      <li><strong>Resilient Restore:</strong> Recovers cleanly even if tracked vendor files were modified or removed outside XTR Unlocker.</li>
+                    </ul>
+                  </div>
+                  <pre class="ini-block"><code><span class="ini-comment">; DeploymentPlanner ForzaTech &amp; Streamline passthrough</span>
+<span class="ini-comment">; Deployed proxy binary on disk: OptiScaler.dll -&gt; version.dll</span>
+<span class="ini-section">[FrameGen]</span>
+FGInput=dlssg
+DepthValidNow=false
+VelocityValidNow=false
+<span class="ini-section">[OptiFG]</span>
+AlwaysTrackHeaps=false
+HUDFix=false
+DisableHUDFix=true
+MakeDepthCopy=false
+MakeMVCopy=false
+<span class="ini-section">[FSR]</span>
+AccAddPerFrame=0.05
+MinDisOccAcc=-0.50
+ReactiveScale=2.0</code></pre>
+                </div>
+              </div>
+            </div>
+
+            <div role="tabpanel" id="panel-fg-bridge" aria-labelledby="tab-fg-bridge" hidden="until-found">
+              <div class="panel-surface">
+                <div class="panel-columns">
+                  <div>
+                    <h3 class="panel-heading">Universal Frame Generation Bridge</h3>
+                    <p class="panel-summary">
+                      Routes <code class="inline-code">FGInput</code> (<code class="inline-code">dlssg</code> or <code class="inline-code">upscaler</code>) to <code class="inline-code">FGOutput</code> (<code class="inline-code">fsrfg</code>, <code class="inline-code">xefg</code>, or <code class="inline-code">nukems</code>) across NVIDIA RTX 20/30/40/50, AMD RDNA, and Intel Arc GPUs.
+                    </p>
+                    <ul class="bullet-list">
+                      <li><strong>Bridge backends:</strong> Supports FidelityFX Frame Generation (<code class="inline-code">fsrfg</code>), Intel XeFG (<code class="inline-code">xefg</code>), and <code class="inline-code">dlssg_to_fsr3_amd_is_better.dll</code> (<code class="inline-code">nukems</code>) with <code class="inline-code">fakenvapi.dll</code>.</li>
+                      <li><strong>HUD &amp; reactive mask calibration:</strong> Enables <code class="inline-code">HUDFix=true</code>, <code class="inline-code">HUDFixExtended=true</code>, depth/motion-vector copies, and <code class="inline-code">DlssReactiveMaskBias=0.45</code> for non-Streamline titles.</li>
+                      <li><strong>Dynamic DLSS presets:</strong> Sets <code class="inline-code">RenderPresetForAll=13</code> (Preset M) on RTX 40/50 Ada and Blackwell, <code class="inline-code">11</code> (Preset K) on RTX 20/30 Turing and Ampere, above the static <code class="inline-code">OptiScaler.ini</code> Preset E (<code class="inline-code">5</code>) baseline.</li>
+                    </ul>
+                  </div>
+                  <pre class="ini-block"><code><span class="ini-comment">; Universal FG Bridge &amp; Anti-Ghosting Shield</span>
+<span class="ini-comment">; Deployed proxy binary on disk: OptiScaler.dll -&gt; dxgi.dll</span>
+<span class="ini-section">[FrameGen]</span>
+FGInput=upscaler   <span class="ini-comment">; or dlssg for Streamline v2</span>
+FGOutput=fsrfg     <span class="ini-comment">; fsrfg | xefg | nukems | nofg</span>
+<span class="ini-section">[OptiFG]</span>
+HUDFix=true
+HUDFixExtended=true
+MakeMVCopy=true
+MakeDepthCopy=true
+<span class="ini-section">[InitFlags]</span>
+DisableReactiveMask=false
+<span class="ini-section">[FSR]</span>
+UseReactiveMaskForTransparency=true
+DlssReactiveMaskBias=0.45
+<span class="ini-section">[DLSS]</span>
+RenderPresetOverride=true
+RenderPresetForAll=13  <span class="ini-comment">; 13 Ada/Blackwell, 11 Turing/Ampere, 5 static</span></code></pre>
+                </div>
+              </div>
+            </div>
+
+            <div role="tabpanel" id="panel-swapper" aria-labelledby="tab-swapper" hidden="until-found">
+              <div class="panel-surface">
+                <div class="panel-columns">
+                  <div>
+                    <h3 class="panel-heading">Multi-Storefront Scanner &amp; DLL Swapper</h3>
+                    <p class="panel-summary">
+                      Scans 8 game library sources, resolves target directories even when prior DLL records do not exist, and tracks SHA-256 backups for transactional Restore recovery.
+                    </p>
+                    <p class="panel-summary"><strong>8 Supported Library Sources:</strong> Steam, GOG, Epic Games Store, Ubisoft Connect, Xbox App, Battle.net, EA App, and Manually Added folders.</p>
+                    <ul class="bullet-list">
+                      <li><strong>Swap without prior records:</strong> Resolves existing asset directories, <code class="inline-code">sl.interposer.dll</code> directory, or main executable directory cleanly when zero prior swap records exist.</li>
+                      <li><strong>Streamline &amp; FidelityFX SDK 2 detection:</strong> Discovers <code class="inline-code">sl.interposer.dll</code>, <code class="inline-code">sl.directsr.dll</code>, <code class="inline-code">sl.dlss*.dll</code>, <code class="inline-code">amd_fidelityfx_loader_dx12.dll</code>, <code class="inline-code">amd_fidelityfx_upscaler_dx12.dll</code>, and <code class="inline-code">amd_fidelityfx_framegeneration_dx12.dll</code>.</li>
+                      <li><strong>Consistent health reporting:</strong> Derives UI status directly from verified on-disk <code class="inline-code">RuntimeHealthService</code> proxy and <code class="inline-code">OptiScaler.ini</code> checks.</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 class="panel-heading">9 Actively Swapped &amp; Manifest-Managed DLLs</h4>
+                    <ul class="pill-grid" aria-label="Swappable DLL filenames">
+                      <li class="dll-pill">nvngx_dlss.dll</li>
+                      <li class="dll-pill">nvngx_dlssg.dll</li>
+                      <li class="dll-pill">nvngx_dlssd.dll</li>
+                      <li class="dll-pill">amd_fidelityfx_dx12.dll</li>
+                      <li class="dll-pill">amd_fidelityfx_vk.dll</li>
+                      <li class="dll-pill">libxess.dll</li>
+                      <li class="dll-pill">libxell.dll</li>
+                      <li class="dll-pill">libxess_fg.dll</li>
+                      <li class="dll-pill">libxess_dx11.dll</li>
+                    </ul>
+                    <p class="panel-summary" style="margin-block-start: 1.15rem;">
+                      <strong>7 Runtime Proxy Choices:</strong> <code class="inline-code">dxgi.dll</code> (default), <code class="inline-code">version.dll</code>, <code class="inline-code">winmm.dll</code>, <code class="inline-code">d3d12.dll</code>, <code class="inline-code">dbghelp.dll</code>, <code class="inline-code">winhttp.dll</code>, and <code class="inline-code">wininet.dll</code>.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="capabilities" class="section" aria-labelledby="capabilities-heading">
+      <div class="container">
+        <div class="section-head">
+          <h2 id="capabilities-heading" class="section-title">Core Engineering Capabilities</h2>
+          <p class="section-lead">Deterministic file operations, hardware-aware INI generation, and pre-deployment safety gates inside a single WinUI 3 studio.</p>
+        </div>
+
+        <div class="cap-grid">
+          <article class="cap-card">
+            <h3>Multi-Launcher &amp; Subdirectory Scanner</h3>
+            <p>Enumerates Steam, GOG, Epic Games Store, Ubisoft Connect, Xbox App, Battle.net, EA App, and Manually Added installations. Performs recursive case-insensitive discovery for NGX, Streamline, XeSS, and FidelityFX SDK 2 binaries.</p>
+            <p class="cap-meta">8 library sources | case-insensitive recursive scan</p>
+          </article>
+
+          <article class="cap-card">
+            <h3>Transactional Deployment &amp; Resilient Restore</h3>
+            <p>Records every deployed proxy, runtime DLL, and overwritten vendor binary in a SHA-256 <code class="inline-code">RuntimeInstallManifest</code>. Restore skips already-absent files, restores missing backups, preserves externally modified vendor binaries, and cleans session artifacts.</p>
+            <p class="cap-meta">SHA-256 manifest + backup recovery</p>
+          </article>
+
+          <article class="cap-card">
+            <h3>ForzaTech Virtual Texture Safeguard</h3>
+            <p>Assigns <code class="inline-code">version.dll</code> and sets <code class="inline-code">AlwaysTrackHeaps=false</code>, <code class="inline-code">HUDFix=false</code>, <code class="inline-code">DisableHUDFix=true</code>, <code class="inline-code">MakeDepthCopy=false</code>, and <code class="inline-code">MakeMVCopy=false</code> while omitting anisotropy/mipmap overrides to protect D3D12 streaming pools.</p>
+            <p class="cap-meta">Forza Horizon 6 &amp; Forza Horizon 5</p>
+          </article>
+
+          <article class="cap-card">
+            <h3>Anti-Ghosting &amp; Motion Vector Shield</h3>
+            <p>Calibrates disocclusion accumulation and reactive masks (<code class="inline-code">AccAddPerFrame=0.05</code>, <code class="inline-code">MinDisOccAcc=-0.50</code>, <code class="inline-code">ReactiveScale=2.0</code> for racing; <code class="inline-code">0.15</code>, <code class="inline-code">-0.35</code>, <code class="inline-code">1.25</code> standard) alongside GPU-matched DLSS Preset M or Preset K.</p>
+            <p class="cap-meta">DlssReactiveMaskBias=0.45 | Preset M / K</p>
+          </article>
+
+          <article class="cap-card">
+            <h3>SHA-256 Verified OptiScaler 0.9.5 Bundle</h3>
+            <p>Ships 18 core verified files including <code class="inline-code">OptiScaler.dll</code>, <code class="inline-code">D3D12Core.dll</code> (DirectX Agility SDK), FidelityFX 2.4/3.1, XeSS 3.0 (<code class="inline-code">libxess.dll</code>, <code class="inline-code">libxess_fg.dll</code>, <code class="inline-code">libxell.dll</code>), <code class="inline-code">dlssg_to_fsr3_amd_is_better.dll</code>, <code class="inline-code">fakenvapi.dll</code>, and upstream licenses.</p>
+            <p class="cap-meta">18 verified files | optiscaler-0.9.5-xtr</p>
+          </article>
+
+          <article class="cap-card">
+            <h3>Anti-Cheat Preflight &amp; Sandbox Gate</h3>
+            <p>Recursively inspects installation trees up to depth 5 against 18+ anti-cheat signatures (Easy Anti-Cheat, Vanguard, BattlEye, RICOCHET, GameGuard, VAC) and checks Xbox <code class="inline-code">WindowsApps</code> write permissions before modifying any file.</p>
+            <p class="cap-meta">Blocks MultiplayerBlocked titles pre-write</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="compatibility" class="section" aria-labelledby="compatibility-heading">
+      <div class="container">
+        <div class="section-head">
+          <h2 id="compatibility-heading" class="section-title">Hardware &amp; 37-Title Compatibility Matrix</h2>
+          <p class="section-lead">GPU pipeline capabilities and verified per-title proxy profiles loaded from <code class="inline-code">profiles/compatibility-db.json</code>.</p>
+        </div>
+
+        <div class="matrix-block">
+          <div tabindex="0" role="region" aria-labelledby="gpu-matrix-caption" class="table-wrapper">
+            <table class="gpu-table">
+              <caption id="gpu-matrix-caption">GPU Architecture &amp; Frame Generation Output Support</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Architecture</th>
+                  <th scope="col">Upscalers</th>
+                  <th scope="col">FG Output</th>
+                  <th scope="col">DLSS Preset</th>
+                  <th scope="col">Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">NVIDIA RTX 40 / 50 (Ada / Blackwell)</th>
+                  <td>Native DLSS SR/RR, FSR, XeSS</td>
+                  <td>Native DLSS-G or <code>fsrfg</code> / <code>xefg</code> / <code>nukems</code></td>
+                  <td>Preset M (<code>RenderPresetForAll=13</code>)</td>
+                  <td>Full native Streamline optical flow or universal FG bridge for non-FG titles.</td>
+                </tr>
+                <tr>
+                  <th scope="row">NVIDIA RTX 20 / 30 (Turing / Ampere)</th>
+                  <td>Native DLSS SR/RR, FSR, XeSS</td>
+                  <td><code>fsrfg</code> / <code>nukems</code> / <code>xefg</code></td>
+                  <td>Preset K (<code>RenderPresetForAll=11</code>)</td>
+                  <td>Unlocks Frame Generation via OptiScaler FG bridge on DX11, DX12, and Vulkan paths.</td>
+                </tr>
+                <tr>
+                  <th scope="row">AMD Radeon (RDNA 2 / 3 / 4)</th>
+                  <td>FSR 2.4 / 3.1, XeSS (DP4a/XMX fallback)</td>
+                  <td><code>fsrfg</code> / <code>nukems</code> (+ <code>fakenvapi.dll</code>)</td>
+                  <td>N/A (FSR / XeSS paths)</td>
+                  <td>Direct FidelityFX Frame Generation and <code class="inline-code">dlssg-to-fsr3</code> bridge with <code class="inline-code">StreamlineSpoofing=true</code>.</td>
+                </tr>
+                <tr>
+                  <th scope="row">Intel Arc (A / B-Series)</th>
+                  <td>XeSS 3.0 (XMX), FSR 2.4 / 3.1</td>
+                  <td><code>xefg</code> / <code>fsrfg</code> / <code>nukems</code></td>
+                  <td>N/A (XeSS / FSR paths)</td>
+                  <td>Native Intel XeSS Frame Generation (<code class="inline-code">libxess_fg.dll</code> + <code class="inline-code">libxell.dll</code>) or FSR FG output.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="matrix-block">
+          <div class="compat-toolbar">
+            <div class="filter-group" role="group" aria-label="Filter compatibility profiles by status">
+              <button type="button" class="filter-btn" data-filter="all" aria-pressed="true">All (37)</button>
+              <button type="button" class="filter-btn" data-filter="VerifiedCompatible" aria-pressed="false">Verified (28)</button>
+              <button type="button" class="filter-btn" data-filter="CommunityTested" aria-pressed="false">Community Tested (1)</button>
+              <button type="button" class="filter-btn" data-filter="MultiplayerBlocked" aria-pressed="false">Blocked (8)</button>
+            </div>
+            <div class="search-field">
+              <label for="compat-search">Filter by title, API, proxy, or notes</label>
+              <input id="compat-search" type="search" autocomplete="off" placeholder="e.g. Forza, version.dll, Vulkan">
+            </div>
+          </div>
+
+          <p id="compat-count" class="compat-count" aria-live="polite">Showing 37 of 37 profiles</p>
+
+          <div tabindex="0" role="region" aria-labelledby="compat-table-caption" class="table-wrapper compat-wrapper">
+            <table class="compat-table">
+              <caption id="compat-table-caption">37 Tracked Compatibility Profiles (profiles/compatibility-db.json)</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Title</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Proxy</th>
+                  <th scope="col">API</th>
+                  <th scope="col">Native FG</th>
+                  <th scope="col">Notes</th>
+                </tr>
+              </thead>
+              <tbody id="compat-tbody">
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Cyberpunk 2077</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>Yes</td>
+                  <td>Full native Streamline and DLSS Frame Generation support on DX12.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Forza Horizon 5</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>version.dll</code></td>
+                  <td>DX12</td>
+                  <td>Yes</td>
+                  <td>ForzaTech virtual texture streaming. Requires version.dll proxy and native Streamline passthrough.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Forza Horizon 6</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>version.dll</code></td>
+                  <td>DX12</td>
+                  <td>Yes</td>
+                  <td>Next-gen ForzaTech virtual texture streaming. Requires version.dll proxy and zero-overhead native Streamline passthrough.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">The Witcher 3: Wild Hunt</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>Yes</td>
+                  <td>DX12 executable (witcher3.exe) supports DLSS Frame Generation.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Marvel's Spider-Man Remastered</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>Yes</td>
+                  <td>Native DLSS 3 Frame Generation supported.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Marvel's Spider-Man 2</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>Yes</td>
+                  <td>Native DLSS 3.7+ and FSR 3.1 frame generation supported.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Alan Wake 2</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>Yes</td>
+                  <td>Northlight Engine mesh shaders. Full DLSS 3.5 Ray Reconstruction and Frame Generation.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Black Myth: Wukong</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>Yes</td>
+                  <td>Unreal Engine 5. Full DLSS 3 Frame Generation and Full Ray Tracing support.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Starfield</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>Yes</td>
+                  <td>Creation Engine 2. Native DLSS 3 Frame Generation.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Indiana Jones and the Great Circle</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>Yes</td>
+                  <td>id Tech engine. Native DLSS 3.7+ and Full Ray Tracing.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">S.T.A.L.K.E.R. 2: Heart of Chornobyl</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>Yes</td>
+                  <td>Unreal Engine 5. Full DLSS 3 and FSR 3.1 Frame Generation.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Monster Hunter Wilds</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>Yes</td>
+                  <td>RE Engine. Native DLSS Frame Generation supported.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Baldur's Gate 3</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX11</td>
+                  <td>No</td>
+                  <td>DirectX 11 and Vulkan supported. DLSS 2 Super Resolution.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Hogwarts Legacy</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>Yes</td>
+                  <td>Unreal Engine 4. Native DLSS Frame Generation.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Resident Evil 4</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>No</td>
+                  <td>RE Engine. OptiScaler FSR 3.1 injection unlocks upscaling.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Dead Space</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>No</td>
+                  <td>Frostbite engine. DLSS 2 Super Resolution.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Dying Light 2 Stay Human</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>Yes</td>
+                  <td>C-Engine. Full DLSS 3 Frame Generation supported.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Returnal</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>Yes</td>
+                  <td>Unreal Engine 4. DLSS 3 Frame Generation.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Ghost of Tsushima Director's Cut</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>Yes</td>
+                  <td>Native DLSS 3 and FSR 3 Frame Generation supported.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">God of War Ragnarok</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>Yes</td>
+                  <td>Native DLSS 3.7 Frame Generation supported.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Horizon Forbidden West</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>Yes</td>
+                  <td>Decima Engine. Full DLSS 3 Frame Generation.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Dragon's Dogma 2</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>Yes</td>
+                  <td>RE Engine. Native DLSS 3 Frame Generation.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Diablo IV</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>Yes</td>
+                  <td>Full DLSS 3 Frame Generation and Ray Tracing.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Remnant II</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>Yes</td>
+                  <td>Unreal Engine 5. Native DLSS 3 Frame Generation.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Lords of the Fallen</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>Yes</td>
+                  <td>Unreal Engine 5. DLSS 3 Frame Generation.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Lies of P</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>No</td>
+                  <td>Unreal Engine 4. Ultra-smooth DLSS 2 implementation.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Final Fantasy XVI</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>Yes</td>
+                  <td>Native DLSS 3 Frame Generation.</td>
+                </tr>
+                <tr data-level="VerifiedCompatible">
+                  <th scope="row">Red Dead Redemption 2</th>
+                  <td><span class="status-badge status-verified"><span aria-hidden="true">&#10003;</span> Verified</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>Vulkan</td>
+                  <td>No</td>
+                  <td>Vulkan and DX12 supported. DLSS 2 Super Resolution.</td>
+                </tr>
+                <tr data-level="CommunityTested">
+                  <th scope="row">Elden Ring</th>
+                  <td><span class="status-badge status-community"><span aria-hidden="true">!</span> Community Tested</span></td>
+                  <td><code>dxgi.dll</code></td>
+                  <td>DX12</td>
+                  <td>No</td>
+                  <td>Easy Anti-Cheat must be disabled for offline modding before injecting proxies.</td>
+                </tr>
+                <tr data-level="MultiplayerBlocked">
+                  <th scope="row">Apex Legends</th>
+                  <td><span class="status-badge status-blocked"><span aria-hidden="true">&#10005;</span> Blocked</span></td>
+                  <td><code>none</code></td>
+                  <td>DX11</td>
+                  <td>No</td>
+                  <td>Multiplayer game protected by Easy Anti-Cheat. DLL proxy injection blocked for safety.</td>
+                </tr>
+                <tr data-level="MultiplayerBlocked">
+                  <th scope="row">VALORANT</th>
+                  <td><span class="status-badge status-blocked"><span aria-hidden="true">&#10005;</span> Blocked</span></td>
+                  <td><code>none</code></td>
+                  <td>DX11</td>
+                  <td>No</td>
+                  <td>Kernel-level Vanguard anti-cheat active. Proxy DLL injection blocked for account safety.</td>
+                </tr>
+                <tr data-level="MultiplayerBlocked">
+                  <th scope="row">Destiny 2</th>
+                  <td><span class="status-badge status-blocked"><span aria-hidden="true">&#10005;</span> Blocked</span></td>
+                  <td><code>none</code></td>
+                  <td>DX11</td>
+                  <td>No</td>
+                  <td>BattlEye anti-cheat active. Proxy DLL injection blocked for safety.</td>
+                </tr>
+                <tr data-level="MultiplayerBlocked">
+                  <th scope="row">Tom Clancy's Rainbow Six Siege</th>
+                  <td><span class="status-badge status-blocked"><span aria-hidden="true">&#10005;</span> Blocked</span></td>
+                  <td><code>none</code></td>
+                  <td>DX11</td>
+                  <td>No</td>
+                  <td>BattlEye anti-cheat active. Proxy injection blocked.</td>
+                </tr>
+                <tr data-level="MultiplayerBlocked">
+                  <th scope="row">Fortnite</th>
+                  <td><span class="status-badge status-blocked"><span aria-hidden="true">&#10005;</span> Blocked</span></td>
+                  <td><code>none</code></td>
+                  <td>DX12</td>
+                  <td>No</td>
+                  <td>BattlEye / Easy Anti-Cheat active. Proxy injection blocked.</td>
+                </tr>
+                <tr data-level="MultiplayerBlocked">
+                  <th scope="row">Call of Duty: Warzone</th>
+                  <td><span class="status-badge status-blocked"><span aria-hidden="true">&#10005;</span> Blocked</span></td>
+                  <td><code>none</code></td>
+                  <td>DX12</td>
+                  <td>No</td>
+                  <td>RICOCHET kernel anti-cheat active. Proxy injection blocked.</td>
+                </tr>
+                <tr data-level="MultiplayerBlocked">
+                  <th scope="row">Counter-Strike 2</th>
+                  <td><span class="status-badge status-blocked"><span aria-hidden="true">&#10005;</span> Blocked</span></td>
+                  <td><code>none</code></td>
+                  <td>Vulkan</td>
+                  <td>No</td>
+                  <td>VAC anti-cheat active. Proxy injection blocked for account safety.</td>
+                </tr>
+                <tr data-level="MultiplayerBlocked">
+                  <th scope="row">Helldivers 2</th>
+                  <td><span class="status-badge status-blocked"><span aria-hidden="true">&#10005;</span> Blocked</span></td>
+                  <td><code>none</code></td>
+                  <td>DX12</td>
+                  <td>No</td>
+                  <td>nProtect GameGuard active. Proxy injection blocked.</td>
+                </tr>
+              </tbody>
+            </table>
+            <p id="compat-empty" class="empty-state" hidden>No compatibility profiles match your current filter.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="quickstart" class="section" aria-labelledby="quickstart-heading">
+      <div class="container">
+        <div class="section-head">
+          <h2 id="quickstart-heading" class="section-title">Quickstart, Release Artifacts &amp; Source Build</h2>
+          <p class="section-lead">Install a self-contained <code class="inline-code">win-x64</code> package from GitHub Releases or compile and test directly from source with the .NET 10 SDK.</p>
+        </div>
+
+        <div class="quickstart-grid">
+          <div>
+            <h3 class="panel-heading">Release Packages</h3>
+            <ul class="artifact-list">
+              <li class="artifact-card">
+                <a href="https://github.com/anmol150704/XTR-Unlocker/releases/latest/download/XTR-Unlocker-Setup.exe">XTR-Unlocker-Setup.exe</a>
+                <p>7-Zip SFX single-file installer extracting and launching <code class="inline-code">XTR Unlocker.exe</code> self-contained on Windows 10 19041+ / Windows 11 x64.</p>
+              </li>
+              <li class="artifact-card">
+                <a href="https://github.com/anmol150704/XTR-Unlocker/releases/latest/download/XTR-Unlocker-Release-win-x64.zip">XTR-Unlocker-Release-win-x64.zip</a>
+                <p>Standard self-contained WinUI 3 binary archive including the 18-file OptiScaler 0.9.5 runtime bundle.</p>
+              </li>
+              <li class="artifact-card">
+                <a href="https://github.com/anmol150704/XTR-Unlocker/releases/latest/download/XTR-Unlocker-Release_Portable-win-x64.zip">XTR-Unlocker-Release_Portable-win-x64.zip</a>
+                <p>Portable self-contained build storing configuration and downloaded upscaler DLLs beside the executable.</p>
+              </li>
             </ul>
-        </div>
-    </header>
 
-    <!-- Hero -->
-    <section class="hero container">
-        <div class="hero-badge">
-            <span class="pulse"></span>
-            <span>XTR ENGINE v1.2.7 • PRODUCTION READY (286 PASSING TESTS)</span>
+            <p class="hotkey-note">
+              <strong>In-game OptiScaler controls:</strong> Press <kbd>Insert</kbd> to open the OptiScaler configuration menu and <kbd>F12</kbd> to toggle Frame Generation in-game. Browse all release notes on <a href="https://github.com/anmol150704/XTR-Unlocker/releases/latest">GitHub Releases</a>.
+            </p>
+          </div>
+
+          <div>
+            <h3 class="panel-heading">Source Build &amp; Test Commands</h3>
+            <div class="cmd-list">
+              <div class="cmd-item">
+                <div class="cmd-header">
+                  <span class="cmd-label">1. Clone repository</span>
+                  <button type="button" class="copy-btn" data-copy="git clone https://github.com/anmol150704/XTR-Unlocker.git">Copy <span class="visually-hidden">clone command</span></button>
+                </div>
+                <code class="cmd-code">git clone https://github.com/anmol150704/XTR-Unlocker.git</code>
+              </div>
+
+              <div class="cmd-item">
+                <div class="cmd-header">
+                  <span class="cmd-label">2. Run unit and integration tests</span>
+                  <button type="button" class="copy-btn" data-copy="dotnet test desktop/tests/XTR.Tests/XTR.Tests.csproj -c Release">Copy <span class="visually-hidden">unit test command</span></button>
+                </div>
+                <code class="cmd-code">dotnet test desktop/tests/XTR.Tests/XTR.Tests.csproj -c Release</code>
+              </div>
+
+              <div class="cmd-item">
+                <div class="cmd-header">
+                  <span class="cmd-label">3. Run opaque-box E2E tests</span>
+                  <button type="button" class="copy-btn" data-copy="dotnet test desktop/tests/XTR.E2ETests/XTR.E2ETests.csproj -c Release">Copy <span class="visually-hidden">E2E test command</span></button>
+                </div>
+                <code class="cmd-code">dotnet test desktop/tests/XTR.E2ETests/XTR.E2ETests.csproj -c Release</code>
+              </div>
+
+              <div class="cmd-item">
+                <div class="cmd-header">
+                  <span class="cmd-label">4. Build self-contained ZIP and SFX installer</span>
+                  <button type="button" class="copy-btn" data-copy="powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1 -Configuration Release -SelfContained -PackageZip -BuildInstaller">Copy <span class="visually-hidden">installer build command</span></button>
+                </div>
+                <code class="cmd-code">powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1 -Configuration Release -SelfContained -PackageZip -BuildInstaller</code>
+              </div>
+
+              <div class="cmd-item">
+                <div class="cmd-header">
+                  <span class="cmd-label">5. Build portable ZIP archive</span>
+                  <button type="button" class="copy-btn" data-copy="powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1 -Configuration Release_Portable -SelfContained -PackageZip">Copy <span class="visually-hidden">portable build command</span></button>
+                </div>
+                <code class="cmd-code">powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1 -Configuration Release_Portable -SelfContained -PackageZip</code>
+              </div>
+            </div>
+            <p id="copy-status" class="visually-hidden" aria-live="polite"></p>
+          </div>
         </div>
-        <h1 class="hero-title">High-Performance Frame Generation<br>& Active Gaming Companion</h1>
-        <p class="hero-desc">
-            A unified, ultra-low-overhead Windows desktop studio. Enables calibrated FSR 3.1 & Nukem9 Frame Generation on RTX 20/30 laptops, eliminates ForzaTech texture streaming dropouts, and delivers an emerald in-game telemetry HUD.
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-meta">
+        <p><strong>XTR Unlocker</strong> is free software licensed under the <a href="https://github.com/anmol150704/XTR-Unlocker/blob/main/LICENSE">GNU General Public License v3.0 (GPL-3.0)</a>.</p>
+        <p>
+          <a href="https://github.com/anmol150704/XTR-Unlocker">GitHub Repository</a>
+          |
+          <a href="https://github.com/anmol150704/XTR-Unlocker/releases/latest">Latest Releases</a>
         </p>
-        <div class="hero-cta">
-            <a href="https://github.com/anmol150704/XTR-Unlocker/releases/latest" class="btn-primary">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                <span>Download XTR-Unlocker-Setup.exe</span>
-            </a>
-            <a href="https://github.com/anmol150704/XTR-Unlocker" class="btn-secondary">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-                <span>View on GitHub</span>
-            </a>
-        </div>
+      </div>
 
-        <!-- Interactive HUD Showcase Widget -->
-        <div class="hud-showcase">
-            <div class="hud-header">
-                <div class="hud-title-wrap">
-                    <span class="dot dot-red"></span>
-                    <span class="dot dot-yellow"></span>
-                    <span class="dot dot-green"></span>
-                    <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-left: 0.5rem;">In-Game HUD Transformation</span>
-                </div>
-                <div class="hud-mode-selector">
-                    <button class="hud-toggle-btn active" id="btn-emerald" onclick="switchHud('emerald')">Emerald Branded HUD</button>
-                    <button class="hud-toggle-btn" id="btn-raw" onclick="switchHud('raw')">Raw Generic Overlay</button>
-                </div>
-            </div>
+      <div>
+        <h2 class="hero-spec-title" style="border-block-end: 0; margin-block-end: 0.65rem; padding-block-end: 0;">Third-Party Components &amp; Acknowledgments</h2>
+        <ul class="credits-list">
+          <li><strong>DLSS Swapper</strong> by beeradmoore (GPL-3.0)</li>
+          <li><strong>OptiScaler v0.9.5</strong> (optiscaler/OptiScaler, GPL-3.0)</li>
+          <li><strong>dlssg-to-fsr3</strong> (Nukem9/dlssg-to-fsr3)</li>
+          <li><strong>AMD FidelityFX SDK</strong> (MIT License)</li>
+          <li><strong>Intel XeSS SDK</strong> (Intel XeSS Community License)</li>
+          <li><strong>Microsoft DirectX Agility SDK</strong></li>
+          <li><strong>NVIDIA Streamline / NGX DLSS</strong></li>
+          <li><strong>SkiaSharp</strong> (mono/SkiaSharp, MIT License)</li>
+          <li><strong>WinUI 3 / Windows App SDK 1.8 &amp; CommunityToolkit.Mvvm</strong></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
 
-            <div class="hud-screen">
-                <div class="game-backdrop"></div>
-                <div class="in-game-hud emerald-style" id="hud-display">
-                    <span class="hud-badge">XTR ENGINE</span>
-                    <span style="color: #10b981; font-weight: 700;">FPS: 128 (FG 2X)</span>
-                    <span style="color: #64748b;">•</span>
-                    <span>7.8 ms</span>
-                    <span style="color: #64748b;">•</span>
-                    <span style="color: #94a3b8;">RTX 2050 (4GB)</span>
-                    <span style="color: #64748b;">•</span>
-                    <span style="color: #06b6d4;">FSR 3.1 ACTIVE</span>
-                </div>
-            </div>
-        </div>
-    </section>
+  <script>
+    (() => {
+      // 1. Responsive Navbar with ResizeObserver + popover="auto" + sticky fallback
+      const header = document.getElementById('site-header');
+      const headerInner = header.querySelector('.header-inner');
+      const menu = document.getElementById('site-menu');
+      let lastCollapsedWidth = 0;
+      let measureRaf = 0;
 
-    <!-- Key Architecture Features -->
-    <section class="container" id="features" style="padding-bottom: 3rem;">
-        <h2 class="section-title">Engine Architecture & Capabilities</h2>
-        <p class="section-subtitle">Grounded graphics systems engineering designed to eliminate stutter, ghosting, and memory bloat.</p>
+      function updateNavLayout() {
+        const wasWide = header.classList.contains('is-wide');
+        const currentWidth = header.clientWidth;
 
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                </div>
-                <h3>Zero-Dropout Virtual Streaming</h3>
-                <p>Playground Games' ForzaTech engine relies on aggressive D3D12 virtual texture heaps. XTR forces <code>AlwaysTrackHeaps=false</code>, disables intrusive buffer duplication, and routes through <code>version.dll</code> proxy to guarantee pristine, uninterrupted roads and liveries in Forza Horizon 6 & 5.</p>
-                <span class="feature-tag">FORZATECH HEAP SAFEGUARD</span>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon cyan-theme">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                </div>
-                <h3>High-Velocity Anti-Ghosting Shield</h3>
-                <p>At 300 km/h, road disocclusion creates heavy trailing smears. We calibrate <code>AccAddPerFrame=0.05</code> and <code>MinDisOccAcc=-0.50</code> to flush stale car samples instantly, while setting <code>DisableReactiveMask=false</code> to preserve native windshield and smoke masks.</p>
-                <span class="feature-tag">DISOCCLUSION CLAMPING</span>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon violet-theme">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                </div>
-                <h3>Lock-Free Shared Memory IPC</h3>
-                <p>Zero-allocation memory-mapped file (<code>Local\XtrTelemetrySharedMem</code>) transmits GPU utilization, 4GB VRAM budget, temperature, and frame intervals between XTR Studio and the game in &lt;1 microsecond with zero CPU overhead.</p>
-                <span class="feature-tag">112-BYTE PACKED STRUCT</span>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                </div>
-                <h3>Non-Invasive ETW Telemetry</h3>
-                <p>Incorporates Intel PresentMon kernel event architecture (<code>Microsoft-Windows-DXGI</code> and <code>Microsoft-Windows-D3D12</code>). Tracks real-time 1% and 0.1% low frametimes directly from Windows kernel events without injecting hook DLLs or tripping anti-cheat.</p>
-                <span class="feature-tag">INTEL PRESENTMON ENGINE</span>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon cyan-theme">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
-                </div>
-                <h3>Active Companion Lifecycle</h3>
-                <p>Monitors game launches in &lt;500ms via WMI process watcher. Automatically elevates the game process to High priority, sets optimal GPU scheduling, and minimizes Studio to system tray to consume 0.0% background CPU.</p>
-                <span class="feature-tag">&lt;45MB RAM • 0.0% CPU</span>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon violet-theme">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zM4 10h16"/></svg>
-                </div>
-                <h3>Multi-Backend Bridge Dispatcher</h3>
-                <p>Automatically pairs each title with its optimal backend: Nukem9 Streamline bridge for native DLSS-G games, AMD FidelityFX SDK for direct DX12 compute, and XeFG for Intel Arc, backed by single-pass O(N+M) INI deployment.</p>
-                <span class="feature-tag">NUKEM9 • FSR 3.1 • XEFG</span>
-            </div>
-        </div>
-    </section>
-
-    <!-- Benchmarks -->
-    <section class="container" id="benchmarks" style="padding-bottom: 3rem;">
-        <h2 class="section-title">Verified Hardware Benchmarks</h2>
-        <p class="section-subtitle">Real-world performance testing on NVIDIA GeForce RTX 2050 Laptop GPU (4GB VRAM, Turing Architecture, 1080p Ultra).</p>
-
-        <div class="benchmarks-section">
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Game Title</th>
-                            <th>Stock Baseline</th>
-                            <th>XTR Engine Turbo Boost</th>
-                            <th>Frametime</th>
-                            <th>VRAM & Stability</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Forza Horizon 6</strong> (DirectX 12)</td>
-                            <td>34 FPS (No Frame Gen)</td>
-                            <td><span class="gain-badge">78 – 92 FPS</span></td>
-                            <td>11.8 ms (Smooth)</td>
-                            <td>Zero texture dropouts • Version.dll passthrough</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Forza Horizon 5</strong> (DirectX 12)</td>
-                            <td>42 FPS (DLSS Quality)</td>
-                            <td><span class="gain-badge">85 – 104 FPS</span></td>
-                            <td>9.6 ms (Low jitter)</td>
-                            <td>AccAddPerFrame=0.05 • Ghost-free tail lights</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Cyberpunk 2077</strong> (Ray Tracing)</td>
-                            <td>31 FPS (Medium RT)</td>
-                            <td><span class="gain-badge">68 – 80 FPS</span></td>
-                            <td>13.2 ms (Reflex tuned)</td>
-                            <td>Preset E smear suppression active</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Spider-Man Remastered</strong> (DX12)</td>
-                            <td>45 FPS (Very High)</td>
-                            <td><span class="gain-badge">90 – 110 FPS</span></td>
-                            <td>9.1 ms (Pristine)</td>
-                            <td>Native Streamline DLSS-G bridge</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </section>
-
-    <!-- Controls -->
-    <section class="container" id="controls" style="padding-bottom: 5rem;">
-        <h2 class="section-title">Laptop-Friendly In-Game Controls</h2>
-        <p class="section-subtitle">Seamlessly toggle features and telemetry in-game without leaving your fullscreen session.</p>
-
-        <div class="hotkeys-grid">
-            <div class="hotkey-card">
-                <div class="key-badge">Insert</div>
-                <h4>XTR Engine Menu</h4>
-                <p>Opens in-game developer tuning and upscaler options.</p>
-            </div>
-            <div class="hotkey-card">
-                <div class="key-badge">F10</div>
-                <h4>Toggle Telemetry HUD</h4>
-                <p>Turns the on-screen emerald FPS display on or off.</p>
-            </div>
-            <div class="hotkey-card">
-                <div class="key-badge">F9</div>
-                <h4>Cycle HUD Mode</h4>
-                <p>Cycles between Simple, Detailed, and Graph layouts.</p>
-            </div>
-            <div class="hotkey-card">
-                <div class="key-badge">F12</div>
-                <h4>Toggle Frame Gen</h4>
-                <p>Instantly compare native baseline vs interpolated FPS.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <p style="margin-bottom: 0.5rem;">
-                <strong>XTR Unlocker</strong> is open-source software licensed under the <a href="https://github.com/anmol150704/XTR-Unlocker/blob/main/LICENSE">GNU General Public License v3.0</a>.
-            </p>
-            <p>
-                Engineered with pride by <a href="https://github.com/anmol150704">Anmol</a> • Designed with zero AI slop, grounded systems research, and clean native code.
-            </p>
-        </div>
-    </footer>
-
-    <script>
-        function switchHud(mode) {
-            const hud = document.getElementById('hud-display');
-            const btnEmerald = document.getElementById('btn-emerald');
-            const btnRaw = document.getElementById('btn-raw');
-
-            if (mode === 'emerald') {
-                btnEmerald.classList.add('active');
-                btnRaw.classList.remove('active');
-                hud.className = 'in-game-hud emerald-style';
-                hud.innerHTML = `
-                    <span class="hud-badge">XTR ENGINE</span>
-                    <span style="color: #10b981; font-weight: 700;">FPS: 128 (FG 2X)</span>
-                    <span style="color: #64748b;">•</span>
-                    <span>7.8 ms</span>
-                    <span style="color: #64748b;">•</span>
-                    <span style="color: #94a3b8;">RTX 2050 (4GB)</span>
-                    <span style="color: #64748b;">•</span>
-                    <span style="color: #06b6d4;">FSR 3.1 ACTIVE</span>
-                `;
-            } else {
-                btnRaw.classList.add('active');
-                btnEmerald.classList.remove('active');
-                hud.className = 'in-game-hud raw-style';
-                hud.innerHTML = `
-                    <span>| D3D12 | FPS: 30.0, Avg: 49.4 | Frame Time: 33.82 ms, Avg: 20.26 ms |</span>
-                `;
-            }
+        if (!wasWide && currentWidth <= lastCollapsedWidth) {
+          return;
         }
-    </script>
+
+        const wasOpen = menu.matches(':popover-open') || menu.classList.contains(':popover-open');
+        header.classList.add('is-measuring');
+        if (wasOpen && typeof menu.hidePopover === 'function') {
+          menu.hidePopover();
+        }
+        menu.removeAttribute('popover');
+        header.classList.add('is-wide');
+
+        const fitsInline = headerInner.scrollWidth <= headerInner.clientWidth;
+
+        if (fitsInline) {
+          lastCollapsedWidth = 0;
+        } else {
+          header.classList.remove('is-wide');
+          menu.setAttribute('popover', 'auto');
+          lastCollapsedWidth = header.clientWidth;
+          if (wasOpen && typeof menu.showPopover === 'function') {
+            menu.showPopover();
+          }
+        }
+
+        cancelAnimationFrame(measureRaf);
+        measureRaf = requestAnimationFrame(() => {
+          header.classList.remove('is-measuring');
+        });
+      }
+
+      if (typeof ResizeObserver !== 'undefined') {
+        const navObserver = new ResizeObserver(updateNavLayout);
+        navObserver.observe(header);
+        navObserver.observe(menu);
+      }
+      updateNavLayout();
+
+      // Close collapsed popover when selecting an in-page link
+      menu.addEventListener('click', (event) => {
+        if (!header.classList.contains('is-wide') && event.target.closest('a')) {
+          if ((menu.matches(':popover-open') || menu.classList.contains(':popover-open')) && typeof menu.hidePopover === 'function') {
+            menu.hidePopover();
+          }
+        }
+      });
+
+      // Fallback sticky state class when container scroll-state is unavailable
+      if (!CSS.supports('container-type', 'scroll-state')) {
+        const sentinel = document.createElement('div');
+        sentinel.setAttribute('aria-hidden', 'true');
+        sentinel.style.cssText = 'position:absolute;inset-block-start:0;inline-size:1px;block-size:1px;pointer-events:none;';
+        document.body.prepend(sentinel);
+        if (typeof IntersectionObserver !== 'undefined') {
+          new IntersectionObserver(([entry]) => {
+            header.classList.toggle('is-stuck', !entry.isIntersecting);
+          }, { threshold: 0 }).observe(sentinel);
+        }
+      }
+
+      // 2. Accessible Pipeline Tabs (focusgroup="tablist nomemory" + fallback + beforematch)
+      const tablist = document.querySelector('.tablist[role="tablist"]');
+      const tabs = Array.from(tablist.querySelectorAll('[role="tab"]'));
+      const panels = Array.from(document.querySelectorAll('.tab-panels > [role="tabpanel"]'));
+      const nativeFocusGroup = Object.hasOwn(HTMLElement.prototype, 'focusGroup');
+
+      function selectTab(nextTab, { focus = false, scroll = true } = {}) {
+        const nextIndex = tabs.indexOf(nextTab);
+        if (nextIndex === -1) return;
+
+        tabs.forEach((tab, index) => {
+          const isSelected = index === nextIndex;
+          tab.setAttribute('aria-selected', String(isSelected));
+          tab.toggleAttribute('focusgroupstart', isSelected);
+          if (!nativeFocusGroup) {
+            tab.tabIndex = isSelected ? 0 : -1;
+          }
+        });
+
+        panels.forEach((panel, index) => {
+          const isSelected = index === nextIndex;
+          if (isSelected) {
+            panel.removeAttribute('hidden');
+            panel.tabIndex = 0;
+          } else {
+            panel.setAttribute('hidden', 'until-found');
+            panel.removeAttribute('tabindex');
+          }
+        });
+
+        if (focus) {
+          nextTab.focus({ preventScroll: true });
+        }
+        if (scroll && typeof nextTab.scrollIntoView === 'function') {
+          nextTab.scrollIntoView({ block: 'nearest', inline: 'nearest', container: 'nearest' });
+        }
+      }
+
+      if (!nativeFocusGroup) {
+        tabs.forEach((tab) => {
+          tab.tabIndex = tab.getAttribute('aria-selected') === 'true' ? 0 : -1;
+        });
+      }
+
+      tablist.addEventListener('click', (event) => {
+        const tab = event.target.closest('[role="tab"]');
+        if (tab) {
+          selectTab(tab, { focus: true });
+        }
+      });
+
+      tablist.addEventListener('keydown', (event) => {
+        const currentTab = event.target.closest('[role="tab"]');
+        if (!currentTab) return;
+        const idx = tabs.indexOf(currentTab);
+        let targetIdx = -1;
+
+        if (event.key === 'ArrowRight') {
+          targetIdx = (idx + 1) % tabs.length;
+        } else if (event.key === 'ArrowLeft') {
+          targetIdx = (idx - 1 + tabs.length) % tabs.length;
+        } else if (event.key === 'Home') {
+          targetIdx = 0;
+        } else if (event.key === 'End') {
+          targetIdx = tabs.length - 1;
+        }
+
+        if (targetIdx !== -1) {
+          event.preventDefault();
+          selectTab(tabs[targetIdx], { focus: true });
+        }
+      });
+
+      panels.forEach((panel, index) => {
+        panel.addEventListener('beforematch', () => {
+          selectTab(tabs[index], { focus: false });
+        });
+      });
+
+      // 3. Compatibility Matrix Filter & Search
+      const filterButtons = Array.from(document.querySelectorAll('.filter-btn[data-filter]'));
+      const searchInput = document.getElementById('compat-search');
+      const compatRows = Array.from(document.querySelectorAll('#compat-tbody > tr'));
+      const compatCount = document.getElementById('compat-count');
+      const compatEmpty = document.getElementById('compat-empty');
+      let activeLevel = 'all';
+
+      function applyCompatibilityFilter() {
+        const query = searchInput.value.trim().toLowerCase();
+        let visible = 0;
+
+        for (const row of compatRows) {
+          const matchesLevel = activeLevel === 'all' || row.dataset.level === activeLevel;
+          const matchesQuery = query === '' || row.textContent.toLowerCase().includes(query);
+          const show = matchesLevel && matchesQuery;
+          row.hidden = !show;
+          if (show) visible += 1;
+        }
+
+        compatCount.textContent = `Showing ${visible} of ${compatRows.length} profiles`;
+        compatEmpty.hidden = visible > 0;
+      }
+
+      filterButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          activeLevel = button.dataset.filter;
+          filterButtons.forEach((btn) => {
+            btn.setAttribute('aria-pressed', String(btn === button));
+          });
+          applyCompatibilityFilter();
+        });
+      });
+
+      searchInput.addEventListener('input', applyCompatibilityFilter);
+
+      // 4. Copy CLI Commands
+      const copyStatus = document.getElementById('copy-status');
+      async function writeClipboardText(text) {
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+          try {
+            await navigator.clipboard.writeText(text);
+            return;
+          } catch {
+            // Fall through to execCommand fallback on restricted file:// origins
+          }
+        }
+        const helper = document.createElement('textarea');
+        helper.value = text;
+        helper.setAttribute('readonly', '');
+        helper.style.cssText = 'position:fixed;inset-block-start:-9999px;opacity:0;';
+        document.body.append(helper);
+        helper.select();
+        const copied = document.execCommand('copy');
+        helper.remove();
+        if (!copied) {
+          throw new Error('Copy failed');
+        }
+      }
+
+      document.querySelectorAll('.copy-btn[data-copy]').forEach((button) => {
+        const initialText = button.firstChild.textContent.trim();
+        let resetTimer = 0;
+
+        button.addEventListener('click', async () => {
+          const command = button.dataset.copy;
+          try {
+            await writeClipboardText(command);
+            button.firstChild.textContent = 'Copied ';
+            copyStatus.textContent = `Copied command: ${command}`;
+          } catch {
+            copyStatus.textContent = 'Clipboard access unavailable; select command text manually.';
+          }
+          clearTimeout(resetTimer);
+          resetTimer = setTimeout(() => {
+            button.firstChild.textContent = `${initialText} `;
+          }, 1800);
+        });
+      });
+    })();
+  </script>
 </body>
 </html>

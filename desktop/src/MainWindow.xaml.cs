@@ -1,4 +1,4 @@
-﻿using DLSS_Swapper.Data;
+using DLSS_Swapper.Data;
 using DLSS_Swapper.Helpers;
 using DLSS_Swapper.Pages;
 using DLSS_Swapper.UserControls;
@@ -366,7 +366,7 @@ public sealed partial class MainWindow : Window
         // We are now ready to show the games list.
         LoadingStackPanel.Visibility = Visibility.Collapsed;
 
-                GoToPage(XtrStudioPage.PageTag);
+                GoToPage(GameGridPage.PageTag);
         if (MainNavigationView.MenuItems.Count > 0)
         {
             MainNavigationView.SelectedItem = MainNavigationView.MenuItems[0];

@@ -43,6 +43,11 @@ public enum GameAssetType
     NvLowLatencyVK = 57,
     DLSS_NR = 59,
 
+    FidelityFX_SDK2_Upscaler_VK = 61,
+    FidelityFX_SDK2_FrameGeneration_VK = 63,
+    FidelityFX_SDK2_Loader_VK = 65,
+    FidelityFX_SDK2_Other = 67,
+
     // Backup
 
     DLSS_BACKUP = 9,
@@ -81,4 +86,9 @@ public enum GameAssetType
     DeepDVC_BACKUP = 56,
     NvLowLatencyVK_BACKUP = 58,
     DLSS_NR_BACKUP = 60,
+
+    FidelityFX_SDK2_Upscaler_VK_BACKUP = 62,
+    FidelityFX_SDK2_FrameGeneration_VK_BACKUP = 64,
+    FidelityFX_SDK2_Loader_VK_BACKUP = 66,
+    FidelityFX_SDK2_Other_BACKUP = 68,
 }

@@ -128,4 +128,84 @@ public sealed class RuntimePreflightTests
                 Directory.Delete(tempDir, recursive: true);
         }
     }
+
+    [TestMethod]
+    public async Task RuntimePreflight_Fh6StreamlineLayout_ReportsStreamlineDlssAndNoMissingWarning()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"xtr_pf_fh6_{Guid.NewGuid():N}");
+        var missingNgxRoot = Path.Combine(Path.GetTempPath(), $"xtr_pf_ngx_{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(tempDir);
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "forzahorizon6.exe"), "EXE");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "sl.interposer.dll"), "SL");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "sl.directsr.dll"), "DIRECTSR");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "sl.common.dll"), "COMMON");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "amd_fidelityfx_loader_dx12.dll"), "FFX_LOADER");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "libxess.dll"), "XESS");
+
+            var pack = await RuntimePack.LoadFromDirectoryAsync(GetBundledPackagePath());
+            Assert.IsNotNull(pack);
+
+            var result = await RuntimePreflightService.RunPreflightAsync(
+                "fh6-pf-test",
+                tempDir,
+                pack,
+                "version.dll",
+                "Forza Horizon 6",
+                allowOfflineAntiCheatOverride: false,
+                ngxModelsRootOverride: missingNgxRoot);
+
+            Assert.IsTrue(result.StreamlineDetected);
+            Assert.IsTrue(result.StreamlineDlssDetected);
+            Assert.IsFalse(result.NativeDlssDetected);
+            Assert.IsTrue(result.FidelityFxSdk2Detected);
+            Assert.IsTrue(result.XeSsDetected);
+            Assert.AreEqual("DX12", result.DetectedApi);
+            Assert.IsFalse(System.Linq.Enumerable.Any(
+                result.Checks,
+                c => c.Severity == CheckItemSeverity.Warning &&
+                     c.Message.Contains("No nvngx_dlss.dll found", StringComparison.OrdinalIgnoreCase)));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task RuntimePreflight_SubdirectoryNgxDlss_DetectsNativeDlss()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"xtr_pf_subdir_{Guid.NewGuid():N}");
+        var missingNgxRoot = Path.Combine(Path.GetTempPath(), $"xtr_pf_ngx_{Guid.NewGuid():N}");
+        try
+        {
+            var subDir = Path.Combine(tempDir, "Binaries", "Win64");
+            Directory.CreateDirectory(subDir);
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "game.exe"), "EXE");
+            var dlssPath = Path.Combine(subDir, "NVNGX_DLSS.DLL");
+            await File.WriteAllTextAsync(dlssPath, "DLSS");
+
+            var pack = await RuntimePack.LoadFromDirectoryAsync(GetBundledPackagePath());
+            Assert.IsNotNull(pack);
+
+            var result = await RuntimePreflightService.RunPreflightAsync(
+                "subdir-pf-test",
+                tempDir,
+                pack,
+                "dxgi.dll",
+                "Subdir Game",
+                allowOfflineAntiCheatOverride: false,
+                ngxModelsRootOverride: missingNgxRoot);
+
+            Assert.IsTrue(result.NativeDlssDetected);
+            Assert.AreEqual(dlssPath, result.PrimaryDlssPath);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, recursive: true);
+        }
+    }
 }

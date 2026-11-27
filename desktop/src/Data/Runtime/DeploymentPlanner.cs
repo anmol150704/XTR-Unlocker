@@ -1163,48 +1163,6 @@ public static class DeploymentPlanner
         plan.PlannedConfigModifications.Add(new PlannedConfigEntry
         {
             Section = "Menu",
-            Key = "ShowFps",
-            Value = "true",
-            Reason = "Renders real-time in-game telemetry overlay with frame generation status."
-        });
-        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-        {
-            Section = "Menu",
-            Key = "FpsOverlayType",
-            Value = hudType,
-            Reason = "Detailed HUD displaying FPS, active upscaler, and generated frame delta."
-        });
-        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-        {
-            Section = "Menu",
-            Key = "FpsOverlayHorizontal",
-            Value = "true",
-            Reason = "Renders sleek horizontal pill HUD layout."
-        });
-        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-        {
-            Section = "Menu",
-            Key = "FpsOverlayPos",
-            Value = hudPos,
-            Reason = "Anchors HUD overlay position."
-        });
-        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-        {
-            Section = "Menu",
-            Key = "FpsScale",
-            Value = "1.05",
-            Reason = "Optimal HiDPI scale for FPS telemetry."
-        });
-        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-        {
-            Section = "Menu",
-            Key = "FpsOverlayAlpha",
-            Value = "0.75",
-            Reason = "Apple dark glass overlay transparency."
-        });
-        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-        {
-            Section = "Menu",
             Key = "DisableSplash",
             Value = "true",
             Reason = "Suppresses external splash screens on game launch."
@@ -1215,20 +1173,6 @@ public static class DeploymentPlanner
             Key = "ShortcutKey",
             Value = devHotkey,
             Reason = "Enables hotkey to toggle engine diagnostics overlay."
-        });
-        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-        {
-            Section = "Menu",
-            Key = "FpsShortcutKey",
-            Value = hudHotkey,
-            Reason = "Enables hotkey to toggle real-time FPS & FG HUD."
-        });
-        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-        {
-            Section = "Menu",
-            Key = "FpsCycleShortcutKey",
-            Value = cycleHotkey,
-            Reason = "Enables hotkey to cycle telemetry detail modes."
         });
         plan.PlannedConfigModifications.Add(new PlannedConfigEntry
         {
@@ -1299,13 +1243,6 @@ public static class DeploymentPlanner
             Key = "UseHQFont",
             Value = "true",
             Reason = "High-quality monospace typography."
-        });
-        plan.PlannedConfigModifications.Add(new PlannedConfigEntry
-        {
-            Section = "Plugins",
-            Key = "LoadAsiPlugins",
-            Value = "true",
-            Reason = "Enables OptiScaler to load in-game ASI plugins such as xtr_hud.asi."
         });
     }
 
